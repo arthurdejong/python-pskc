@@ -1,0 +1,12 @@
+# global
+*.pyc
+*.pyo
+__pycache__
+
+# /
+/*.egg-info
+/.coverage
+/build
+/coverage
+/dist
+/distribute-*.egg
