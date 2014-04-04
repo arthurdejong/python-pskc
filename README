@@ -1,0 +1,40 @@
+# Python PSKC module #
+
+A Python module to handle Portable Symmetric Key Container (PSKC) files as
+defined in RFC6030. PSKC files are used to transport and provision
+symmetric keys to different types of crypto modules, commonly one-time
+password tokens or other authentication devices.
+
+The goal of this module is mainly to provide parsing of PSKC files in
+order to extract secret keys for use in an OTP authentication system. At a
+later time support for writing files may be added.
+
+http://arthurdejong.org/python-pskc/
+
+
+## Security considerations ##
+
+This code handles private key material and is written in Python. No
+precautions have been taken to lock pages in memory to prevent swapping.
+Also no attempt is currently made to security dispose of memory that may
+have held private key material.
+
+
+## Copyright ##
+
+Copyright (C) 2014 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
