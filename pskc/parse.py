@@ -43,6 +43,41 @@ def g_e_v(element, match):
         return value.text.strip()
 
 
+class DataType(object):
+
+    def __init__(self, element, t=str):
+        self.element = element
+        self.t = t
+
+    @property
+    def plain_value(self):
+        if self.element is None:
+            return
+        plain_value = self.element.find('pskc:PlainValue', namespaces=namespaces)
+        if plain_value is not None:
+            return plain_value.text.strip()
+
+
+class BinaryDataType(DataType):
+
+    @property
+    def value(self):
+        plain_value = self.plain_value
+        if plain_value:
+            return base64.b64decode(plain_value)
+        # TODO: else: see if EncryptedValue is present and decode
+
+
+class IntegerDataType(DataType):
+
+    @property
+    def value(self):
+        plain_value = self.plain_value
+        if plain_value:
+            return int(plain_value)
+        # TODO: else: see if EncryptedValue is present and decode
+
+
 class Key(object):
 
     def __init__(self, key_package):
@@ -67,6 +102,29 @@ class Key(object):
             self.algorithm = key.attrib.get('Algorithm')
 
         self.issuer = g_e_v(key_package, 'pskc:Key/pskc:Issuer')
+        self.secret = None
+        self.counter = None
+        self.time_offset = None
+        self.time_interval = None
+        self.time_drift = None
+
+        data = key_package.find('pskc:Key/pskc:Data', namespaces=namespaces)
+        if data is not None:
+            # the secret key itself
+            secret = BinaryDataType(data.find('pskc:Secret', namespaces=namespaces))
+            self.secret = secret.value
+            # event counter for event-based OTP
+            counter = IntegerDataType(data.find('pskc:Counter', namespaces=namespaces))
+            self.counter = counter.value
+            # time offset for time-based OTP (number of intervals)
+            time_offset = IntegerDataType(data.find('pskc:Time', namespaces=namespaces))
+            self.time_offset = time_offset.value
+            # time interval in seconds
+            time_interval = IntegerDataType(data.find('pskc:TimeInterval', namespaces=namespaces))
+            self.time_interval = time_interval.value
+            # device clock drift value (number of time intervals)
+            time_drift = IntegerDataType(data.find('pskc:TimeDrift', namespaces=namespaces))
+            self.time_drift = time_drift
 
 
 class PSKC(object):
