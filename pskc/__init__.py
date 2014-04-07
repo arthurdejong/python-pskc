@@ -24,5 +24,11 @@ TBD: more documentation
 """
 
 
+from pskc.parse import PSKC
+
+
+__all__ = ['PSKC', '__version__']
+
+
 # the version number of the library
 __version__ = '0.1'
