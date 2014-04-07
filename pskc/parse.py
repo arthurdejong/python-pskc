@@ -93,6 +93,8 @@ class Key(object):
         # TODO: handle <ExpiryDate> as datetime
         self.device_userid = g_e_v(key_package, 'pskc:DeviceInfo/pskc:UserId')
 
+        self.crypto_module = g_e_v(key_package, 'pskc:CryptoModuleInfo/pskc:Id')
+
         self.id = None
         self.algorithm = None
 
@@ -102,6 +104,46 @@ class Key(object):
             self.algorithm = key.attrib.get('Algorithm')
 
         self.issuer = g_e_v(key_package, 'pskc:Key/pskc:Issuer')
+        self.key_profile = g_e_v(key_package, 'pskc:Key/pskc:KeyProfileId')
+        self.key_reference = g_e_v(key_package, 'pskc:Key/pskc:KeyReference')
+        self.friendly_name = g_e_v(key_package, 'pskc:Key/pskc:FriendlyName')
+        # TODO: support multi-language values of <FriendlyName>
+        self.userid = g_e_v(key_package, 'pskc:Key/pskc:UserId')
+
+        self.algorithm_suite = g_e_v(key_package, 'pskc:Key/pskc:AlgorithmParameters/pskc:Suite')
+
+        self.challenge_encoding = None
+        self.challenge_min = None
+        self.challenge_max = None
+        self.challenge_check = None
+
+        challenge_format = key_package.find('pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat', namespaces=namespaces)
+        if challenge_format is not None:
+            self.challenge_encoding = challenge_format.attrib.get('Encoding')
+            v = challenge_format.attrib.get('Min')
+            if v:
+                self.challenge_min = int(v)
+            v = challenge_format.attrib.get('Max')
+            if v:
+                self.challenge_max = int(v)
+            v = challenge_format.attrib.get('CheckDigits')
+            if v:
+                self.challenge_check = v.lower() == 'true'
+
+        self.response_encoding = None
+        self.response_length = None
+        self.response_check = None
+
+        response_format = key_package.find('pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat', namespaces=namespaces)
+        if response_format is not None:
+            self.response_encoding = response_format.attrib.get('Encoding')
+            v = response_format.attrib.get('Length')
+            if v:
+                self.response_length = int(v)
+            v = response_format.attrib.get('CheckDigits')
+            if v:
+                self.response_check = v.lower() == 'true'
+
         self.secret = None
         self.counter = None
         self.time_offset = None
