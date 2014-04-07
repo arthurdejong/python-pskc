@@ -36,3 +36,37 @@ a simple plain text secret key.
 'Issuer-A'
 >>> key.secret
 '1234'
+
+
+This tests Figure 3 from RFC6030. Relative to Figure 2 this includes
+device, cryptographic module and user identification as well as some more
+parameters.
+
+>>> pskc = PSKC('tests/rfc6030-figure3.pskc')
+>>> pskc.id
+'exampleID1'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'Manufacturer'
+>>> key.serial
+'987654321'
+>>> key.device_userid
+'DC=example-bank,DC=net'
+>>> key.crypto_module
+'CM_ID_001'
+>>> key.id
+'12345678'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> key.secret
+'12345678901234567890'
+>>> key.counter
+0
+>>> key.userid
+'UID=jsmith,DC=example-bank,DC=net'
