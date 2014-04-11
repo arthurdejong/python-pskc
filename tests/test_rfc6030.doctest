@@ -70,3 +70,19 @@ parameters.
 0
 >>> key.userid
 'UID=jsmith,DC=example-bank,DC=net'
+
+
+This tests Figure 4 from RFC6030. In this case the key value itself is not
+contained but can be derived using the serial and out-of-band agreements
+on the meanings of key_profile and key_reference.
+
+>>> pskc = PSKC('tests/rfc6030-figure4.pskc')
+>>> key = pskc.keys[0]
+>>> key.serial
+'987654321'
+>>> key.key_profile
+'keyProfile1'
+>>> key.key_reference
+'MasterKeyLabel'
+>>> key.counter
+0
