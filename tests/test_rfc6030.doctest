@@ -86,3 +86,55 @@ on the meanings of key_profile and key_reference.
 'MasterKeyLabel'
 >>> key.counter
 0
+
+
+This tests the key policy properties as illustrated in Figure 5 from RFC6030.
+
+>>> pskc = PSKC('tests/rfc6030-figure5.pskc')
+>>> len(pskc.keys)
+2
+>>> key1, key2 = pskc.keys
+>>> key1.serial
+'987654321'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+>>> key.response_length
+8
+>>> key.response_encoding
+'DECIMAL'
+>>> key1.secret
+'12345678901234567890'
+>>> key1.counter
+0
+>>> key1.policy.pin_min_length
+4
+>>> key1.policy.pin_max_length
+4
+>>> key1.policy.pin_key_id
+'123456781'
+>>> key1.policy.pin_encoding
+'DECIMAL'
+>>> key1.policy.pin_usage
+'Local'
+>>> key1.policy.key_usage
+['OTP']
+>>> key1.policy.may_use('OTP')
+True
+>>> key1.policy.may_use('Encrypt')
+False
+>>> key1.policy.unknown_policy_elements
+False
+>>> key2.id
+'123456781'
+>>> key2.serial
+'987654321'
+>>> key2.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc:pin'
+>>> key2.response_length
+4
+>>> key2.response_encoding
+'DECIMAL'
+>>> key2.secret
+'1234'
+>>> key1.policy.pin
+'1234'
