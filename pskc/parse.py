@@ -23,6 +23,8 @@ import base64
 
 import dateutil.parser
 
+from pskc.policy import Policy
+
 
 # the relevant XML namespaces for PSKC
 namespaces = dict(
@@ -97,7 +99,9 @@ class IntegerDataType(DataType):
 
 class Key(object):
 
-    def __init__(self, key_package):
+    def __init__(self, pskc, key_package):
+
+        self.pskc = pskc
 
         self.manufacturer = g_e_v(key_package, 'pskc:DeviceInfo/pskc:Manufacturer')
         self.serial = g_e_v(key_package, 'pskc:DeviceInfo/pskc:SerialNo')
@@ -183,6 +187,9 @@ class Key(object):
             time_drift = IntegerDataType(data.find('pskc:TimeDrift', namespaces=namespaces))
             self.time_drift = time_drift
 
+        self.policy = Policy(self, key_package.find(
+            'pskc:Key/pskc:Policy', namespaces=namespaces))
+
 
 class PSKC(object):
 
@@ -196,4 +203,4 @@ class PSKC(object):
         # handle KeyPackage entries
         self.keys = []
         for package in container.findall('pskc:KeyPackage', namespaces=namespaces):
-            self.keys.append(Key(package))
+            self.keys.append(Key(self, package))
