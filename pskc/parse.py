@@ -64,26 +64,25 @@ def g_e_d(tree, match):
 
 class DataType(object):
 
-    def __init__(self, element, t=str):
-        self.element = element
-        self.t = t
+    def __init__(self, key, element=None):
+        self.key = key
+        self.plain_value = None
+        self.parse(element)
 
-    @property
-    def plain_value(self):
-        if self.element is None:
+    def parse(self, element):
+        if element is None:
             return
-        plain_value = self.element.find('pskc:PlainValue', namespaces=namespaces)
-        if plain_value is not None:
-            return plain_value.text.strip()
+        self.plain_value = g_e_v(element, 'pskc:PlainValue')
 
 
 class BinaryDataType(DataType):
 
     @property
     def value(self):
-        plain_value = self.plain_value
-        if plain_value:
-            return base64.b64decode(plain_value)
+        # plain value is base64 encoded
+        value = self.plain_value
+        if value is not None:
+            return base64.b64decode(value)
         # TODO: else: see if EncryptedValue is present and decode
 
 
@@ -91,9 +90,10 @@ class IntegerDataType(DataType):
 
     @property
     def value(self):
-        plain_value = self.plain_value
-        if plain_value:
-            return int(plain_value)
+        # plain value is a string representation of the number
+        value = self.plain_value
+        if value:
+            return int(value)
         # TODO: else: see if EncryptedValue is present and decode
 
 
@@ -163,32 +163,52 @@ class Key(object):
             if v:
                 self.response_check = v.lower() == 'true'
 
-        self.secret = None
-        self.counter = None
-        self.time_offset = None
-        self.time_interval = None
-        self.time_drift = None
+        self._secret = BinaryDataType(self)
+        self._counter = IntegerDataType(self)
+        self._time_offset = IntegerDataType(self)
+        self._time_interval = IntegerDataType(self)
+        self._time_drift = IntegerDataType(self)
 
         data = key_package.find('pskc:Key/pskc:Data', namespaces=namespaces)
         if data is not None:
-            # the secret key itself
-            secret = BinaryDataType(data.find('pskc:Secret', namespaces=namespaces))
-            self.secret = secret.value
-            # event counter for event-based OTP
-            counter = IntegerDataType(data.find('pskc:Counter', namespaces=namespaces))
-            self.counter = counter.value
-            # time offset for time-based OTP (number of intervals)
-            time_offset = IntegerDataType(data.find('pskc:Time', namespaces=namespaces))
-            self.time_offset = time_offset.value
-            # time interval in seconds
-            time_interval = IntegerDataType(data.find('pskc:TimeInterval', namespaces=namespaces))
-            self.time_interval = time_interval.value
-            # device clock drift value (number of time intervals)
-            time_drift = IntegerDataType(data.find('pskc:TimeDrift', namespaces=namespaces))
-            self.time_drift = time_drift
+            self._secret.parse(data.find(
+                'pskc:Secret', namespaces=namespaces))
+            self._counter.parse(data.find(
+                'pskc:Counter', namespaces=namespaces))
+            self._time_offset.parse(data.find(
+                'pskc:Time', namespaces=namespaces))
+            self._time_interval.parse(data.find(
+                'pskc:TimeInterval', namespaces=namespaces))
+            self._time_drift.parse(data.find(
+                'pskc:TimeDrift', namespaces=namespaces))
 
         self.policy = Policy(self, key_package.find(
             'pskc:Key/pskc:Policy', namespaces=namespaces))
+
+    @property
+    def secret(self):
+        """The secret key itself."""
+        return self._secret.value
+
+    @property
+    def counter(self):
+        """An event counter for event-based OTP."""
+        return self._counter.value
+
+    @property
+    def time_offset(self):
+        """A time offset for time-based OTP (number of intervals)."""
+        return self._time_offset.value
+
+    @property
+    def time_interval(self):
+        """A time interval in seconds."""
+        return self._time_interval.value
+
+    @property
+    def time_drift(self):
+        """Device clock drift value (number of time intervals)."""
+        return self._time_drift.value
 
 
 class PSKC(object):
