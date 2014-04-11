@@ -44,6 +44,48 @@ class Policy(object):
     usage is not permitted.
     """
 
+    # Key is used for OTP generation.
+    KEY_USE_OTP = 'OTP'
+
+    # Key is used for Challenge/Response purposes.
+    KEY_USE_CR = 'CR'
+
+    # For generating keyed message digests.
+    KEY_USE_INTEGRITY = 'Integrity'
+
+    # For checking keyed message digests.
+    KEY_USE_VERIFY = 'Verify'
+
+    # Unlocking device when wrong PIN has been entered too many times.
+    KEY_USE_UNLOCK = 'Unlock'
+
+    # Key is used for data decryption purposes.
+    KEY_USE_DECRYPT = 'Decrypt'
+
+    # The key is used for key wrap purposes.
+    KEY_USE_KEYWRAP = 'KeyWrap'
+
+    # The key is used for key unwrap purposes.
+    KEY_USE_UNWRAP = 'Unwrap'
+
+    # Use in a key derivation function to derive a new key.
+    KEY_USE_DERIVE = 'Derive'
+
+    # Generate a new key based on a random number and the previous value.
+    KEY_USE_GENERATE = 'Generate'
+
+    # The PIN is checked on the device before the key is used.
+    PIN_USE_LOCAL = 'Local'
+
+    # The response has the PIN prepanded and needs to be checked.
+    PIN_USE_PREPEND = 'Prepend'
+
+    # The response has the PIN appended and needs to be checked.
+    PIN_USE_APPEND = 'Append'
+
+    # The PIN is used in the algorithm computation.
+    PIN_USE_ALGORITHMIC = 'Algorithmic'
+
     def __init__(self, key=None, policy=None):
         """Create a new policy, optionally linked to the key and parsed."""
         self.start_date = None
