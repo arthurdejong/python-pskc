@@ -21,6 +21,8 @@
 from xml.etree import ElementTree
 import base64
 
+import dateutil.parser
+
 
 # the relevant XML namespaces for PSKC
 namespaces = dict(
@@ -37,10 +39,25 @@ namespaces = dict(
 )
 
 
-def g_e_v(element, match):
-    value = element.find(match, namespaces=namespaces)
-    if value is not None:
-        return value.text.strip()
+def g_e_v(tree, match):
+    """Get the text value of an element (or None)."""
+    element = tree.find(match, namespaces=namespaces)
+    if element is not None:
+        return element.text.strip()
+
+
+def g_e_i(tree, match):
+    """Return an element value as an int (or None)."""
+    element = tree.find(match, namespaces=namespaces)
+    if element is not None:
+        return int(element.text.strip())
+
+
+def g_e_d(tree, match):
+    """Return an element value as a datetime (or None)."""
+    element = tree.find(match, namespaces=namespaces)
+    if element is not None:
+        return dateutil.parser.parse(element.text.strip())
 
 
 class DataType(object):
@@ -87,10 +104,8 @@ class Key(object):
         self.model = g_e_v(key_package, 'pskc:DeviceInfo/pskc:Model')
         self.issue_no = g_e_v(key_package, 'pskc:DeviceInfo/pskc:IssueNo')
         self.device_binding = g_e_v(key_package, 'pskc:DeviceInfo/pskc:DeviceBinding')
-        self.start_date = g_e_v(key_package, 'pskc:DeviceInfo/pskc:StartDate')
-        # TODO: handle <StartDate> as datetime
-        self.expiry_date = g_e_v(key_package, 'pskc:DeviceInfo/pskc:ExpiryDate')
-        # TODO: handle <ExpiryDate> as datetime
+        self.start_date = g_e_d(key_package, 'pskc:DeviceInfo/pskc:StartDate')
+        self.expiry_date = g_e_d(key_package, 'pskc:DeviceInfo/pskc:ExpiryDate')
         self.device_userid = g_e_v(key_package, 'pskc:DeviceInfo/pskc:UserId')
 
         self.crypto_module = g_e_v(key_package, 'pskc:CryptoModuleInfo/pskc:Id')
