@@ -154,3 +154,21 @@ Figure 6 from RFC6030.
 '3132333435363738393031323334353637383930'
 >>> key.check()
 True
+
+
+This tests a derived master key using PBKDF2 as seen in Figure 7 from
+RFC6030.
+
+>>> pskc = PSKC('tests/rfc6030-figure7.pskc')
+>>> pskc.encryption.key_name
+'My Password 1'
+>>> pskc.encryption.derive_key('qwerty')
+>>> pskc.encryption.key.encode('hex')
+'651e63cd57008476af1ff6422cd02e41'
+>>> pskc.mac.key.encode('hex')
+'bdaab8d648e850d25a3289364f7d7eaaf53ce581'
+>>> key = pskc.keys[0]
+>>> key.secret
+'12345678901234567890'
+>>> key.check()
+True
