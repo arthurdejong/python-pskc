@@ -71,14 +71,17 @@ class Encryption(object):
     """Class for handling encryption keys that are used in the PSKC file."""
 
     def __init__(self, key_info=None):
+        self.id = None
         self.key_names = []
         self.key = None
-        if key_info is not None:
-            self.parse(key_info)
+        self.parse(key_info)
 
     def parse(self, key_info):
         """Read encryption information from the EncryptionKey XML tree."""
         from pskc.parse import g_e_v, namespaces
+        if key_info is None:
+            return
+        self.id = key_info.attrib.get('Id')
         for name in key_info.findall('ds:KeyName', namespaces=namespaces):
             self.key_names.append(g_e_v(name, '.'))
 
