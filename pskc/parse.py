@@ -65,14 +65,18 @@ def g_e_d(tree, match):
 class DataType(object):
 
     def __init__(self, key, element=None):
+        from pskc.encryption import EncryptedValue
         self.key = key
         self.plain_value = None
+        self.encrypted_value = EncryptedValue(self.key.pskc.encryption)
         self.parse(element)
 
     def parse(self, element):
         if element is None:
             return
         self.plain_value = g_e_v(element, 'pskc:PlainValue')
+        self.encrypted_value.parse(element.find(
+            'pskc:EncryptedValue', namespaces=namespaces))
 
 
 class BinaryDataType(DataType):
@@ -83,7 +87,10 @@ class BinaryDataType(DataType):
         value = self.plain_value
         if value is not None:
             return base64.b64decode(value)
-        # TODO: else: see if EncryptedValue is present and decode
+        # encrypted value is in correct format
+        value = self.encrypted_value.decrypt()
+        if value is not None:
+            return value
 
 
 class IntegerDataType(DataType):
@@ -94,7 +101,14 @@ class IntegerDataType(DataType):
         value = self.plain_value
         if value:
             return int(value)
-        # TODO: else: see if EncryptedValue is present and decode
+        # decrypted value is a
+        value = self.encrypted_value.decrypt()
+        if value is not None:
+            # Python3 has int.from_bytes(value, byteorder='big')
+            v = 0
+            for x in value:
+                v = (v << 8) + ord(x)
+            return v
 
 
 class Key(object):
@@ -214,12 +228,16 @@ class Key(object):
 class PSKC(object):
 
     def __init__(self, filename):
+        from pskc.encryption import Encryption
         tree = ElementTree.parse(filename)
         container = tree.getroot()
         # the version of the PSKC schema
         self.version = container.attrib.get('Version')
         # unique identifier for the container
         self.id = container.attrib.get('Id')
+        # handle EncryptionKey entries
+        self.encryption = Encryption(container.find(
+            'pskc:EncryptionKey', namespaces=namespaces))
         # handle KeyPackage entries
         self.keys = []
         for package in container.findall('pskc:KeyPackage', namespaces=namespaces):
