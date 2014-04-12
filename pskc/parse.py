@@ -66,9 +66,11 @@ class DataType(object):
 
     def __init__(self, key, element=None):
         from pskc.encryption import EncryptedValue
+        from pskc.mac import ValueMAC
         self.key = key
         self.plain_value = None
         self.encrypted_value = EncryptedValue(self.key.pskc.encryption)
+        self.value_mac = ValueMAC(self.key.pskc.mac)
         self.parse(element)
 
     def parse(self, element):
@@ -77,6 +79,12 @@ class DataType(object):
         self.plain_value = g_e_v(element, 'pskc:PlainValue')
         self.encrypted_value.parse(element.find(
             'pskc:EncryptedValue', namespaces=namespaces))
+        self.value_mac.parse(element.find(
+            'pskc:ValueMAC', namespaces=namespaces))
+
+    def check(self):
+        """Check whether the embedded MAC is correct."""
+        return self.value_mac.check(self.encrypted_value.cipher_value)
 
 
 class BinaryDataType(DataType):
@@ -224,11 +232,21 @@ class Key(object):
         """Device clock drift value (number of time intervals)."""
         return self._time_drift.value
 
+    def check(self):
+        """Check if all MACs in the message are valid."""
+        checks = (self._secret.check(), self._counter.check(),
+                  self._time_offset.check(), self._time_interval.check(),
+                  self._time_drift.check())
+        if all(x is None for x in checks):
+            return None
+        return all(x is not False for x in checks)
+
 
 class PSKC(object):
 
     def __init__(self, filename):
         from pskc.encryption import Encryption
+        from pskc.mac import MAC
         tree = ElementTree.parse(filename)
         container = tree.getroot()
         # the version of the PSKC schema
@@ -238,6 +256,9 @@ class PSKC(object):
         # handle EncryptionKey entries
         self.encryption = Encryption(container.find(
             'pskc:EncryptionKey', namespaces=namespaces))
+        # handle MACMethod entries
+        self.mac = MAC(self, container.find(
+            'pskc:MACMethod', namespaces=namespaces))
         # handle KeyPackage entries
         self.keys = []
         for package in container.findall('pskc:KeyPackage', namespaces=namespaces):
