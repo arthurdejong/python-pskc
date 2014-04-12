@@ -21,6 +21,7 @@
 import base64
 
 from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
 
 
 AES128_CBC = 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
@@ -67,6 +68,58 @@ class EncryptedValue(object):
             return plaintext[0:-ord(plaintext[-1])]
 
 
+PBKDF2_URIS = [
+    'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5#pbkdf2',
+    'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2',
+    'http://www.w3.org/2009/xmlenc11#pbkdf2',
+]
+
+
+class KeyDerivation(object):
+    """Handle derived keys."""
+
+    def __init__(self, key_deriviation=None):
+        self.algorithm = None
+        # PBKDF2 properties
+        self.pbkdf2_salt = None
+        self.pbkdf2_iterations = None
+        self.pbkdf2_key_length = None
+        self.pbkdf2_prf = None
+        self.parse(key_deriviation)
+
+    def parse(self, key_deriviation):
+        from pskc.parse import g_e_v, g_e_i, namespaces
+        if key_deriviation is None:
+            return
+        self.algorithm = key_deriviation.attrib.get('Algorithm')
+        # PBKDF2 properties
+        pbkdf2 = key_deriviation.find(
+            'xenc11:PBKDF2-params', namespaces=namespaces)
+        if pbkdf2 is None:
+            pbkdf2 = key_deriviation.find(
+                'pkcs5:PBKDF2-params', namespaces=namespaces)
+        if pbkdf2 is not None:
+            # get used salt
+            value = g_e_v(pbkdf2, 'Salt/Specified')
+            if value is not None:
+                self.pbkdf2_salt = base64.b64decode(value)
+            # required number of iterations
+            self.pbkdf2_iterations = g_e_i(pbkdf2, 'IterationCount')
+            # key length
+            self.pbkdf2_key_length = g_e_i(pbkdf2, 'KeyLength')
+            # pseudorandom function used
+            prf = pbkdf2.find('PRF', namespaces=namespaces)
+            if prf is not None:
+                self.pbkdf2_prf = prf.attrib.get('Algorithm')
+
+    def generate(self, password):
+        if self.algorithm in PBKDF2_URIS:
+            # TODO: support pseudorandom function (prf)
+            return PBKDF2(
+                password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
+                count=self.pbkdf2_iterations, prf=None)
+
+
 class Encryption(object):
     """Class for handling encryption keys that are used in the PSKC file."""
 
@@ -74,6 +127,7 @@ class Encryption(object):
         self.id = None
         self.key_names = []
         self.key = None
+        self.derivation = KeyDerivation()
         self.parse(key_info)
 
     def parse(self, key_info):
@@ -84,8 +138,18 @@ class Encryption(object):
         self.id = key_info.attrib.get('Id')
         for name in key_info.findall('ds:KeyName', namespaces=namespaces):
             self.key_names.append(g_e_v(name, '.'))
+        for name in key_info.findall(
+                'xenc11:DerivedKey/xenc11:MasterKeyName',
+                namespaces=namespaces):
+            self.key_names.append(g_e_v(name, '.'))
+        self.derivation.parse(key_info.find(
+            'xenc11:DerivedKey/xenc11:KeyDerivationMethod',
+            namespaces=namespaces))
 
     @property
     def key_name(self):
         if self.key_names:
             return self.key_names[0]
+
+    def derive_key(self, password):
+        self.key = self.derivation.generate(password)
