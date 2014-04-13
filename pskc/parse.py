@@ -154,8 +154,8 @@ class Key(object):
         self.algorithm_suite = g_e_v(key_package, 'pskc:Key/pskc:AlgorithmParameters/pskc:Suite')
 
         self.challenge_encoding = None
-        self.challenge_min = None
-        self.challenge_max = None
+        self.challenge_min_length = None
+        self.challenge_max_length = None
         self.challenge_check = None
 
         challenge_format = key_package.find('pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat', namespaces=namespaces)
@@ -163,10 +163,10 @@ class Key(object):
             self.challenge_encoding = challenge_format.attrib.get('Encoding')
             v = challenge_format.attrib.get('Min')
             if v:
-                self.challenge_min = int(v)
+                self.challenge_min_length = int(v)
             v = challenge_format.attrib.get('Max')
             if v:
-                self.challenge_max = int(v)
+                self.challenge_max_length = int(v)
             v = challenge_format.attrib.get('CheckDigits')
             if v:
                 self.challenge_check = v.lower() == 'true'
