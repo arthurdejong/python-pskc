@@ -172,3 +172,40 @@ RFC6030.
 '12345678901234567890'
 >>> key.check()
 True
+
+
+This tests bulk provisioning as shown in Figure 10 From RFC6030.
+
+>>> pskc = PSKC('tests/rfc6030-figure10.pskc')
+>>> all(key.manufacturer == 'TokenVendorAcme' for key in pskc.keys)
+True
+>>> [key.serial for key in pskc.keys]
+['654321', '123456', '9999999', '9999999']
+>>> all(key.algorithm == 'urn:ietf:params:xml:ns:keyprov:pskc:hotp' for key in pskc.keys)
+True
+>>> all(key.issuer == 'Issuer' for key in pskc.keys)
+True
+>>> all(key.response_length == 8 for key in pskc.keys)
+True
+>>> all(key.response_encoding == 'DECIMAL' for key in pskc.keys)
+True
+>>> all(key.secret == '12345678901234567890' for key in pskc.keys)
+True
+>>> all(key.counter == 0 for key in pskc.keys)
+True
+>>> pskc.keys[0].policy.start_date
+datetime.datetime(2006, 5, 1, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[0].policy.expiry_date
+datetime.datetime(2006, 5, 31, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[1].policy.start_date
+datetime.datetime(2006, 5, 1, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[1].policy.expiry_date
+datetime.datetime(2006, 5, 31, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[2].policy.start_date
+datetime.datetime(2006, 3, 1, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[2].policy.expiry_date
+datetime.datetime(2006, 3, 31, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[3].policy.start_date
+datetime.datetime(2006, 4, 1, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[3].policy.expiry_date
+datetime.datetime(2006, 4, 30, 0, 0, tzinfo=tzutc())
