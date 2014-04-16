@@ -18,9 +18,29 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-"""Portable Symmetric Key Container (PSKC)
+"""Python module for handling PSKC files
 
-TBD: more documentation
+This Python library handles Portable Symmetric Key Container (PSKC) files
+as defined in RFC6030. PSKC files are used to transport and provision
+symmetric keys (seed files) to different types of crypto modules, commonly
+one-time password tokens or other authentication devices.
+
+The main goal of this module is to be able to extract keys from PSKC files
+for use in an OTP authentication system.
+
+The following prints all keys, decrypting using a password:
+
+
+>>> from pskc import PSKC
+>>> pskc = PSKC('tests/rfc6030-figure7.pskc')
+>>> pskc.encryption.derive_key('qwerty')
+>>> for key in pskc.keys:
+...     print key.serial, key.secret
+987654321 12345678901234567890
+
+The module should be able to handle most common PSKC files. Checking
+embedded signatures, asymmetric keys and writing files are on the wishlist
+(patches welcome).
 """
 
 
