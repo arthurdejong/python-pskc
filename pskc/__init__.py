@@ -30,7 +30,6 @@ for use in an OTP authentication system.
 
 The following prints all keys, decrypting using a password:
 
-
 >>> from pskc import PSKC
 >>> pskc = PSKC('tests/rfc6030-figure7.pskc')
 >>> pskc.encryption.derive_key('qwerty')
@@ -44,11 +43,52 @@ embedded signatures, asymmetric keys and writing files are on the wishlist
 """
 
 
-from pskc.parse import PSKC
-
-
 __all__ = ['PSKC', '__version__']
 
 
 # the version number of the library
 __version__ = '0.1'
+
+
+class PSKC(object):
+    """Wrapper module for parsing a PSKC file.
+
+    Instances of this class provide the following attributes:
+
+      version: the PSKC format version used (1.0)
+      id: identifier
+      encryption: information on used encryption (Encryption instance)
+      mac: information on used MAC method (MAC instance)
+      keys: list of keys (Key instances)
+    """
+
+    def __init__(self, filename):
+        from xml.etree import ElementTree
+        from pskc.encryption import Encryption
+        from pskc.mac import MAC
+        self.version = None
+        self.id = None
+        self.encryption = Encryption()
+        self.mac = MAC(self)
+        self.keys = []
+        tree = ElementTree.parse(filename)
+        self.parse(tree.getroot())
+
+    def parse(self, container):
+        """Read information from the provided <KeyContainer> tree."""
+        from pskc.parse import namespaces
+        from pskc.key import Key
+        # the version of the PSKC schema
+        self.version = container.attrib.get('Version')
+        # unique identifier for the container
+        self.id = container.attrib.get('Id')
+        # handle EncryptionKey entries
+        self.encryption.parse(container.find(
+            'pskc:EncryptionKey', namespaces=namespaces))
+        # handle MACMethod entries
+        self.mac.parse(container.find(
+            'pskc:MACMethod', namespaces=namespaces))
+        # handle KeyPackage entries
+        for package in container.findall(
+                'pskc:KeyPackage', namespaces=namespaces):
+            self.keys.append(Key(self, package))

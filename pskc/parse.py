@@ -25,9 +25,6 @@ PSKC files.
 """
 
 
-from xml.etree import ElementTree
-
-
 # the relevant XML namespaces for PSKC
 namespaces = dict(
     # the XML namespace URI for version 1.0 of PSKC
@@ -63,38 +60,3 @@ def g_e_d(tree, match):
     if element is not None:
         import dateutil.parser
         return dateutil.parser.parse(element.text.strip())
-
-
-class PSKC(object):
-    """Wrapper module for parsing a PSKC file.
-
-    Instances of this class provide the following attributes:
-
-      version: the PSKC format version used (1.0)
-      id: identifier
-      encryption: information on used encryption (Encryption instance)
-      mac: information on used MAC method (MAC instance)
-      keys: list of keys (Key instances)
-    """
-
-    def __init__(self, filename):
-        from pskc.encryption import Encryption
-        from pskc.mac import MAC
-        from pskc.key import Key
-        tree = ElementTree.parse(filename)
-        container = tree.getroot()
-        # the version of the PSKC schema
-        self.version = container.attrib.get('Version')
-        # unique identifier for the container
-        self.id = container.attrib.get('Id')
-        # handle EncryptionKey entries
-        self.encryption = Encryption(container.find(
-            'pskc:EncryptionKey', namespaces=namespaces))
-        # handle MACMethod entries
-        self.mac = MAC(self, container.find(
-            'pskc:MACMethod', namespaces=namespaces))
-        # handle KeyPackage entries
-        self.keys = []
-        for package in container.findall(
-                'pskc:KeyPackage', namespaces=namespaces):
-            self.keys.append(Key(self, package))
