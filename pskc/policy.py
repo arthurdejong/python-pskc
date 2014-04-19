@@ -18,6 +18,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+"""Module that provides PSKC key policy information."""
+
 
 class Policy(object):
     """Representation of a policy that describes key and pin usage.
@@ -88,6 +90,7 @@ class Policy(object):
 
     def __init__(self, key=None, policy=None):
         """Create a new policy, optionally linked to the key and parsed."""
+        self.key = key
         self.start_date = None
         self.expiry_date = None
         self.number_of_transactions = None
@@ -99,11 +102,10 @@ class Policy(object):
         self.pin_max_length = None
         self.pin_encoding = None
         self.unknown_policy_elements = False
-        self.key = key
         self.parse(policy)
 
     def parse(self, policy):
-        """Read key policy information from the provided KeyPackage tree."""
+        """Read key policy information from the provided <Policy> tree."""
         from pskc.parse import g_e_v, g_e_i, g_e_d, namespaces
         if policy is None:
             return
