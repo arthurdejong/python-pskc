@@ -18,6 +18,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+"""Module for parsing PSKC files.
+
+This module provides the PSKC class and some utility functions for parsing
+PSKC files.
+"""
+
+
 from xml.etree import ElementTree
 
 
@@ -59,6 +66,16 @@ def g_e_d(tree, match):
 
 
 class PSKC(object):
+    """Wrapper module for parsing a PSKC file.
+
+    Instances of this class provide the following attributes:
+
+      version: the PSKC format version used (1.0)
+      id: identifier
+      encryption: information on used encryption (Encryption instance)
+      mac: information on used MAC method (MAC instance)
+      keys: list of keys (Key instances)
+    """
 
     def __init__(self, filename):
         from pskc.encryption import Encryption
@@ -78,5 +95,6 @@ class PSKC(object):
             'pskc:MACMethod', namespaces=namespaces))
         # handle KeyPackage entries
         self.keys = []
-        for package in container.findall('pskc:KeyPackage', namespaces=namespaces):
+        for package in container.findall(
+                'pskc:KeyPackage', namespaces=namespaces):
             self.keys.append(Key(self, package))
