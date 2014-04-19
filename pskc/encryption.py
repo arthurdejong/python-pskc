@@ -18,6 +18,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+"""Module that handles encrypted PSKC values.
+
+This module defines an Encryption class that handles the encryption key
+and an EncryptedValue wrapper class that can decrypt values using the
+encryption key.
+
+The encryption key can be derived using the KeyDerivation class.
+"""
+
+
 import base64
 
 from Crypto.Cipher import AES
@@ -38,13 +48,13 @@ class EncryptedValue(object):
 
     def __init__(self, encryption, encrypted_value=None):
         """Initialise an encrypted value for the provided Key."""
+        self.encryption = encryption
         self.algorithm = None
         self.cipher_value = None
-        self.encryption = encryption
         self.parse(encrypted_value)
 
     def parse(self, encrypted_value):
-        """Read encrypted data from the EncryptedValue XML tree."""
+        """Read encrypted data from the <EncryptedValue> XML tree."""
         from pskc.parse import g_e_v, namespaces
         if encrypted_value is None:
             return
@@ -76,7 +86,16 @@ PBKDF2_URIS = [
 
 
 class KeyDerivation(object):
-    """Handle derived keys."""
+    """Handle key derivation.
+
+    The algorithm property contains the key derivation algorithm to use. For
+    PBDKF2 the following parameters are set:
+
+      pbkdf2_salt: salt value
+      pbkdf2_iterations: number of iterations to use
+      pbkdf2_key_length: required key lengt
+      pbkdf2_prf: name of pseudorandom function used (HMAC-SHA1 is assumed)
+    """
 
     def __init__(self, key_deriviation=None):
         self.algorithm = None
@@ -88,6 +107,7 @@ class KeyDerivation(object):
         self.parse(key_deriviation)
 
     def parse(self, key_deriviation):
+        """Read derivation parameters from a <KeyDerivationMethod> element."""
         from pskc.parse import g_e_v, g_e_i, namespaces
         if key_deriviation is None:
             return
@@ -113,6 +133,7 @@ class KeyDerivation(object):
                 self.pbkdf2_prf = prf.attrib.get('Algorithm')
 
     def generate(self, password):
+        """Derive a key from the password."""
         if self.algorithm in PBKDF2_URIS:
             # TODO: support pseudorandom function (prf)
             return PBKDF2(
@@ -121,7 +142,20 @@ class KeyDerivation(object):
 
 
 class Encryption(object):
-    """Class for handling encryption keys that are used in the PSKC file."""
+    """Class for handling encryption keys that are used in the PSKC file.
+
+    Encryption generally uses a symmetric key that is used to encrypt some
+    of the information stored in PSKC files (typically the seed). This
+    class provides the following values:
+
+      id: identifier of the key
+      key_names: list of names for the key
+      key_name: (first) name of the key (usually there is only one)
+      key: the key value itself (binary form)
+
+    The key can either be included in the PSKC file (in that case it
+    automatically picked up) or derived using the derive_key() method.
+    """
 
     def __init__(self, key_info=None):
         self.id = None
@@ -131,7 +165,7 @@ class Encryption(object):
         self.parse(key_info)
 
     def parse(self, key_info):
-        """Read encryption information from the EncryptionKey XML tree."""
+        """Read encryption information from the <EncryptionKey> XML tree."""
         from pskc.parse import g_e_v, namespaces
         if key_info is None:
             return
@@ -148,8 +182,10 @@ class Encryption(object):
 
     @property
     def key_name(self):
+        """Provide the name of the (first) key."""
         if self.key_names:
             return self.key_names[0]
 
     def derive_key(self, password):
+        """Derive a key from the password."""
         self.key = self.derivation.generate(password)
