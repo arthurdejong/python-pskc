@@ -68,7 +68,7 @@ parameters.
 '12345678901234567890'
 >>> key.counter
 0
->>> key.userid
+>>> key.key_userid
 'UID=jsmith,DC=example-bank,DC=net'
 
 

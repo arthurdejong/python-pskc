@@ -18,6 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+"""Module that handles keys stored in PSKC files."""
+
+
 import base64
 
 from pskc.encryption import EncryptedValue
@@ -26,15 +29,29 @@ from pskc.policy import Policy
 
 
 class DataType(object):
+    """Provide access to possibly encrypted, MAC'ed information.
+
+    This class is meant to be subclassed to provide typed access to stored
+    values. Instances of this class provide the following attributes:
+
+      plain_value: raw unencrypted value if present (possibly base64 encoded)
+      encrypted_value: reference to an EncryptedValue instance
+      value_mac: reference to a ValueMAC instance
+      value: the plaintext value (decrypted if necessary)
+    """
 
     def __init__(self, key, element=None):
-        self.key = key
         self.plain_value = None
-        self.encrypted_value = EncryptedValue(self.key.pskc.encryption)
-        self.value_mac = ValueMAC(self.key.pskc.mac)
+        self.encrypted_value = EncryptedValue(key.pskc.encryption)
+        self.value_mac = ValueMAC(key.pskc.mac)
         self.parse(element)
 
     def parse(self, element):
+        """Read information from the provided element.
+
+        The element is expected to contain <PlainValue>, <EncryptedValue>
+        and/or ValueMAC elements that contain information on the actual
+        value."""
         from pskc.parse import g_e_v, namespaces
         if element is None:
             return
@@ -46,13 +63,16 @@ class DataType(object):
 
     def check(self):
         """Check whether the embedded MAC is correct."""
+        # this checks the encrypted value
         return self.value_mac.check(self.encrypted_value.cipher_value)
 
 
 class BinaryDataType(DataType):
+    """Subclass of DataType for binary data (e.g. keys)."""
 
     @property
     def value(self):
+        """Provide the raw binary value."""
         # plain value is base64 encoded
         value = self.plain_value
         if value is not None:
@@ -64,14 +84,16 @@ class BinaryDataType(DataType):
 
 
 class IntegerDataType(DataType):
+    """Subclass of DataType for integer types (e.g. counters)."""
 
     @property
     def value(self):
+        """Provide the raw integer value."""
         # plain value is a string representation of the number
         value = self.plain_value
         if value:
             return int(value)
-        # decrypted value is a
+        # decrypted value is big endian encoded
         value = self.encrypted_value.decrypt()
         if value is not None:
             # Python3 has int.from_bytes(value, byteorder='big')
@@ -82,10 +104,60 @@ class IntegerDataType(DataType):
 
 
 class Key(object):
+    """Representation of a single key from a PSKC file.
+
+    Instances of this class provide the following properties:
+
+      id: unique key identifier (should be constant between interchanges)
+      algorithm: identifier of the PSKC algorithm profile (URI)
+      secret: the secret key itself (binary form, automatically decrypted)
+      counter: event counter for event-based OTP
+      time: time offset for time-based OTP algorithms (in intervals)
+      time_interval: time interval for time-based OTP in seconds
+      time_drift: device clock drift (negative means device is slow)
+      issuer: party that issued the key
+      key_profile: reference to pre-shared key profile information
+      key_reference: reference to an external key
+      friendly_name: human-readable name for the secret key
+      key_userid: user distinguished name associated with the key
+      manufacturer: name of the organisation that made the device
+      serial: serial number of the device
+      model: device model description
+      issue_no: issue number per serial number
+      device_binding: device (class) identifier for the key to be loaded upon
+      start_date: key should not be used before this date
+      expiry_date: key or device may expire after this date
+      device_userid: user distinguished name associated with the device
+      crypto_module: id of module to which keys are provisioned within device
+      algorithm_suite: additional algorithm characteristics (e.g. used hash)
+      challenge_encoding: format of the challenge for CR devices
+      challenge_min_length: minimum accepted challenge length by device
+      challenge_max_length: maximum size challenge accepted by the device
+      challenge_check: whether the device will check an embedded check digit
+      response_encoding: format of the response the device will generate
+      response_length: the length of the response of the device
+      response_check: whether the device appends a Luhn check digit
+      policy: reference to policy information (see Policy class)
+    """
 
     def __init__(self, pskc, key_package):
 
         self.pskc = pskc
+
+        self.id = None
+        self.algorithm = None
+
+        self._secret = BinaryDataType(self)
+        self._counter = IntegerDataType(self)
+        self._time_offset = IntegerDataType(self)
+        self._time_interval = IntegerDataType(self)
+        self._time_drift = IntegerDataType(self)
+
+        self.issuer = None
+        self.key_profile = None
+        self.key_reference = None
+        self.friendly_name = None
+        self.key_userid = None
 
         self.manufacturer = None
         self.serial = None
@@ -98,15 +170,6 @@ class Key(object):
 
         self.crypto_module = None
 
-        self.id = None
-        self.algorithm = None
-
-        self.issuer = None
-        self.key_profile = None
-        self.key_reference = None
-        self.friendly_name = None
-        self.userid = None
-
         self.algorithm_suite = None
 
         self.challenge_encoding = None
@@ -118,68 +181,20 @@ class Key(object):
         self.response_length = None
         self.response_check = None
 
-        self._secret = BinaryDataType(self)
-        self._counter = IntegerDataType(self)
-        self._time_offset = IntegerDataType(self)
-        self._time_interval = IntegerDataType(self)
-        self._time_drift = IntegerDataType(self)
-
         self.policy = Policy(self)
 
         self.parse(key_package)
 
     def parse(self, key_package):
+        """Read key information from the provided <KeyPackage> tree."""
         from pskc.parse import g_e_v, g_e_d, namespaces
         if key_package is None:
             return
-
-        self.manufacturer = g_e_v(key_package, 'pskc:DeviceInfo/pskc:Manufacturer')
-        self.serial = g_e_v(key_package, 'pskc:DeviceInfo/pskc:SerialNo')
-        self.model = g_e_v(key_package, 'pskc:DeviceInfo/pskc:Model')
-        self.issue_no = g_e_v(key_package, 'pskc:DeviceInfo/pskc:IssueNo')
-        self.device_binding = g_e_v(key_package, 'pskc:DeviceInfo/pskc:DeviceBinding')
-        self.start_date = g_e_d(key_package, 'pskc:DeviceInfo/pskc:StartDate')
-        self.expiry_date = g_e_d(key_package, 'pskc:DeviceInfo/pskc:ExpiryDate')
-        self.device_userid = g_e_v(key_package, 'pskc:DeviceInfo/pskc:UserId')
-
-        self.crypto_module = g_e_v(key_package, 'pskc:CryptoModuleInfo/pskc:Id')
 
         key = key_package.find('pskc:Key', namespaces=namespaces)
         if key is not None:
             self.id = key.attrib.get('Id')
             self.algorithm = key.attrib.get('Algorithm')
-
-        self.issuer = g_e_v(key_package, 'pskc:Key/pskc:Issuer')
-        self.key_profile = g_e_v(key_package, 'pskc:Key/pskc:KeyProfileId')
-        self.key_reference = g_e_v(key_package, 'pskc:Key/pskc:KeyReference')
-        self.friendly_name = g_e_v(key_package, 'pskc:Key/pskc:FriendlyName')
-        # TODO: support multi-language values of <FriendlyName>
-        self.userid = g_e_v(key_package, 'pskc:Key/pskc:UserId')
-
-        self.algorithm_suite = g_e_v(key_package, 'pskc:Key/pskc:AlgorithmParameters/pskc:Suite')
-
-        challenge_format = key_package.find('pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat', namespaces=namespaces)
-        if challenge_format is not None:
-            self.challenge_encoding = challenge_format.attrib.get('Encoding')
-            v = challenge_format.attrib.get('Min')
-            if v:
-                self.challenge_min_length = int(v)
-            v = challenge_format.attrib.get('Max')
-            if v:
-                self.challenge_max_length = int(v)
-            v = challenge_format.attrib.get('CheckDigits')
-            if v:
-                self.challenge_check = v.lower() == 'true'
-
-        response_format = key_package.find('pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat', namespaces=namespaces)
-        if response_format is not None:
-            self.response_encoding = response_format.attrib.get('Encoding')
-            v = response_format.attrib.get('Length')
-            if v:
-                self.response_length = int(v)
-            v = response_format.attrib.get('CheckDigits')
-            if v:
-                self.response_check = v.lower() == 'true'
 
         data = key_package.find('pskc:Key/pskc:Data', namespaces=namespaces)
         if data is not None:
@@ -193,6 +208,58 @@ class Key(object):
                 'pskc:TimeInterval', namespaces=namespaces))
             self._time_drift.parse(data.find(
                 'pskc:TimeDrift', namespaces=namespaces))
+
+        self.issuer = g_e_v(key_package, 'pskc:Key/pskc:Issuer')
+        self.key_profile = g_e_v(key_package, 'pskc:Key/pskc:KeyProfileId')
+        self.key_reference = g_e_v(key_package, 'pskc:Key/pskc:KeyReference')
+        self.friendly_name = g_e_v(key_package, 'pskc:Key/pskc:FriendlyName')
+        # TODO: support multi-language values of <FriendlyName>
+        self.key_userid = g_e_v(key_package, 'pskc:Key/pskc:UserId')
+
+        self.manufacturer = g_e_v(
+            key_package, 'pskc:DeviceInfo/pskc:Manufacturer')
+        self.serial = g_e_v(key_package, 'pskc:DeviceInfo/pskc:SerialNo')
+        self.model = g_e_v(key_package, 'pskc:DeviceInfo/pskc:Model')
+        self.issue_no = g_e_v(key_package, 'pskc:DeviceInfo/pskc:IssueNo')
+        self.device_binding = g_e_v(
+            key_package, 'pskc:DeviceInfo/pskc:DeviceBinding')
+        self.start_date = g_e_d(key_package, 'pskc:DeviceInfo/pskc:StartDate')
+        self.expiry_date = g_e_d(
+            key_package, 'pskc:DeviceInfo/pskc:ExpiryDate')
+        self.device_userid = g_e_v(key_package, 'pskc:DeviceInfo/pskc:UserId')
+
+        self.crypto_module = g_e_v(
+            key_package, 'pskc:CryptoModuleInfo/pskc:Id')
+
+        self.algorithm_suite = g_e_v(
+            key_package, 'pskc:Key/pskc:AlgorithmParameters/pskc:Suite')
+
+        challenge_format = key_package.find(
+            'pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat',
+            namespaces=namespaces)
+        if challenge_format is not None:
+            self.challenge_encoding = challenge_format.attrib.get('Encoding')
+            v = challenge_format.attrib.get('Min')
+            if v:
+                self.challenge_min_length = int(v)
+            v = challenge_format.attrib.get('Max')
+            if v:
+                self.challenge_max_length = int(v)
+            v = challenge_format.attrib.get('CheckDigits')
+            if v:
+                self.challenge_check = v.lower() == 'true'
+
+        response_format = key_package.find(
+            'pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat',
+            namespaces=namespaces)
+        if response_format is not None:
+            self.response_encoding = response_format.attrib.get('Encoding')
+            v = response_format.attrib.get('Length')
+            if v:
+                self.response_length = int(v)
+            v = response_format.attrib.get('CheckDigits')
+            if v:
+                self.response_check = v.lower() == 'true'
 
         self.policy.parse(key_package.find(
             'pskc:Key/pskc:Policy', namespaces=namespaces))
