@@ -18,6 +18,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+"""Module that provides message authentication for PSKC values.
+
+This module provides a MAC class that is used to store information about
+how the MAC should be calculated (including the MAC key) and a ValueMAC
+class that provides (H)MAC checking for PSKC key data.
+
+The MAC key is generated specifically for each PSKC file and encrypted
+with the PSKC encryption key.
+"""
+
+
 import base64
 import hashlib
 import hmac
@@ -29,47 +40,62 @@ HMAC_SHA1 = 'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
 
 
 class ValueMAC(object):
+    """Provide MAC checking ability to PSKC data values."""
 
     def __init__(self, mac, value_mac=None):
         self.mac = mac
-        self.value_mac = None
+        self._value_mac = None
         self.parse(value_mac)
 
     def parse(self, value_mac):
+        """Read MAC information from the <ValueMAC> XML tree."""
         from pskc.parse import g_e_v
         if value_mac is None:
             return
         value = g_e_v(value_mac, '.')
         if value is not None:
-            self.value_mac = base64.b64decode(value)
+            self._value_mac = base64.b64decode(value)
 
     def check(self, value):
-        if value is None or self.value_mac is None:
+        """Check if the provided value matches the MAC.
+
+        This will return None if the value cannot be checked (no value,
+        no key, etc.) or a boolean otherwise.
+        """
+        if value is None or self._value_mac is None:
             return
         algorithm = self.mac.algorithm
         key = self.mac.key
         if algorithm == HMAC_SHA1 and key is not None:
             h = hmac.new(key, value, hashlib.sha1).digest()
-            return h == self.value_mac
+            return h == self._value_mac
 
 
 class MAC(object):
+    """Class describing the MAC algorithm to use and how to get the key.
+
+    Instances of this class provide the following attributes:
+
+      algorithm: the name of the HMAC to use (currently only HMAC_SHA1)
+      key: the binary value of the MAC key if it can be decrypted
+    """
 
     def __init__(self, pskc, mac_method=None):
         self.algorithm = None
-        self.mac_key = EncryptedValue(pskc.encryption)
+        self._mac_key = EncryptedValue(pskc.encryption)
         self.parse(mac_method)
 
     def parse(self, mac_method):
-        """Read encryption information from the EncryptionKey XML tree."""
+        """Read MAC information from the <MACMethod> XML tree."""
         from pskc.parse import g_e_v, namespaces
         if mac_method is None:
             return
         self.algorithm = mac_method.attrib.get('Algorithm')
-        self.mac_key.parse(mac_method.find(
+        self._mac_key.parse(mac_method.find(
             'pskc:MACKey', namespaces=namespaces))
         mac_key_reference = g_e_v(mac_method, 'pskc:MACKeyReference')
 
     @property
     def key(self):
-        return self.mac_key.decrypt()
+        """Provides access to the MAC key binary value if available."""
+        return self._mac_key.decrypt()
