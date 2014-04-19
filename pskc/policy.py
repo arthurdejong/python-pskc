@@ -100,12 +100,13 @@ class Policy(object):
         self.pin_encoding = None
         self.unknown_policy_elements = False
         self.key = key
-        if policy is not None:
-            self.parse(policy)
+        self.parse(policy)
 
     def parse(self, policy):
         """Read key policy information from the provided KeyPackage tree."""
         from pskc.parse import g_e_v, g_e_i, g_e_d, namespaces
+        if policy is None:
+            return
 
         self.start_date = g_e_d(policy, 'pskc:StartDate')
         self.expiry_date = g_e_d(policy, 'pskc:ExpiryDate')

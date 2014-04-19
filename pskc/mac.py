@@ -22,6 +22,8 @@ import base64
 import hashlib
 import hmac
 
+from pskc.encryption import EncryptedValue
+
 
 HMAC_SHA1 = 'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
 
@@ -54,7 +56,6 @@ class ValueMAC(object):
 class MAC(object):
 
     def __init__(self, pskc, mac_method=None):
-        from pskc.encryption import EncryptedValue
         self.algorithm = None
         self.mac_key = EncryptedValue(pskc.encryption)
         self.parse(mac_method)
