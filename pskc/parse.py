@@ -20,8 +20,7 @@
 
 """Module for parsing PSKC files.
 
-This module provides the PSKC class and some utility functions for parsing
-PSKC files.
+This module provides some utility functions for parsing PSKC files.
 """
 
 
