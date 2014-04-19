@@ -1,8 +1,10 @@
-# Python PSKC module #
+Python PSKC module
+==================
 
 A Python module to handle Portable Symmetric Key Container (PSKC) files as
-defined in RFC6030. PSKC files are used to transport and provision
-symmetric keys to different types of crypto modules, commonly one-time
+defined in `RFC6030 <https://tools.ietf.org/html/rfc6030>`_. PSKC files are
+used to transport and provision symmetric keys and key related meta data to
+different types of crypto modules. The format is commonly used for one-time
 password tokens or other authentication devices.
 
 The goal of this module is mainly to provide parsing of PSKC files in
@@ -12,7 +14,27 @@ later time support for writing files may be added.
 http://arthurdejong.org/python-pskc/
 
 
-## Security considerations ##
+API
+---
+
+The module provides a straightforward API that is mostly geared towards
+parsing existing PSKC files.
+
+Extracting key matarial from PSKC files is as simple as.
+
+>>> from pskc import PSKC
+>>> pskc = PSKC('tests/rfc6030-figure7.pskc')
+>>> pskc.encryption.derive_key('qwerty')
+>>> for key in pskc.keys:
+...     print key.serial, key.secret
+987654321 12345678901234567890
+
+The key object has a number of properties. See the pskc.key.Key documentation
+for details.
+
+
+Security considerations
+-----------------------
 
 This code handles private key material and is written in Python. No
 precautions have been taken to lock pages in memory to prevent swapping.
@@ -20,7 +42,8 @@ Also no attempt is currently made to security dispose of memory that may
 have held private key material.
 
 
-## Copyright ##
+Copyright
+---------
 
 Copyright (C) 2014 Arthur de Jong
 
