@@ -53,5 +53,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     packages=find_packages(),
-    install_requires=['distribute', 'Crypto', 'dateutil'],
+    install_requires=['distribute', 'Crypto', 'python-dateutil'],
 )
