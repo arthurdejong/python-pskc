@@ -112,7 +112,7 @@ class Key(object):
       algorithm: identifier of the PSKC algorithm profile (URI)
       secret: the secret key itself (binary form, automatically decrypted)
       counter: event counter for event-based OTP
-      time: time offset for time-based OTP algorithms (in intervals)
+      time_offset: time offset for time-based OTP algorithms (in intervals)
       time_interval: time interval for time-based OTP in seconds
       time_drift: device clock drift (negative means device is slow)
       issuer: party that issued the key
