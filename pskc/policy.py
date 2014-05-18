@@ -52,6 +52,9 @@ class Policy(object):
     # Key is used for Challenge/Response purposes.
     KEY_USE_CR = 'CR'
 
+    # Key is used for data encryption purposes.
+    KEY_USE_ENCRYPT = 'Encrypt'
+
     # For generating keyed message digests.
     KEY_USE_INTEGRITY = 'Integrity'
 
