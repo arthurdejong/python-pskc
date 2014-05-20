@@ -141,15 +141,20 @@ False
 
 
 This tests key encryption based on pre-shared keys as illustrated in
-Figure 6 from RFC6030.
+Figure 6 from RFC6030. The first attempt at extracting the key will fail
+due to the encryption.
 
 >>> pskc = PSKC('tests/rfc6030-figure6.pskc')
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.secret is None
+True
 >>> pskc.encryption.key_name
 'Pre-shared-key'
 >>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
 >>> pskc.mac.key.encode('hex')
 '1122334455667788990011223344556677889900'
->>> key = pskc.keys[0]
 >>> key.secret.encode('hex')
 '3132333435363738393031323334353637383930'
 >>> key.check()
