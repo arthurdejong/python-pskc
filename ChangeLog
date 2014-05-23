@@ -1,0 +1,256 @@
+2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [15ca643] README, pskc/__init__.py, tests/rfc6030-figure10.pskc,
+	  tests/rfc6030-figure10.pskcxml, tests/rfc6030-figure2.pskc,
+	  tests/rfc6030-figure2.pskcxml, tests/rfc6030-figure3.pskc,
+	  tests/rfc6030-figure3.pskcxml, tests/rfc6030-figure4.pskc,
+	  tests/rfc6030-figure4.pskcxml, tests/rfc6030-figure5.pskc,
+	  tests/rfc6030-figure5.pskcxml, tests/rfc6030-figure6.pskc,
+	  tests/rfc6030-figure6.pskcxml, tests/rfc6030-figure7.pskc,
+	  tests/rfc6030-figure7.pskcxml, tests/test_rfc6030.doctest:
+	  Use pskcxml as file name extension
+
+	  This is the extension that is suggested in RFC6030.
+
+2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [44c7d2e] docs/policy.rst, docs/usage.rst: Improve IANA links
+
+2014-05-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cda1c5f] tests/test_rfc6030.doctest: Improve test
+
+	  This tests that, before the PSKC ecnryption is key available,
+	  the secret from the key cannot be extracted.
+
+2014-05-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e96c746] docs/_templates/autosummary/module.rst, docs/conf.py,
+	  docs/encryption.rst, docs/index.rst, docs/mac.rst, docs/policy.rst,
+	  docs/usage.rst: Provide Sphinx documentation
+
+2014-05-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [edf4d24] pskc/policy.py: Add missing policy constant
+
+2014-05-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [92a994d] pskc/key.py: Fix attribute name in docstring
+
+2014-04-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cc9bbb5] README: Update README
+
+2014-05-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d0a7814] .gitignore, setup.py: Fix dateutil dependency
+
+	  This also ignores downloaded .egg files.
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e0159ba] pskc/parse.py: Fix module description
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ba17976] pskc/__init__.py, pskc/parse.py: Move PSKC class to
+	  toplevel module
+
+	  This also splits the parsing to a parse() function for consistency.
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [64e207d] pskc/key.py, tests/test_rfc6030.doctest: Provide
+	  pskc.key docstrings
+
+	  This documents most of the information that is available per
+	  key and adds a few other minor cosmetic changes.
+
+	  This also re-organises the key properties to be in a slightly more
+	  logical order and renames the userid key property to key_userid
+	  to more clearly distinguish it from device_userid.
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6becc61] pskc/parse.py: Provide pskc.parse docstrings
+
+	  This documents most of the API of the parsing functions and the
+	  PSKC class.
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1d42fbc] pskc/policy.py: Complete pskc.policy docstrings
+
+	  Also contains small consistency improvement.
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b07d709] pskc/mac.py: Provide pskc.mac docstrings
+
+	  This also hides two properties that are not part of the public API.
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [285860e] pskc/encryption.py: Provide pskc.encryption docstrings
+
+	  This documents classes in the pskc.encryption module.
+
+2014-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8c9e03d] pskc/key.py, pskc/mac.py, pskc/parse.py, pskc/policy.py:
+	  Move Key class to separate module
+
+	  This also allows re-organising the imports a bit.
+
+2014-04-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c883d48] MANIFEST.in, pskc/__init__.py, setup.cfg, setup.py:
+	  Add initial setup script
+
+2014-04-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3df6849] COPYING: Include a license file (LGPL)
+
+2014-04-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f08cdb5] tests/rfc6030-figure10.pskc, tests/test_rfc6030.doctest:
+	  Add bulk provisioning test from Figure 10
+
+2014-04-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [41828cd] pskc/parse.py: Use slightly clearer names
+
+2014-04-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5ab731c] tests/rfc6030-figure7.pskc, tests/test_rfc6030.doctest:
+	  Add test for Figure 7 from RFC6030
+
+	  This tests encrypted key derivation using PBKDF2 and a pre-shared
+	  passphrase.
+
+2014-04-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a3fd598] pskc/encryption.py: Implement PBKDF2 key derivation
+
+	  This supports deriving the key from a passphrase and information
+	  present in the DerivedKey and PBKDF2-params XML elements.
+
+2014-04-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2ff470f] pskc/encryption.py: Add id attribute from EncryptionKey
+
+2014-04-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [460f335] tests/rfc6030-figure6.pskc, tests/test_rfc6030.doctest:
+	  Add test for Figure 6 from RFC6030
+
+	  This test key encryption with a pre-shared key and MAC checks.
+
+2014-04-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a926ddb] pskc/mac.py, pskc/parse.py: Implement MAC checking
+
+	  This implements message message authentication code checking
+	  for the encrypted values if MACMethod and ValueMAC are present.
+
+2014-04-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e53e865] pskc/encryption.py, pskc/parse.py: Support decrypting
+	  with a pre-shared key
+
+	  This adds an encryption module that provides wrappers for
+	  handling decryption.
+
+2014-04-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3fe0919] pskc/parse.py: Refactor DataType value handling
+
+	  This ensures that DataType values are retrieved dynamically
+	  instead of at the time the PSKC file was parsed in order to make
+	  decryption work.
+
+2014-04-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [591bb5d] pskc/policy.py: Document key and pin usage values
+
+2014-04-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b952b93] tests/rfc6030-figure5.pskc, tests/test_rfc6030.doctest:
+	  Add test for Figure 5 from RFC6030
+
+	  This test extraction of key policy information and cross-key
+	  references.
+
+2014-04-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e939a96] pskc/parse.py, pskc/policy.py: Implement key policy
+	  parsing
+
+	  This parses key policy from PSKC files and provides a few utility
+	  methods to help with policy validation.
+
+2014-04-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8c9ac8c] pskc/parse.py: Support parsing date and integer values
+
+2014-04-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6446f7d] tests/rfc6030-figure4.pskc, tests/test_rfc6030.doctest:
+	  Add test for Figure 4 from RFC6030
+
+	  This tests for key profile and key reference properties that
+	  can be used to reference external keys.
+
+2014-04-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e72369f] tests/rfc6030-figure3.pskc, tests/test-rfc6030.doctest,
+	  tests/test_rfc6030.doctest: Add test for Figure 3 from RFC6030
+
+	  This tests Figure 3 from RFC6030 with a very basic plain text
+	  secret key and some supplementary data.
+
+2014-04-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2c111a8] pskc/parse.py: Get more data from KeyPackage
+
+	  This gets most simple string values from the KeyPackage as well
+	  as some integer and boolean values.
+
+2014-04-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [96b4b54] tests/rfc6030-figure2.pskc, tests/test-rfc6030.doctest:
+	  Add test for example from RFC6030
+
+	  This tests Figure 2 from RFC6030 with a very basic plain text
+	  secret key.
+
+2014-04-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d662cf2] pskc/parse.py: Support getting plaintext key
+
+2014-04-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [550630d] tests/test_minimal.doctest: Minimal test
+
+	  This adds a doctest for the absolute minimum PSKC file that does
+	  not contain any useful information.
+
+2014-04-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bf8e7f6] pskc/__init__.py, pskc/parse.py: Basic implementation
+	  of PSKC class
+
+	  This class is used for handling PSKC files. It will parse the
+	  file and store relevant properties for easy access. The Key
+	  class corresponds to a single key defined in the PSKC file.
+
+	  This is a very minimal implementation that only provides some
+	  meta-data from the file and keys (work in progress).
+
+2014-04-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9803dfc] README: Provide an initial README
+
+2014-04-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c912bb4] .gitignore, pskc/__init__.py: Initial project layout
