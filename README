@@ -23,7 +23,7 @@ parsing existing PSKC files.
 Extracting key matarial from PSKC files is as simple as.
 
 >>> from pskc import PSKC
->>> pskc = PSKC('tests/rfc6030-figure7.pskc')
+>>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
 >>> pskc.encryption.derive_key('qwerty')
 >>> for key in pskc.keys:
 ...     print key.serial, key.secret
