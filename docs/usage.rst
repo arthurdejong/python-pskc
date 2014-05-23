@@ -74,7 +74,7 @@ file.
 
       A URI that identifies the PSKC algorithm profile. The algorithm profile
       associates specific semantics to the key. Some `known profiles
-      <https://www.iana.org/assignments/pskc/pskc.xml#alg-profiles>`__ are:
+      <https://www.iana.org/assignments/pskc/#alg-profiles>`__ are:
 
       * ``urn:ietf:params:xml:ns:keyprov:pskc:pin``:
         `Symmetric static credential comparison <https://tools.ietf.org/html/rfc6030#section-10.2>`_

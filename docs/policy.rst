@@ -31,7 +31,7 @@ limits that are placed on key usage and requirements for key PIN protection.
    .. attribute:: key_usage
 
       A list of `valid usage scenarios
-      <https://www.iana.org/assignments/pskc/pskc.xml#key-usage>`__ for the
+      <https://www.iana.org/assignments/pskc/#key-usage>`__ for the
       key that the recipient should check against the intended usage of the
       key. Also see :func:`may_use` and :ref:`the list of key usage constants
       below <key-use-constants>`.
