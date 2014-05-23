@@ -42,6 +42,8 @@ embedded signatures, asymmetric keys and writing files are on the wishlist
 (patches welcome).
 """
 
+import sys
+
 
 __all__ = ['PSKC', '__version__']
 
@@ -65,21 +67,30 @@ class PSKC(object):
     def __init__(self, filename):
         from xml.etree import ElementTree
         from pskc.encryption import Encryption
+        from pskc.exceptions import ParseError
         from pskc.mac import MAC
         self.version = None
         self.id = None
         self.encryption = Encryption()
         self.mac = MAC(self)
         self.keys = []
-        tree = ElementTree.parse(filename)
+        try:
+            tree = ElementTree.parse(filename)
+        except ElementTree.ParseError:
+            raise ParseError('Error parsing XML')
         self.parse(tree.getroot())
 
     def parse(self, container):
         """Read information from the provided <KeyContainer> tree."""
-        from pskc.parse import namespaces
+        from pskc.exceptions import ParseError
         from pskc.key import Key
+        from pskc.parse import namespaces
+        if not container.tag.endswith('KeyContainer'):
+            raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
         self.version = container.attrib.get('Version')
+        if self.version != '1.0':
+            raise ParseError('Unsupported version %r' % self.version)
         # unique identifier for the container
         self.id = container.attrib.get('Id')
         # handle EncryptionKey entries
