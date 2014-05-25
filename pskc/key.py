@@ -74,13 +74,10 @@ class BinaryDataType(DataType):
     def value(self):
         """Provide the raw binary value."""
         # plain value is base64 encoded
-        value = self.plain_value
-        if value is not None:
-            return base64.b64decode(value)
+        if self.plain_value is not None:
+            return base64.b64decode(self.plain_value)
         # encrypted value is in correct format
-        value = self.encrypted_value.decrypt()
-        if value is not None:
-            return value
+        return self.encrypted_value.decrypt()
 
 
 class IntegerDataType(DataType):
@@ -90,9 +87,8 @@ class IntegerDataType(DataType):
     def value(self):
         """Provide the raw integer value."""
         # plain value is a string representation of the number
-        value = self.plain_value
-        if value:
-            return int(value)
+        if self.plain_value:
+            return int(self.plain_value)
         # decrypted value is big endian encoded
         value = self.encrypted_value.decrypt()
         if value is not None:
