@@ -103,6 +103,6 @@ class PSKC(object):
         self.mac.parse(container.find(
             'pskc:MACMethod', namespaces=namespaces))
         # handle KeyPackage entries
-        for package in container.findall(
+        for key_package in container.findall(
                 'pskc:KeyPackage', namespaces=namespaces):
-            self.keys.append(Key(self, package))
+            self.keys.append(Key(self, key_package))
