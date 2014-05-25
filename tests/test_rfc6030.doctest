@@ -148,8 +148,10 @@ due to the encryption.
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
->>> key.secret is None
-True
+>>> key.secret
+Traceback (most recent call last):
+    ...
+DecryptionError: No key available
 >>> pskc.encryption.key_name
 'Pre-shared-key'
 >>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')

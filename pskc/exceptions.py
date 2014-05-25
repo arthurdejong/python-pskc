@@ -29,3 +29,13 @@ class ParseError(Exception):
 
     def __str__(self):
         return getattr(self, 'message', '')
+
+
+class DecryptionError(Exception):
+    """There was a problem decrypting the value.
+
+    The encrypted value as available but something went wrong with decrypting
+    it."""
+
+    def __str__(self):
+        return getattr(self, 'message', '')

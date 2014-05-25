@@ -72,14 +72,19 @@ class EncryptedValue(object):
 
     def decrypt(self):
         """Decrypt the linked value and return the plaintext value."""
-        key = self.encryption.key
-        if key is None or self.cipher_value is None:
+        from pskc.exceptions import DecryptionError
+        if self.cipher_value is None:
             return
+        key = self.encryption.key
+        if key is None:
+            raise DecryptionError('No key available')
         if self.algorithm == AES128_CBC:
             iv = self.cipher_value[:AES.block_size]
             ciphertext = self.cipher_value[AES.block_size:]
             cipher = AES.new(key, AES.MODE_CBC, iv)
             return unpad(cipher.decrypt(ciphertext))
+        else:
+            raise DecryptionError('Unsupported algorithm: %r' % self.algorithm)
 
 
 PBKDF2_URIS = [

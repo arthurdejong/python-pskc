@@ -40,3 +40,18 @@ ParseError: Missing KeyContainer
 Traceback (most recent call last):
     ...
 ParseError: Unsupported version
+
+
+>>> pskc = PSKC('tests/invalid-encryption.pskcxml')
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.secret
+Traceback (most recent call last):
+    ...
+DecryptionError: No key available
+>>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> key.secret
+Traceback (most recent call last):
+    ...
+DecryptionError: Unsupported algorithm: ...
