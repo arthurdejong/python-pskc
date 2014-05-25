@@ -37,6 +37,11 @@ from Crypto.Protocol.KDF import PBKDF2
 AES128_CBC = 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
 
 
+def unpad(value):
+    """Remove padding from the plaintext."""
+    return value[0:-ord(value[-1])]
+
+
 class EncryptedValue(object):
     """Wrapper class to handle encrypted values.
 
@@ -68,14 +73,13 @@ class EncryptedValue(object):
     def decrypt(self):
         """Decrypt the linked value and return the plaintext value."""
         key = self.encryption.key
-        ciphertext = self.cipher_value
-        if key is None or ciphertext is None:
+        if key is None or self.cipher_value is None:
             return
         if self.algorithm == AES128_CBC:
-            iv = ciphertext[:AES.block_size]
+            iv = self.cipher_value[:AES.block_size]
+            ciphertext = self.cipher_value[AES.block_size:]
             cipher = AES.new(key, AES.MODE_CBC, iv)
-            plaintext = cipher.decrypt(ciphertext[AES.block_size:])
-            return plaintext[0:-ord(plaintext[-1])]
+            return unpad(cipher.decrypt(ciphertext))
 
 
 PBKDF2_URIS = [
