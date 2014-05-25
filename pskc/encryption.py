@@ -34,9 +34,6 @@ from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
 
 
-AES128_CBC = 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
-
-
 def unpad(value):
     """Remove padding from the plaintext."""
     return value[0:-ord(value[-1])]
@@ -78,20 +75,13 @@ class EncryptedValue(object):
         key = self.encryption.key
         if key is None:
             raise DecryptionError('No key available')
-        if self.algorithm == AES128_CBC:
+        if self.algorithm.endswith('#aes128-cbc'):
             iv = self.cipher_value[:AES.block_size]
             ciphertext = self.cipher_value[AES.block_size:]
             cipher = AES.new(key, AES.MODE_CBC, iv)
             return unpad(cipher.decrypt(ciphertext))
         else:
             raise DecryptionError('Unsupported algorithm: %r' % self.algorithm)
-
-
-PBKDF2_URIS = [
-    'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5#pbkdf2',
-    'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2',
-    'http://www.w3.org/2009/xmlenc11#pbkdf2',
-]
 
 
 class KeyDerivation(object):
@@ -143,7 +133,7 @@ class KeyDerivation(object):
 
     def generate(self, password):
         """Derive a key from the password."""
-        if self.algorithm in PBKDF2_URIS:
+        if self.algorithm.endswith('#pbkdf2'):
             # TODO: support pseudorandom function (prf)
             return PBKDF2(
                 password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,

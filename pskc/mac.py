@@ -36,9 +36,6 @@ import hmac
 from pskc.encryption import EncryptedValue
 
 
-HMAC_SHA1 = 'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
-
-
 class ValueMAC(object):
     """Provide MAC checking ability to PSKC data values."""
 
@@ -66,7 +63,7 @@ class ValueMAC(object):
             return
         algorithm = self.mac.algorithm
         key = self.mac.key
-        if algorithm == HMAC_SHA1 and key is not None:
+        if algorithm.endswith('#hmac-sha1') and key is not None:
             h = hmac.new(key, value, hashlib.sha1).digest()
             return h == self._value_mac
 
