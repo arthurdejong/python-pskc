@@ -33,3 +33,8 @@ This tests the most minimal valid PSKC file with one empty key.
 >>> pskc = PSKC(minimal_pskc)
 >>> [key.id for key in pskc.keys]
 [None]
+
+
+Check creation of empty PSKC structure.
+
+>>> pskc = PSKC()

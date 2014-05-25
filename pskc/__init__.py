@@ -64,7 +64,7 @@ class PSKC(object):
       keys: list of keys (Key instances)
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         from xml.etree import ElementTree
         from pskc.encryption import Encryption
         from pskc.exceptions import ParseError
@@ -74,11 +74,14 @@ class PSKC(object):
         self.encryption = Encryption()
         self.mac = MAC(self)
         self.keys = []
-        try:
-            tree = ElementTree.parse(filename)
-        except ElementTree.ParseError:
-            raise ParseError('Error parsing XML')
-        self.parse(tree.getroot())
+        if filename is not None:
+            try:
+                tree = ElementTree.parse(filename)
+            except ElementTree.ParseError:
+                raise ParseError('Error parsing XML')
+            self.parse(tree.getroot())
+        else:
+            self.version = '1.0'
 
     def parse(self, container):
         """Read information from the provided <KeyContainer> tree."""
