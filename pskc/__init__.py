@@ -106,3 +106,18 @@ class PSKC(object):
         for key_package in container.findall(
                 'pskc:KeyPackage', namespaces=namespaces):
             self.keys.append(Key(self, key_package))
+
+    def add_key(self, **kwargs):
+        """Create a new key instance for the PSKC file.
+
+        The new key is initialised with properties from the provided keyword
+        arguments if any."""
+        from pskc.key import Key
+        key = Key(self)
+        self.keys.append(key)
+        # assign the kwargs as key properties
+        for k, v in kwargs.items():
+            if not hasattr(key, k):
+                raise AttributeError()
+            setattr(key, k, v)
+        return key

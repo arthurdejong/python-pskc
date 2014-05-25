@@ -35,6 +35,15 @@ This tests the most minimal valid PSKC file with one empty key.
 [None]
 
 
-Check creation of empty PSKC structure.
+Check creation of empty PSKC structure and adding an empty key to the list.
 
 >>> pskc = PSKC()
+>>> key = pskc.add_key(id='123')
+>>> key.id
+'123'
+
+Adding a key with unknown attributes raises an error.
+>>> key = pskc.add_key(foo='bar')
+Traceback (most recent call last):
+    ...
+AttributeError

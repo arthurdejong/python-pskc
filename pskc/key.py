@@ -136,7 +136,7 @@ class Key(object):
       policy: reference to policy information (see Policy class)
     """
 
-    def __init__(self, pskc, key_package):
+    def __init__(self, pskc, key_package=None):
 
         self.pskc = pskc
 
