@@ -85,6 +85,14 @@ class EncryptedValue(object):
             ciphertext = self.cipher_value[AES.block_size:]
             cipher = AES.new(key, AES.MODE_CBC, iv)
             return unpad(cipher.decrypt(ciphertext))
+        elif self.algorithm.endswith('#tripledes-cbc'):
+            from Crypto.Cipher import DES3
+            if len(key) not in DES3.key_size:
+                raise DecryptionError('Invalid key length')
+            iv = self.cipher_value[:DES3.block_size]
+            ciphertext = self.cipher_value[DES3.block_size:]
+            cipher = DES3.new(key, DES3.MODE_CBC, iv)
+            return unpad(cipher.decrypt(ciphertext))
         else:
             raise DecryptionError('Unsupported algorithm: %r' % self.algorithm)
 
