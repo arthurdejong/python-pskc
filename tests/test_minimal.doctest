@@ -41,6 +41,8 @@ Check creation of empty PSKC structure and adding an empty key to the list.
 >>> key = pskc.add_key(id='123')
 >>> key.id
 '123'
+>>> key.secret is None
+True
 
 Adding a key with unknown attributes raises an error.
 >>> key = pskc.add_key(foo='bar')
