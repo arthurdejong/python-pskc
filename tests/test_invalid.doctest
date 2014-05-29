@@ -24,11 +24,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 Load a number of invalid files.
 
 
+This file is plain invalid XML.
+
 >>> pskc = PSKC('tests/invalid-notxml.pskcxml')
 Traceback (most recent call last):
     ...
 ParseError: Error parsing XML
 
+
+This XML file has a wrong top-level element.
 
 >>> pskc = PSKC('tests/invalid-wrongelement.pskcxml')
 Traceback (most recent call last):
@@ -36,11 +40,16 @@ Traceback (most recent call last):
 ParseError: Missing KeyContainer
 
 
+This file has an unknown PSKC version.
+
 >>> pskc = PSKC('tests/invalid-wrongversion.pskcxml')
 Traceback (most recent call last):
     ...
 ParseError: Unsupported version
 
+
+This PSKC file has one key with an unknown algorithm and one key without an
+algorithm specified.
 
 >>> pskc = PSKC('tests/invalid-encryption.pskcxml')
 >>> key = pskc.keys[0]
@@ -62,3 +71,33 @@ DecryptionError: Unsupported algorithm: ...
 Traceback (most recent call last):
     ...
 DecryptionError: No algorithm specified
+
+
+Specify an unknown key derivation algorithm specified.
+
+>>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
+>>> pskc.encryption.derivation.algorithm = 'unknown'
+>>> pskc.encryption.derive_key('qwerty')
+Traceback (most recent call last):
+    ...
+KeyDerivationError: Unsupported algorithm: ...
+
+
+Figure 6 does use encryption but with a pre-shared key. Attempting key
+derivation with such a PSKC file should result in an exception.
+
+>>> pskc = PSKC('tests/rfc6030-figure6.pskcxml')
+>>> pskc.encryption.derive_key('qwerty')
+Traceback (most recent call last):
+    ...
+KeyDerivationError: No algorithm specified
+
+
+Specify an unknown PBKDF2 PRF (pseudorandom function).
+
+>>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
+>>> pskc.encryption.derivation.pbkdf2_prf = 'unknown'
+>>> pskc.encryption.derive_key('qwerty')
+Traceback (most recent call last):
+    ...
+KeyDerivationError: Pseudorandom function unsupported: ...
