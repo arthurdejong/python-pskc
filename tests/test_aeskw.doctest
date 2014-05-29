@@ -1,0 +1,101 @@
+test_keywrap.doctest - test keywrap functions
+
+Copyright (C) 2014 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from pskc.aeskw import wrap, unwrap
+
+
+Wrap 128 bits of Key Data with a 128-bit KEK (test vector 4.1 from RFC 3394).
+
+>>> key = '000102030405060708090A0B0C0D0E0F'.decode('hex')
+>>> plaintext = '00112233445566778899AABBCCDDEEFF'.decode('hex')
+>>> ciphertext = '1FA68B0A8112B447AEF34BD8FB5A7B829D3E862371D2CFE5'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+
+
+Wrap 128 bits of Key Data with a 192-bit KEK (test vector 4.2 from RFC 3394).
+
+>>> key = '000102030405060708090A0B0C0D0E0F1011121314151617'.decode('hex')
+>>> plaintext = '00112233445566778899AABBCCDDEEFF'.decode('hex')
+>>> ciphertext = '96778B25AE6CA435F92B5B97C050AED2468AB8A17AD84E5D'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+
+
+Wrap 128 bits of Key Data with a 256-bit KEK (test vector 4.3 from RFC 3394).
+
+>>> key = '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F'.decode('hex')
+>>> plaintext = '00112233445566778899AABBCCDDEEFF'.decode('hex')
+>>> ciphertext = '64E8C3F9CE0F5BA263E9777905818A2A93C8191E7D6E8AE7'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+
+
+Wrap 192 bits of Key Data with a 192-bit KEK (test vector 4.4 from RFC 3394).
+
+>>> key = '000102030405060708090A0B0C0D0E0F1011121314151617'.decode('hex')
+>>> plaintext = '00112233445566778899AABBCCDDEEFF0001020304050607'.decode('hex')
+>>> ciphertext = '031D33264E15D33268F24EC260743EDCE1C6C7DDEE725A936BA814915C6762D2'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+
+
+Wrap 192 bits of Key Data with a 256-bit KEK (test vector 4.5 from RFC 3394).
+
+>>> key = '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F'.decode('hex')
+>>> plaintext = '00112233445566778899AABBCCDDEEFF0001020304050607'.decode('hex')
+>>> ciphertext = 'A8F9BC1612C68B3FF6E6F4FBE30E71E4769C8B80A32CB8958CD5D17D6B254DA1'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+
+
+Wrap 256 bits of Key Data with a 256-bit KEK (test vector 4.6 from RFC 3394).
+
+>>> key = '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F'.decode('hex')
+>>> plaintext = '00112233445566778899AABBCCDDEEFF000102030405060708090A0B0C0D0E0F'.decode('hex')
+>>> ciphertext = '28C9F404C4B810F4CBCCB35CFB87F8263F5786E2D80ED326CBC7F0E71A99F43BFB988B9B7A02DD21'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+
+
+Mangling the ciphertext and unwrapping results in an exception:
+
+>>> ciphertext = 'XX' + ciphertext[2:]
+>>> unwrap(ciphertext, key)
+Traceback (most recent call last):
+    ...
+DecryptionError: IV does not match
+>>> ciphertext = ciphertext[2:]
+>>> unwrap(ciphertext, key)
+Traceback (most recent call last):
+    ...
+DecryptionError: Ciphertext length wrong

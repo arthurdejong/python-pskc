@@ -36,6 +36,11 @@ class ParseError(PSKCError):
     pass
 
 
+class EncryptionError(PSKCError):
+    """There was a problem encrypting the value."""
+    pass
+
+
 class DecryptionError(PSKCError):
     """There was a problem decrypting the value.
 
