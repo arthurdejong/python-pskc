@@ -42,3 +42,8 @@ class DecryptionError(PSKCError):
     The encrypted value as available but something went wrong with decrypting
     it."""
     pass
+
+
+class KeyDerivationError(PSKCError):
+    """There was a problem performing the key derivation."""
+    pass

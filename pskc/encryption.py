@@ -136,14 +136,23 @@ class KeyDerivation(object):
             if prf is not None:
                 self.pbkdf2_prf = prf.attrib.get('Algorithm')
 
-    def generate(self, password):
+    def derive(self, password):
         """Derive a key from the password."""
+        from pskc.exceptions import KeyDerivationError
+        if self.algorithm is None:
+            raise KeyDerivationError('No algorithm specified')
         if self.algorithm.endswith('#pbkdf2'):
             from Crypto.Protocol.KDF import PBKDF2
             # TODO: support pseudorandom function (prf)
+            if self.pbkdf2_prf:
+                raise KeyDerivationError(
+                    'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
             return PBKDF2(
                 password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
                 count=self.pbkdf2_iterations, prf=None)
+        else:
+            raise KeyDerivationError(
+                'Unsupported algorithm: %r' % self.algorithm)
 
 
 class Encryption(object):
@@ -193,4 +202,4 @@ class Encryption(object):
 
     def derive_key(self, password):
         """Derive a key from the password."""
-        self.key = self.derivation.generate(password)
+        self.key = self.derivation.derive(password)
