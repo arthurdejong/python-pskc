@@ -24,8 +24,9 @@ class::
 
    .. attribute:: version
 
-      The PSKC format version used. Only version ``1.0`` is currently specified
-      in `RFC6030 <https://tools.ietf.org/html/rfc6030#section-1.2>`__.
+      The PSKC format version used. Only version ``1.0`` is currently
+      specified in
+      `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-1.2>`__.
 
    .. attribute:: id
 
@@ -122,7 +123,7 @@ file.
       A reference to a pre-shared key profile agreed upon between the sending
       and receiving parties. The profile information itself is not
       transmitted within the container.
-      See `RFC6030 <https://tools.ietf.org/html/rfc6030#section-4.4>`__.
+      See `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-4.4>`__.
 
    .. attribute:: key_reference
 
@@ -142,7 +143,8 @@ file.
    .. attribute:: manufacturer
 
       The name of the manufacturer of the device to which the key is
-      provisioned. `RFC6030 <https://tools.ietf.org/html/rfc6030#section-4.3.1>`__
+      provisioned.
+      `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-4.3.1>`__
       prescribes that the value is of the form ``oath.prefix`` for `OATH
       Manufacturer Prefixes <http://www.openauthentication.org/oath-id/prefixes/>`_
       or ``iana.organisation`` for `IANA Private Enterprise Numbers

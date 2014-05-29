@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  Non-Encrypted HOTP Secret Key with PIN example from RFC6030 (Figure 5).
+  Non-Encrypted HOTP Secret Key with PIN example from RFC 6030 (Figure 5).
 -->
 
 <KeyContainer Version="1.0"

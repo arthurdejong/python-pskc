@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  Basic PSKC Key Container example from RFC6030 (Figure 2).
+  Basic PSKC Key Container example from RFC 6030 (Figure 2).
 -->
 
 <KeyContainer Version="1.0"

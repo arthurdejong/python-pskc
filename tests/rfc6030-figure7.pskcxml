@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  Figure 7 example from RFC6030 that has a PSKC document using encryption
-  based on passphrase-based keys. The pre-shared password is 'qwerty', The
-  derived encryption key is 651e63cd57008476af1ff6422cd02e41 hex and the
-  OTP secret is 12345678901234567890 hex.
+  Figure 7 example from RFC 6030 that has a PSKC document using encryption
+  based on passphrase-based keys. The pre-shared password is 'qwerty', the
+  derived encryption key is 651e63cd57008476af1ff6422cd02e41 hex and the OTP
+  secret is 12345678901234567890 hex.
 -->
 
 <pskc:KeyContainer

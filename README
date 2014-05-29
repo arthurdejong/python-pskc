@@ -2,14 +2,14 @@ Python PSKC module
 ==================
 
 A Python module to handle Portable Symmetric Key Container (PSKC) files as
-defined in `RFC6030 <https://tools.ietf.org/html/rfc6030>`_. PSKC files are
+defined in `RFC 6030 <https://tools.ietf.org/html/rfc6030>`_. PSKC files are
 used to transport and provision symmetric keys and key related meta data to
 different types of crypto modules. The format is commonly used for one-time
 password tokens or other authentication devices.
 
-The goal of this module is mainly to provide parsing of PSKC files in
-order to extract secret keys for use in an OTP authentication system. At a
-later time support for writing files may be added.
+The goal of this module is mainly to provide parsing of PSKC files in order
+to extract secret keys for use in an OTP authentication system. At a later
+time support for writing files may be added.
 
 http://arthurdejong.org/python-pskc/
 
@@ -37,9 +37,9 @@ Security considerations
 -----------------------
 
 This code handles private key material and is written in Python. No
-precautions have been taken to lock pages in memory to prevent swapping.
-Also no attempt is currently made to security dispose of memory that may
-have held private key material.
+precautions have been taken to lock pages in memory to prevent swapping. Also
+no attempt is currently made to security dispose of memory that may have held
+private key material.
 
 
 Copyright

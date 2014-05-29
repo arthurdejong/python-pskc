@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  Figure 6 example from RFC6030 that shows key material encrypted using
+  Figure 6 example from RFC 6030 that shows key material encrypted using
   AES-128-CBC with pre-shared key (12345678901234567890123456789012 hex).
   The MAC key used (1122334455667788990011223344556677889900 hex) is
   encrypted with the same key.

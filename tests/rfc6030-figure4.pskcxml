@@ -2,7 +2,7 @@
 
 <!--
   Example of a PSKC Document Transmitting an HOTP Key via Key Derivation
-  Values from RFC6030 (Figure 4).
+  Values from RFC 6030 (Figure 4).
 -->
 
 <KeyContainer Version="1.0"
