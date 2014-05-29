@@ -21,21 +21,24 @@
 """Collection of exceptions."""
 
 
-class ParseError(Exception):
+class PSKCError(Exception):
+    """General top-level exception."""
+
+    def __str__(self):
+        return getattr(self, 'message', '')
+
+
+class ParseError(PSKCError):
     """Something went wrong with parsing the PSKC file.
 
     Either the file is invalid XML or required elements or attributes are
     missing."""
-
-    def __str__(self):
-        return getattr(self, 'message', '')
+    pass
 
 
-class DecryptionError(Exception):
+class DecryptionError(PSKCError):
     """There was a problem decrypting the value.
 
     The encrypted value as available but something went wrong with decrypting
     it."""
-
-    def __str__(self):
-        return getattr(self, 'message', '')
+    pass

@@ -72,6 +72,8 @@ class EncryptedValue(object):
         key = self.encryption.key
         if key is None:
             raise DecryptionError('No key available')
+        if self.algorithm is None:
+            raise DecryptionError('No algorithm specified')
         if self.algorithm.endswith('#aes128-cbc') or \
            self.algorithm.endswith('#aes192-cbc') or \
            self.algorithm.endswith('#aes256-cbc'):

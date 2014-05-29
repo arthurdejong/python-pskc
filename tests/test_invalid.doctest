@@ -55,3 +55,10 @@ DecryptionError: No key available
 Traceback (most recent call last):
     ...
 DecryptionError: Unsupported algorithm: ...
+>>> key = pskc.keys[1]
+>>> key.id
+'45678901'
+>>> key.secret
+Traceback (most recent call last):
+    ...
+DecryptionError: No algorithm specified
