@@ -99,3 +99,20 @@ DecryptionError: IV does not match
 Traceback (most recent call last):
     ...
 DecryptionError: Ciphertext length wrong
+
+
+Lastly, an explicit IV can be set.
+
+>>> key = '000102030405060708090A0B0C0D0E0F'.decode('hex')
+>>> plaintext = '0011223344556677'.decode('hex')
+>>> iv = '1010101010101010'.decode('hex')
+>>> wrap(plaintext, key, iv)
+Traceback (most recent call last):
+    ...
+EncryptionError: Plaintext length wrong
+>>> plaintext = '00112233445566778899AABBCCDDEEFF'.decode('hex')
+>>> ciphertext = '4cd926c570e19c35ace71d59a1062dae850e6a709066e0bf'.decode('hex')
+>>> wrap(plaintext, key, iv) == ciphertext
+True
+>>> unwrap(ciphertext, key, iv) == plaintext
+True

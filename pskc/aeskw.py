@@ -34,15 +34,22 @@ def _split(value):
 RFC3394_IV = 'a6a6a6a6a6a6a6a6'.decode('hex')
 
 
-def wrap(plaintext, key):
-    """Apply the AES key wrap algorithm to the plaintext."""
+def wrap(plaintext, key, iv=None):
+    """Apply the AES key wrap algorithm to the plaintext.
+
+    The iv can specify an initial value, otherwise the value from RFC 3394
+    will be used.
+    """
 
     if len(plaintext) % 8 != 0 or len(plaintext) < 16:
         raise EncryptionError('Plaintext length wrong')
 
+    if iv is None:
+        iv = RFC3394_IV
+
     encrypt = AES.new(key).encrypt
     n = len(plaintext) / 8
-    A = RFC3394_IV
+    A = iv
     R = [plaintext[i * 8:i * 8 + 8]
          for i in range(n)]
     for j in range(6):
@@ -52,11 +59,18 @@ def wrap(plaintext, key):
     return A + ''.join(R)
 
 
-def unwrap(ciphertext, key):
-    """Apply the AES key unwrap algorithm to the ciphertext."""
+def unwrap(ciphertext, key, iv=None):
+    """Apply the AES key unwrap algorithm to the ciphertext.
+
+    The iv can specify an initial value, otherwise the value from RFC 3394
+    will be used.
+    """
 
     if len(ciphertext) % 8 != 0 or len(ciphertext) < 24:
         raise DecryptionError('Ciphertext length wrong')
+
+    if iv is None:
+        iv = RFC3394_IV
 
     decrypt = AES.new(key).decrypt
     n = len(ciphertext) / 8 - 1
@@ -68,6 +82,6 @@ def unwrap(ciphertext, key):
             A = strxor(A, long_to_bytes(n * j + i + 1, 8))
             A, R[i] = _split(decrypt(A + R[i]))
 
-    if A == RFC3394_IV:
+    if A == iv:
         return ''.join(R)
     raise DecryptionError('IV does not match')
