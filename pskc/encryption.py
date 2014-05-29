@@ -30,9 +30,6 @@ The encryption key can be derived using the KeyDerivation class.
 
 import base64
 
-from Crypto.Cipher import AES
-from Crypto.Protocol.KDF import PBKDF2
-
 
 def unpad(value):
     """Remove padding from the plaintext."""
@@ -75,7 +72,13 @@ class EncryptedValue(object):
         key = self.encryption.key
         if key is None:
             raise DecryptionError('No key available')
-        if self.algorithm.endswith('#aes128-cbc'):
+        if self.algorithm.endswith('#aes128-cbc') or \
+           self.algorithm.endswith('#aes192-cbc') or \
+           self.algorithm.endswith('#aes256-cbc'):
+            from Crypto.Cipher import AES
+            if len(key) * 8 != int(self.algorithm[-7:-4]) or \
+               len(key) not in AES.key_size:
+                raise DecryptionError('Invalid key length')
             iv = self.cipher_value[:AES.block_size]
             ciphertext = self.cipher_value[AES.block_size:]
             cipher = AES.new(key, AES.MODE_CBC, iv)
@@ -134,6 +137,7 @@ class KeyDerivation(object):
     def generate(self, password):
         """Derive a key from the password."""
         if self.algorithm.endswith('#pbkdf2'):
+            from Crypto.Protocol.KDF import PBKDF2
             # TODO: support pseudorandom function (prf)
             return PBKDF2(
                 password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
