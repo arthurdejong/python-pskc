@@ -101,7 +101,85 @@ Traceback (most recent call last):
 DecryptionError: Ciphertext length wrong
 
 
-Lastly, an explicit IV can be set.
+Wrap 20 octets with a 192-bit key (first example from section 6 of RFC 5649).
+
+>>> key = '5840df6e29b02af1ab493b705bf16ea1ae8338f4dcc176a8'.decode('hex')
+>>> plaintext = 'c37b7e6492584340bed12207808941155068f738'.decode('hex')
+>>> ciphertext = '138bdeaa9b8fa7fc61f97742e72248ee5ae6ae5360d1ae6a5f54f373fa543b6a'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+>>> wrap(plaintext, key, pad=False)  # disable padding
+Traceback (most recent call last):
+    ...
+EncryptionError: Plaintext length wrong
+>>> unwrap(ciphertext, key, pad=False)
+Traceback (most recent call last):
+    ...
+DecryptionError: IV does not match
+
+
+Wrap 7 octets with a 192-bit key (second example from section 6 of RFC 5649).
+
+>>> key = '5840df6e29b02af1ab493b705bf16ea1ae8338f4dcc176a8'.decode('hex')
+>>> plaintext = '466f7250617369'.decode('hex')
+>>> ciphertext = 'afbeb0f07dfbf5419200f2ccb50bb24f'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+>>> wrap(plaintext, key, pad=False)  # disable padding
+Traceback (most recent call last):
+    ...
+EncryptionError: Plaintext length wrong
+>>> unwrap(ciphertext, key, pad=False)
+Traceback (most recent call last):
+    ...
+DecryptionError: Ciphertext length wrong
+
+
+Normally padding is only done if needed but it can be forced.
+
+>>> key = '000102030405060708090A0B0C0D0E0F'.decode('hex')
+>>> plaintext = '00112233445566778899AABBCCDDEEFF'.decode('hex')
+>>> ciphertext = '1FA68B0A8112B447AEF34BD8FB5A7B829D3E862371D2CFE5'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+>>> ciphertext = '2cef0c9e30de26016c230cb78bc60d51b1fe083ba0c79cd5'.decode('hex')
+>>> wrap(plaintext, key, pad=True) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+>>> unwrap(ciphertext, key, pad=False)  # disabling padding fails IV check
+Traceback (most recent call last):
+    ...
+DecryptionError: IV does not match
+
+
+Padding can also be disabled. This also disables the shortcut for small
+plaintexts as described in RFC 5649.
+
+>>> key = '000102030405060708090A0B0C0D0E0F'.decode('hex')
+>>> plaintext = '0011223344556677'.decode('hex')
+>>> ciphertext = 'f4740052e82a225174ce86fbd7b805e7'.decode('hex')
+>>> wrap(plaintext, key) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+>>> wrap(plaintext, key, pad=False)  # disable padding
+Traceback (most recent call last):
+    ...
+EncryptionError: Plaintext length wrong
+>>> unwrap(ciphertext, key, pad=False)
+Traceback (most recent call last):
+    ...
+DecryptionError: Ciphertext length wrong
+
+
+Lastly, an explicit IV can be set but this disables the padding functionality.
 
 >>> key = '000102030405060708090A0B0C0D0E0F'.decode('hex')
 >>> plaintext = '0011223344556677'.decode('hex')
