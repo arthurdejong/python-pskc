@@ -93,6 +93,15 @@ class EncryptedValue(object):
             ciphertext = self.cipher_value[DES3.block_size:]
             cipher = DES3.new(key, DES3.MODE_CBC, iv)
             return unpad(cipher.decrypt(ciphertext))
+        elif self.algorithm.endswith('#kw-aes128') or \
+             self.algorithm.endswith('#kw-aes192') or \
+             self.algorithm.endswith('#kw-aes256'):
+            from pskc.aeskw import unwrap
+            from Crypto.Cipher import AES
+            if len(key) * 8 != int(self.algorithm[-3:]) or \
+               len(key) not in AES.key_size:
+                raise DecryptionError('Invalid key length')
+            return unwrap(self.cipher_value, key)
         else:
             raise DecryptionError('Unsupported algorithm: %r' % self.algorithm)
 

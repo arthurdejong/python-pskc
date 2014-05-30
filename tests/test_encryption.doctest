@@ -53,3 +53,31 @@ DecryptionError: Invalid key length
 >>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
 >>> pskc.keys[0].secret
 '12345678901234567890'
+
+
+>>> pskc = PSKC('tests/kw-aes128.pskcxml')
+>>> pskc.encryption.key = '1234'.decode('hex')
+>>> pskc.keys[0].secret
+Traceback (most recent call last):
+    ...
+DecryptionError: Invalid key length
+>>> pskc.encryption.key = '000102030405060708090a0b0c0d0e0f'.decode('hex')
+>>> pskc.keys[0].secret.encode('hex')
+'00112233445566778899aabbccddeeff'
+
+
+>>> pskc = PSKC('tests/kw-aes192.pskcxml')
+>>> pskc.encryption.key = '000102030405060708090a0b0c0d0e0f'.decode('hex')
+>>> pskc.keys[0].secret
+Traceback (most recent call last):
+    ...
+DecryptionError: Invalid key length
+>>> pskc.encryption.key = '000102030405060708090a0b0c0d0e0f1011121314151617'.decode('hex')
+>>> pskc.keys[0].secret.encode('hex')
+'00112233445566778899aabbccddeeff'
+
+
+>>> pskc = PSKC('tests/kw-aes256.pskcxml')
+>>> pskc.encryption.key = '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f'.decode('hex')
+>>> pskc.keys[0].secret.encode('hex')
+'00112233445566778899aabbccddeeff0001020304050607'

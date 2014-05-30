@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Test that holds an kw-aes256 encrypted value. Key is
+  000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F,
+  plain value is 00112233445566778899AABBCCDDEEFF0001020304050607.
+-->
+
+<KeyContainer Version="1.0"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <EncryptionKey>
+  <ds:KeyName>Pre-shared-key</ds:KeyName>
+ </EncryptionKey>
+ <KeyPackage>
+  <Key>
+   <Data>
+    <Secret>
+     <EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#kw-aes256"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>qPm8FhLGiz/25vT74w5x5Haci4CjLLiVjNXRfWslTaE=</xenc:CipherValue>
+      </xenc:CipherData>
+     </EncryptedValue>
+    </Secret>
+   </Data>
+  </Key>
+ </KeyPackage>
+</KeyContainer>
