@@ -89,3 +89,36 @@ described in section 4 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 4
 >>> key.policy.key_usage
 ['OTP']
+
+
+This tests an SecurID-AES-Counter key contained within a PSKC file as
+described in section 6 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
+
+>>> pskc = PSKC('tests/draft-keyprov-securid-aes-counter.pskcxml')
+>>> pskc.version
+'1.0'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'RSA, The Security Division of EMC'
+>>> key.serial
+'123456798'
+>>> key.id
+'23456789'
+>>> key.algorithm
+'http://www.rsa.com/names/2008/04/algorithms/SecurID/SecurID-AES128-Counter'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> key.secret
+'12345678901234567890'
+>>> key.counter
+0
+>>> key.policy.key_usage
+['OTP']
+>>> key.policy.start_date
+datetime.datetime(2006, 4, 14, 0, 0, tzinfo=tzutc())
+>>> key.policy.expiry_date
+datetime.datetime(2010, 9, 30, 0, 0, tzinfo=tzutc())
