@@ -1,0 +1,58 @@
+test_draft_keyprov.doctest - test for examples from
+                             draft-hoyer-keyprov-pskc-algorithm-profiles-01
+
+Copyright (C) 2014 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from pskc import PSKC
+
+
+This tests an OCRA (OATH Challenge Response Algorithm) key contained within
+a PSKC file as described in section 3 of
+draft-hoyer-keyprov-pskc-algorithm-profiles-01.
+
+>>> pskc = PSKC('tests/draft-keyprov-ocra.pskcxml')
+>>> pskc.version
+'1.0'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'TokenVendorAcme'
+>>> key.serial
+'987654322'
+>>> key.id
+'12345678'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#OCRA-1:HOTP-SHA512-8:C-QN08'
+>>> key.issuer
+'Issuer'
+>>> key.challenge_encoding
+'DECIMAL'
+>>> key.challenge_min_length
+8
+>>> key.challenge_max_length
+8
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> key.secret
+'12345678901234567890'
+>>> key.counter
+0
+>>> key.policy.key_usage
+['CR']
