@@ -21,6 +21,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> from pskc import PSKC
 
 
+This tests the most minimal valid PSKC file with one empty key.
+
+>>> import StringIO
+>>> minimal_pskc = StringIO.StringIO('''
+... <?xml version="1.0"?>
+... <KeyContainer xmlns="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+...   <KeyPackage/>
+... </KeyContainer>
+... '''.strip())
+>>> pskc = PSKC(minimal_pskc)
+>>> [key.id for key in pskc.keys]
+[None]
+
+
+Check creation of empty PSKC structure and adding an empty key to the list.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(id='123')
+>>> key.id
+'123'
+>>> key.secret is None
+True
+
+Adding a key with unknown attributes raises an error.
+>>> key = pskc.add_key(foo='bar')
+Traceback (most recent call last):
+    ...
+AttributeError
+
+
 Load an PSKC file with an odd namespace.
 
 >>> pskc = PSKC('tests/odd-namespace.pskcxml')
