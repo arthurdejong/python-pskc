@@ -1,0 +1,85 @@
+test_tripledeskw.doctest - test keywrap functions
+
+Copyright (C) 2014 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+>>> import re
+>>> from pskc.tripledeskw import wrap, unwrap
+>>> def fromhex(value):
+...     return re.sub(r'\s', '', value).decode('hex')
+
+
+Example from RFC 3217 section 3.2 wrapping a 192 bit Triple DES key with
+another 192 bit Triple DES key.
+
+>>> plaintext = fromhex('''
+... 2923 bf85 e06d d6ae 5291 49f1 f1ba e9ea b3a7 da3d 860d 3e98
+... ''')
+>>> key = fromhex('''
+... 255e 0d1c 07b6 46df b313 4cc8 43ba 8aa7 1f02 5b7c 0838 251f
+... ''')
+>>> iv = fromhex('5dd4 cbfc 96f5 453b')
+>>> ciphertext = fromhex('''
+... 6901 0761 8ef0 92b3 b48c a179 6b23 4ae9 fa33 ebb4 1596 0403
+... 7db5 d6a8 4eb3 aac2 768c 6327 75a4 67d4
+... ''')
+>>> wrap(plaintext, key, iv=iv) == ciphertext
+True
+>>> unwrap(ciphertext, key) == plaintext
+True
+
+
+Leaving out the iv ensures that a random iv is used.
+
+>>> c = wrap(plaintext, key)
+>>> c == ciphertext
+False
+>>> unwrap(c, key) == plaintext
+True
+
+
+Wrapping is only specified for Triple DES keys but the algorithms works for
+any plaintext that is a multiple of the Triple DES block size but fails
+otherwise.
+
+>>> short_plaintext = fromhex('''
+... 2923 bf85 e06d d6ae 5291 49f1 f1ba e9ea
+... ''')
+>>> unwrap(wrap(short_plaintext, key), key) == short_plaintext
+True
+>>> short_plaintext = fromhex('''
+... 2923 bf85 e06d d6ae 5291 49f1 f1ba e9
+... ''')
+>>> wrap(short_plaintext, key)
+Traceback (most recent call last):
+    ...
+EncryptionError: Plaintext length wrong
+
+
+The ciphertext must have the correct length (multiple of Triple DES block
+size) and unwrapping is also authenticated.
+
+>>> unwrap(ciphertext, key) == plaintext
+True
+>>> unwrap(ciphertext[:-1], key)
+Traceback (most recent call last):
+    ...
+DecryptionError: Ciphertext length wrong
+>>> unwrap(ciphertext[:-1] + 'A', key)
+Traceback (most recent call last):
+    ...
+DecryptionError: CMS key checksum error
