@@ -56,3 +56,36 @@ draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 0
 >>> key.policy.key_usage
 ['CR']
+
+
+This tests an TOTP (OATH Time based OTP) key contained within a PSKC file as
+described in section 4 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
+
+>>> pskc = PSKC('tests/draft-keyprov-totp.pskcxml')
+>>> pskc.version
+'1.0'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'TokenVendorAcme'
+>>> key.serial
+'987654323'
+>>> key.id
+'987654323'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#totp'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> key.secret
+'12345678901234567890'
+>>> key.time_offset
+0
+>>> key.time_interval
+30
+>>> key.time_drift
+4
+>>> key.policy.key_usage
+['OTP']
