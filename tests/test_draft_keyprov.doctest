@@ -122,3 +122,38 @@ described in section 6 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 datetime.datetime(2006, 4, 14, 0, 0, tzinfo=tzutc())
 >>> key.policy.expiry_date
 datetime.datetime(2010, 9, 30, 0, 0, tzinfo=tzutc())
+
+
+This tests an ActivIdentity-3DES key contained within a PSKC file as
+described in section 8 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
+
+>>> pskc = PSKC('tests/draft-keyprov-actividentity-3des.pskcxml')
+>>> pskc.version
+'1.0'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'ActivIdentity'
+>>> key.serial
+'34567890'
+>>> key.id
+'12345677'
+>>> key.algorithm
+'http://www.actividentity.com/2008/04/algorithms/algorithms#ActivIdentity-3DES'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> key.secret
+'12345678901234567890'
+>>> key.counter
+0
+>>> key.time_offset
+0
+>>> key.time_interval
+32
+>>> key.time_drift
+0
+>>> key.policy.key_usage
+['OTP']
