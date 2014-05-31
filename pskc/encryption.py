@@ -102,6 +102,12 @@ class EncryptedValue(object):
                len(key) not in AES.key_size:
                 raise DecryptionError('Invalid key length')
             return unwrap(self.cipher_value, key)
+        elif self.algorithm.endswith('#kw-tripledes'):
+            from pskc.tripledeskw import unwrap
+            from Crypto.Cipher import DES3
+            if len(key) not in DES3.key_size:
+                raise DecryptionError('Invalid key length')
+            return unwrap(self.cipher_value, key)
         else:
             raise DecryptionError('Unsupported algorithm: %r' % self.algorithm)
 

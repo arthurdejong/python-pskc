@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Test that holds an kw-tripledes encrypted value. The pre-shared key is
+  255e0d1c07b646dfb3134cc843ba8aa71f025b7c0838251f, the plain text value is
+  2923bf85e06dd6ae529149f1f1bae9eab3a7da3d860d3e98.
+-->
+
+<KeyContainer Version="1.0"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <EncryptionKey>
+  <ds:KeyName>Pre-shared-key</ds:KeyName>
+ </EncryptionKey>
+ <KeyPackage>
+  <Key>
+   <Data>
+    <Secret>
+     <EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#kw-tripledes"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>aQEHYY7wkrO0jKF5ayNK6foz67QVlgQDfbXWqE6zqsJ2jGMndaRn1A==</xenc:CipherValue>
+      </xenc:CipherData>
+     </EncryptedValue>
+    </Secret>
+   </Data>
+  </Key>
+ </KeyPackage>
+</KeyContainer>

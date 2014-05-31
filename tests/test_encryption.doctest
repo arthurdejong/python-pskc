@@ -81,3 +81,14 @@ DecryptionError: Invalid key length
 >>> pskc.encryption.key = '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f'.decode('hex')
 >>> pskc.keys[0].secret.encode('hex')
 '00112233445566778899aabbccddeeff0001020304050607'
+
+
+>>> pskc = PSKC('tests/kw-tripledes.pskcxml')
+>>> pskc.encryption.key = '255e0d1c07b646dfb3134cc843ba8aa71f'.decode('hex')
+>>> pskc.keys[0].secret
+Traceback (most recent call last):
+    ...
+DecryptionError: Invalid key length
+>>> pskc.encryption.key = '255e0d1c07b646dfb3134cc843ba8aa71f025b7c0838251f'.decode('hex')
+>>> pskc.keys[0].secret.encode('hex')
+'2923bf85e06dd6ae529149f1f1bae9eab3a7da3d860d3e98'
