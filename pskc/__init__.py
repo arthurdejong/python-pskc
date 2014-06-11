@@ -91,11 +91,11 @@ class PSKC(object):
         if not container.tag.endswith('KeyContainer'):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
-        self.version = container.attrib.get('Version')
+        self.version = container.get('Version')
         if self.version != '1.0':
             raise ParseError('Unsupported version %r' % self.version)
         # unique identifier for the container
-        self.id = container.attrib.get('Id')
+        self.id = container.get('Id')
         # handle EncryptionKey entries
         self.encryption.parse(container.find(
             'pskc:EncryptionKey', namespaces=namespaces))

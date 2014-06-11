@@ -59,7 +59,7 @@ class EncryptedValue(object):
             return
         encryption_method = encrypted_value.find(
             'xenc:EncryptionMethod', namespaces=namespaces)
-        self.algorithm = encryption_method.attrib.get('Algorithm')
+        self.algorithm = encryption_method.get('Algorithm')
         value = g_e_v(encrypted_value, 'xenc:CipherData/xenc:CipherValue')
         if value is not None:
             self.cipher_value = base64.b64decode(value)
@@ -138,7 +138,7 @@ class KeyDerivation(object):
         from pskc.parse import g_e_v, g_e_i, namespaces
         if key_deriviation is None:
             return
-        self.algorithm = key_deriviation.attrib.get('Algorithm')
+        self.algorithm = key_deriviation.get('Algorithm')
         # PBKDF2 properties
         pbkdf2 = key_deriviation.find(
             'xenc11:PBKDF2-params', namespaces=namespaces)
@@ -157,7 +157,7 @@ class KeyDerivation(object):
             # pseudorandom function used
             prf = pbkdf2.find('PRF', namespaces=namespaces)
             if prf is not None:
-                self.pbkdf2_prf = prf.attrib.get('Algorithm')
+                self.pbkdf2_prf = prf.get('Algorithm')
 
     def derive(self, password):
         """Derive a key from the password."""
@@ -206,7 +206,7 @@ class Encryption(object):
         from pskc.parse import g_e_v, namespaces
         if key_info is None:
             return
-        self.id = key_info.attrib.get('Id')
+        self.id = key_info.get('Id')
         for name in key_info.findall('ds:KeyName', namespaces=namespaces):
             self.key_names.append(g_e_v(name, '.'))
         for name in key_info.findall(

@@ -124,18 +124,18 @@ class Policy(object):
         pin_policy = policy.find(
             'pskc:PINPolicy', namespaces=namespaces)
         if pin_policy is not None:
-            self.pin_key_id = pin_policy.attrib.get('PINKeyId')
-            self.pin_usage = pin_policy.attrib.get('PINUsageMode')
-            v = pin_policy.attrib.get('MaxFailedAttempts')
-            if v:
-                self.pin_max_failed_attemtps = int(v)
-            v = pin_policy.attrib.get('MinLength')
-            if v:
-                self.pin_min_length = int(v)
-            v = pin_policy.attrib.get('MaxLength')
-            if v:
-                self.pin_max_length = int(v)
-            self.pin_encoding = pin_policy.attrib.get('PINEncoding')
+            self.pin_key_id = pin_policy.get('PINKeyId')
+            self.pin_usage = pin_policy.get('PINUsageMode')
+            value = pin_policy.get('MaxFailedAttempts')
+            if value:
+                self.pin_max_failed_attemtps = int(value)
+            value = pin_policy.get('MinLength')
+            if value:
+                self.pin_min_length = int(value)
+            value = pin_policy.get('MaxLength')
+            if value:
+                self.pin_max_length = int(value)
+            self.pin_encoding = pin_policy.get('PINEncoding')
             # TODO: check if there are any other attributes set for PINPolicy
             # of if there are any children and set unknown_policy_elementss
 

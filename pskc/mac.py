@@ -87,7 +87,7 @@ class MAC(object):
         from pskc.parse import g_e_v, namespaces
         if mac_method is None:
             return
-        self.algorithm = mac_method.attrib.get('Algorithm')
+        self.algorithm = mac_method.get('Algorithm')
         self._mac_key.parse(mac_method.find(
             'pskc:MACKey', namespaces=namespaces))
         mac_key_reference = g_e_v(mac_method, 'pskc:MACKeyReference')

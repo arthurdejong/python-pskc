@@ -189,8 +189,8 @@ class Key(object):
 
         key = key_package.find('pskc:Key', namespaces=namespaces)
         if key is not None:
-            self.id = key.attrib.get('Id')
-            self.algorithm = key.attrib.get('Algorithm')
+            self.id = key.get('Id')
+            self.algorithm = key.get('Algorithm')
 
         data = key_package.find('pskc:Key/pskc:Data', namespaces=namespaces)
         if data is not None:
@@ -234,28 +234,28 @@ class Key(object):
             'pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat',
             namespaces=namespaces)
         if challenge_format is not None:
-            self.challenge_encoding = challenge_format.attrib.get('Encoding')
-            v = challenge_format.attrib.get('Min')
-            if v:
-                self.challenge_min_length = int(v)
-            v = challenge_format.attrib.get('Max')
-            if v:
-                self.challenge_max_length = int(v)
-            v = challenge_format.attrib.get('CheckDigits')
-            if v:
-                self.challenge_check = v.lower() == 'true'
+            self.challenge_encoding = challenge_format.get('Encoding')
+            value = challenge_format.get('Min')
+            if value:
+                self.challenge_min_length = int(value)
+            value = challenge_format.get('Max')
+            if value:
+                self.challenge_max_length = int(value)
+            value = challenge_format.get('CheckDigits')
+            if value:
+                self.challenge_check = value.lower() == 'true'
 
         response_format = key_package.find(
             'pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat',
             namespaces=namespaces)
         if response_format is not None:
-            self.response_encoding = response_format.attrib.get('Encoding')
-            v = response_format.attrib.get('Length')
-            if v:
-                self.response_length = int(v)
-            v = response_format.attrib.get('CheckDigits')
-            if v:
-                self.response_check = v.lower() == 'true'
+            self.response_encoding = response_format.get('Encoding')
+            value = response_format.get('Length')
+            if value:
+                self.response_length = int(value)
+            value = response_format.get('CheckDigits')
+            if value:
+                self.response_check = value.lower() == 'true'
 
         self.policy.parse(key_package.find(
             'pskc:Key/pskc:Policy', namespaces=namespaces))
