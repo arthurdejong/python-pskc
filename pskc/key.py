@@ -52,14 +52,12 @@ class DataType(object):
         The element is expected to contain <PlainValue>, <EncryptedValue>
         and/or ValueMAC elements that contain information on the actual
         value."""
-        from pskc.parse import g_e_v, namespaces
+        from pskc.parse import find, findtext
         if element is None:
             return
-        self.plain_value = g_e_v(element, 'pskc:PlainValue')
-        self.encrypted_value.parse(element.find(
-            'pskc:EncryptedValue', namespaces=namespaces))
-        self.value_mac.parse(element.find(
-            'pskc:ValueMAC', namespaces=namespaces))
+        self.plain_value = findtext(element, 'pskc:PlainValue')
+        self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
+        self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
     def check(self):
         """Check whether the embedded MAC is correct."""
@@ -183,56 +181,55 @@ class Key(object):
 
     def parse(self, key_package):
         """Read key information from the provided <KeyPackage> tree."""
-        from pskc.parse import g_e_v, g_e_d, namespaces
+        from pskc.parse import find, findtext, findtime
         if key_package is None:
             return
 
-        key = key_package.find('pskc:Key', namespaces=namespaces)
+        key = find(key_package, 'pskc:Key')
         if key is not None:
             self.id = key.get('Id')
             self.algorithm = key.get('Algorithm')
 
-        data = key_package.find('pskc:Key/pskc:Data', namespaces=namespaces)
+        data = find(key_package, 'pskc:Key/pskc:Data')
         if data is not None:
-            self._secret.parse(data.find(
-                'pskc:Secret', namespaces=namespaces))
-            self._counter.parse(data.find(
-                'pskc:Counter', namespaces=namespaces))
-            self._time_offset.parse(data.find(
-                'pskc:Time', namespaces=namespaces))
-            self._time_interval.parse(data.find(
-                'pskc:TimeInterval', namespaces=namespaces))
-            self._time_drift.parse(data.find(
-                'pskc:TimeDrift', namespaces=namespaces))
+            self._secret.parse(find(data, 'pskc:Secret'))
+            self._counter.parse(find(data, 'pskc:Counter'))
+            self._time_offset.parse(find(data, 'pskc:Time'))
+            self._time_interval.parse(find(data, 'pskc:TimeInterval'))
+            self._time_drift.parse(find(data, 'pskc:TimeDrift'))
 
-        self.issuer = g_e_v(key_package, 'pskc:Key/pskc:Issuer')
-        self.key_profile = g_e_v(key_package, 'pskc:Key/pskc:KeyProfileId')
-        self.key_reference = g_e_v(key_package, 'pskc:Key/pskc:KeyReference')
-        self.friendly_name = g_e_v(key_package, 'pskc:Key/pskc:FriendlyName')
+        self.issuer = findtext(key_package, 'pskc:Key/pskc:Issuer')
+        self.key_profile = findtext(key_package, 'pskc:Key/pskc:KeyProfileId')
+        self.key_reference = findtext(
+            key_package, 'pskc:Key/pskc:KeyReference')
+        self.friendly_name = findtext(
+            key_package, 'pskc:Key/pskc:FriendlyName')
         # TODO: support multi-language values of <FriendlyName>
-        self.key_userid = g_e_v(key_package, 'pskc:Key/pskc:UserId')
+        self.key_userid = findtext(key_package, 'pskc:Key/pskc:UserId')
 
-        self.manufacturer = g_e_v(
+        self.manufacturer = findtext(
             key_package, 'pskc:DeviceInfo/pskc:Manufacturer')
-        self.serial = g_e_v(key_package, 'pskc:DeviceInfo/pskc:SerialNo')
-        self.model = g_e_v(key_package, 'pskc:DeviceInfo/pskc:Model')
-        self.issue_no = g_e_v(key_package, 'pskc:DeviceInfo/pskc:IssueNo')
-        self.device_binding = g_e_v(
+        self.serial = findtext(key_package, 'pskc:DeviceInfo/pskc:SerialNo')
+        self.model = findtext(key_package, 'pskc:DeviceInfo/pskc:Model')
+        self.issue_no = findtext(key_package, 'pskc:DeviceInfo/pskc:IssueNo')
+        self.device_binding = findtext(
             key_package, 'pskc:DeviceInfo/pskc:DeviceBinding')
-        self.start_date = g_e_d(key_package, 'pskc:DeviceInfo/pskc:StartDate')
-        self.expiry_date = g_e_d(
+        self.start_date = findtime(
+            key_package, 'pskc:DeviceInfo/pskc:StartDate')
+        self.expiry_date = findtime(
             key_package, 'pskc:DeviceInfo/pskc:ExpiryDate')
-        self.device_userid = g_e_v(key_package, 'pskc:DeviceInfo/pskc:UserId')
+        self.device_userid = findtext(
+            key_package, 'pskc:DeviceInfo/pskc:UserId')
 
-        self.crypto_module = g_e_v(
+        self.crypto_module = findtext(
             key_package, 'pskc:CryptoModuleInfo/pskc:Id')
 
-        self.algorithm_suite = g_e_v(
+        self.algorithm_suite = findtext(
             key_package, 'pskc:Key/pskc:AlgorithmParameters/pskc:Suite')
 
-        challenge_format = key_package.find(
-            'pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat',
-            namespaces=namespaces)
+        challenge_format = find(
+            key_package,
+            'pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat')
         if challenge_format is not None:
             self.challenge_encoding = challenge_format.get('Encoding')
             value = challenge_format.get('Min')
@@ -245,9 +242,9 @@ class Key(object):
             if value:
                 self.challenge_check = value.lower() == 'true'
 
-        response_format = key_package.find(
-            'pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat',
-            namespaces=namespaces)
+        response_format = find(
+            key_package,
+            'pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat')
         if response_format is not None:
             self.response_encoding = response_format.get('Encoding')
             value = response_format.get('Length')
@@ -257,8 +254,7 @@ class Key(object):
             if value:
                 self.response_check = value.lower() == 'true'
 
-        self.policy.parse(key_package.find(
-            'pskc:Key/pskc:Policy', namespaces=namespaces))
+        self.policy.parse(find(key_package, 'pskc:Key/pskc:Policy'))
 
     @property
     def secret(self):

@@ -109,20 +109,18 @@ class Policy(object):
 
     def parse(self, policy):
         """Read key policy information from the provided <Policy> tree."""
-        from pskc.parse import g_e_v, g_e_i, g_e_d, namespaces
+        from pskc.parse import find, findall, findtext, findint, findtime
         if policy is None:
             return
 
-        self.start_date = g_e_d(policy, 'pskc:StartDate')
-        self.expiry_date = g_e_d(policy, 'pskc:ExpiryDate')
-        self.number_of_transactions = g_e_i(
+        self.start_date = findtime(policy, 'pskc:StartDate')
+        self.expiry_date = findtime(policy, 'pskc:ExpiryDate')
+        self.number_of_transactions = findint(
             policy, 'pskc:NumberOfTransactions')
-        for key_usage in policy.findall(
-                'pskc:KeyUsage', namespaces=namespaces):
-            self.key_usage.append(g_e_v(key_usage, '.'))
+        for key_usage in findall(policy, 'pskc:KeyUsage'):
+            self.key_usage.append(findtext(key_usage, '.'))
 
-        pin_policy = policy.find(
-            'pskc:PINPolicy', namespaces=namespaces)
+        pin_policy = find(policy, 'pskc:PINPolicy')
         if pin_policy is not None:
             self.pin_key_id = pin_policy.get('PINKeyId')
             self.pin_usage = pin_policy.get('PINUsageMode')

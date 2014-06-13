@@ -39,23 +39,44 @@ namespaces = dict(
 )
 
 
-def g_e_v(tree, match):
+def findall(tree, match):
+    """Find a child element (or None)."""
+    return tree.findall(match, namespaces=namespaces)
+
+
+def find(tree, match):
+    """Find a child element (or None)."""
+    try:
+        return iter(findall(tree, match)).next()
+    except StopIteration:
+        return None
+
+
+def findtext(tree, match):
     """Get the text value of an element (or None)."""
-    element = tree.find(match, namespaces=namespaces)
+    element = find(tree, match)
     if element is not None:
         return element.text.strip()
 
 
-def g_e_i(tree, match):
+def findint(tree, match):
     """Return an element value as an int (or None)."""
-    element = tree.find(match, namespaces=namespaces)
-    if element is not None:
-        return int(element.text.strip())
+    value = findtext(tree, match)
+    if value:
+        return int(value)
 
 
-def g_e_d(tree, match):
+def findtime(tree, match):
     """Return an element value as a datetime (or None)."""
-    element = tree.find(match, namespaces=namespaces)
-    if element is not None:
+    value = findtext(tree, match)
+    if value:
         import dateutil.parser
-        return dateutil.parser.parse(element.text.strip())
+        return dateutil.parser.parse(value)
+
+
+def findbin(tree, match):
+    """Return the binary element value base64 decoded."""
+    value = findtext(tree, match)
+    if value:
+        import base64
+        return base64.b64decode(value)

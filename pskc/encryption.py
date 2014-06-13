@@ -28,9 +28,6 @@ The encryption key can be derived using the KeyDerivation class.
 """
 
 
-import base64
-
-
 def unpad(value):
     """Remove padding from the plaintext."""
     return value[0:-ord(value[-1])]
@@ -54,15 +51,13 @@ class EncryptedValue(object):
 
     def parse(self, encrypted_value):
         """Read encrypted data from the <EncryptedValue> XML tree."""
-        from pskc.parse import g_e_v, namespaces
+        from pskc.parse import find, findbin
         if encrypted_value is None:
             return
-        encryption_method = encrypted_value.find(
-            'xenc:EncryptionMethod', namespaces=namespaces)
+        encryption_method = find(encrypted_value, 'xenc:EncryptionMethod')
         self.algorithm = encryption_method.get('Algorithm')
-        value = g_e_v(encrypted_value, 'xenc:CipherData/xenc:CipherValue')
-        if value is not None:
-            self.cipher_value = base64.b64decode(value)
+        self.cipher_value = findbin(
+            encrypted_value, 'xenc:CipherData/xenc:CipherValue')
 
     def decrypt(self):
         """Decrypt the linked value and return the plaintext value."""
@@ -135,27 +130,23 @@ class KeyDerivation(object):
 
     def parse(self, key_deriviation):
         """Read derivation parameters from a <KeyDerivationMethod> element."""
-        from pskc.parse import g_e_v, g_e_i, namespaces
+        from pskc.parse import find, findint, findbin
         if key_deriviation is None:
             return
         self.algorithm = key_deriviation.get('Algorithm')
         # PBKDF2 properties
-        pbkdf2 = key_deriviation.find(
-            'xenc11:PBKDF2-params', namespaces=namespaces)
+        pbkdf2 = find(key_deriviation, 'xenc11:PBKDF2-params')
         if pbkdf2 is None:
-            pbkdf2 = key_deriviation.find(
-                'pkcs5:PBKDF2-params', namespaces=namespaces)
+            pbkdf2 = find(key_deriviation, 'pkcs5:PBKDF2-params')
         if pbkdf2 is not None:
             # get used salt
-            value = g_e_v(pbkdf2, 'Salt/Specified')
-            if value is not None:
-                self.pbkdf2_salt = base64.b64decode(value)
+            self.pbkdf2_salt = findbin(pbkdf2, 'Salt/Specified')
             # required number of iterations
-            self.pbkdf2_iterations = g_e_i(pbkdf2, 'IterationCount')
+            self.pbkdf2_iterations = findint(pbkdf2, 'IterationCount')
             # key length
-            self.pbkdf2_key_length = g_e_i(pbkdf2, 'KeyLength')
+            self.pbkdf2_key_length = findint(pbkdf2, 'KeyLength')
             # pseudorandom function used
-            prf = pbkdf2.find('PRF', namespaces=namespaces)
+            prf = find(pbkdf2, 'PRF')
             if prf is not None:
                 self.pbkdf2_prf = prf.get('Algorithm')
 
@@ -203,19 +194,17 @@ class Encryption(object):
 
     def parse(self, key_info):
         """Read encryption information from the <EncryptionKey> XML tree."""
-        from pskc.parse import g_e_v, namespaces
+        from pskc.parse import find, findall, findtext
         if key_info is None:
             return
         self.id = key_info.get('Id')
-        for name in key_info.findall('ds:KeyName', namespaces=namespaces):
-            self.key_names.append(g_e_v(name, '.'))
-        for name in key_info.findall(
-                'xenc11:DerivedKey/xenc11:MasterKeyName',
-                namespaces=namespaces):
-            self.key_names.append(g_e_v(name, '.'))
-        self.derivation.parse(key_info.find(
-            'xenc11:DerivedKey/xenc11:KeyDerivationMethod',
-            namespaces=namespaces))
+        for name in findall(key_info, 'ds:KeyName'):
+            self.key_names.append(findtext(name, '.'))
+        for name in findall(
+                key_info, 'xenc11:DerivedKey/xenc11:MasterKeyName'):
+            self.key_names.append(findtext(name, '.'))
+        self.derivation.parse(find(
+            key_info, 'xenc11:DerivedKey/xenc11:KeyDerivationMethod'))
 
     @property
     def key_name(self):

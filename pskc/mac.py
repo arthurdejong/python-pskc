@@ -29,7 +29,6 @@ with the PSKC encryption key.
 """
 
 
-import base64
 import hashlib
 import hmac
 
@@ -46,12 +45,10 @@ class ValueMAC(object):
 
     def parse(self, value_mac):
         """Read MAC information from the <ValueMAC> XML tree."""
-        from pskc.parse import g_e_v
+        from pskc.parse import findbin
         if value_mac is None:
             return
-        value = g_e_v(value_mac, '.')
-        if value is not None:
-            self._value_mac = base64.b64decode(value)
+        self._value_mac = findbin(value_mac, '.')
 
     def check(self, value):
         """Check if the provided value matches the MAC.
@@ -84,13 +81,12 @@ class MAC(object):
 
     def parse(self, mac_method):
         """Read MAC information from the <MACMethod> XML tree."""
-        from pskc.parse import g_e_v, namespaces
+        from pskc.parse import find, findtext
         if mac_method is None:
             return
         self.algorithm = mac_method.get('Algorithm')
-        self._mac_key.parse(mac_method.find(
-            'pskc:MACKey', namespaces=namespaces))
-        mac_key_reference = g_e_v(mac_method, 'pskc:MACKeyReference')
+        self._mac_key.parse(find(mac_method, 'pskc:MACKey'))
+        mac_key_reference = findtext(mac_method, 'pskc:MACKeyReference')
 
     @property
     def key(self):

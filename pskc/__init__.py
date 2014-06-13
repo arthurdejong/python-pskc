@@ -87,7 +87,7 @@ class PSKC(object):
         """Read information from the provided <KeyContainer> tree."""
         from pskc.exceptions import ParseError
         from pskc.key import Key
-        from pskc.parse import namespaces
+        from pskc.parse import find, findall
         if not container.tag.endswith('KeyContainer'):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
@@ -97,14 +97,11 @@ class PSKC(object):
         # unique identifier for the container
         self.id = container.get('Id')
         # handle EncryptionKey entries
-        self.encryption.parse(container.find(
-            'pskc:EncryptionKey', namespaces=namespaces))
+        self.encryption.parse(find(container, 'pskc:EncryptionKey'))
         # handle MACMethod entries
-        self.mac.parse(container.find(
-            'pskc:MACMethod', namespaces=namespaces))
+        self.mac.parse(find(container, 'pskc:MACMethod'))
         # handle KeyPackage entries
-        for key_package in container.findall(
-                'pskc:KeyPackage', namespaces=namespaces):
+        for key_package in findall(container, 'pskc:KeyPackage'):
             self.keys.append(Key(self, key_package))
 
     def add_key(self, **kwargs):
