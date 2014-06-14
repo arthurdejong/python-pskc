@@ -117,7 +117,7 @@ class KeyDerivation(object):
       pbkdf2_salt: salt value
       pbkdf2_iterations: number of iterations to use
       pbkdf2_key_length: required key lengt
-      pbkdf2_prf: name of pseudorandom function used (HMAC-SHA1 is assumed)
+      pbkdf2_prf: name of pseudorandom function used
     """
 
     def __init__(self, key_deriviation=None):
@@ -158,13 +158,17 @@ class KeyDerivation(object):
             raise KeyDerivationError('No algorithm specified')
         if self.algorithm.endswith('#pbkdf2'):
             from Crypto.Protocol.KDF import PBKDF2
-            # TODO: support pseudorandom function (prf)
+            from pskc.mac import get_hmac
+            prf = None
             if self.pbkdf2_prf:
-                raise KeyDerivationError(
-                    'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
+                prf = get_hmac(self.pbkdf2_prf)
+                if prf is None:
+                    raise KeyDerivationError(
+                        'Pseudorandom function unsupported: %r' %
+                        self.pbkdf2_prf)
             return PBKDF2(
                 password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
-                count=self.pbkdf2_iterations, prf=None)
+                count=self.pbkdf2_iterations, prf=prf)
         else:
             raise KeyDerivationError(
                 'Unsupported algorithm: %r' % self.algorithm)
