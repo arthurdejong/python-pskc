@@ -101,3 +101,43 @@ Specify an unknown PBKDF2 PRF (pseudorandom function).
 Traceback (most recent call last):
     ...
 KeyDerivationError: Pseudorandom function unsupported: ...
+
+
+There is a ValueMAC element but no MACMethod element.
+
+>>> pskc = PSKC('tests/invalid-no-mac-method.pskcxml')
+>>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.secret
+Traceback (most recent call last):
+    ...
+DecryptionError: No MAC key available
+
+
+There is an unknown algorithm specified in MACMethod.
+
+>>> pskc = PSKC('tests/invalid-mac-algorithm.pskcxml')
+>>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.secret
+Traceback (most recent call last):
+    ...
+DecryptionError: Unsupported MAC algorithm: ...
+
+
+The MAC value does not match the calculated MAC, something was modified in
+transit.
+
+>>> pskc = PSKC('tests/invalid-mac-value.pskcxml')
+>>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.secret
+Traceback (most recent call last):
+    ...
+DecryptionError: MAC value does not match
