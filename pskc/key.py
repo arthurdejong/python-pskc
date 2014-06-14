@@ -37,7 +37,6 @@ class DataType(object):
       plain_value: raw unencrypted value if present (possibly base64 encoded)
       encrypted_value: reference to an EncryptedValue instance
       value_mac: reference to a ValueMAC instance
-      value: the plaintext value (decrypted if necessary)
     """
 
     def __init__(self, key, element=None):
@@ -68,12 +67,13 @@ class DataType(object):
 class BinaryDataType(DataType):
     """Subclass of DataType for binary data (e.g. keys)."""
 
-    @property
-    def value(self):
+    def get_value(self):
         """Provide the raw binary value."""
         # plain value is base64 encoded
         if self.plain_value is not None:
             return base64.b64decode(self.plain_value)
+        # check MAC if present
+        self.check()
         # encrypted value is in correct format
         return self.encrypted_value.decrypt()
 
@@ -81,12 +81,13 @@ class BinaryDataType(DataType):
 class IntegerDataType(DataType):
     """Subclass of DataType for integer types (e.g. counters)."""
 
-    @property
-    def value(self):
+    def get_value(self):
         """Provide the raw integer value."""
         # plain value is a string representation of the number
         if self.plain_value:
             return int(self.plain_value)
+        # check MAC if present
+        self.check()
         # decrypted value is big endian encoded
         value = self.encrypted_value.decrypt()
         if value is not None:
@@ -259,33 +260,31 @@ class Key(object):
     @property
     def secret(self):
         """The secret key itself."""
-        return self._secret.value
+        return self._secret.get_value()
 
     @property
     def counter(self):
         """An event counter for event-based OTP."""
-        return self._counter.value
+        return self._counter.get_value()
 
     @property
     def time_offset(self):
         """A time offset for time-based OTP (number of intervals)."""
-        return self._time_offset.value
+        return self._time_offset.get_value()
 
     @property
     def time_interval(self):
         """A time interval in seconds."""
-        return self._time_interval.value
+        return self._time_interval.get_value()
 
     @property
     def time_drift(self):
         """Device clock drift value (number of time intervals)."""
-        return self._time_drift.value
+        return self._time_drift.get_value()
 
     def check(self):
         """Check if all MACs in the message are valid."""
-        checks = (self._secret.check(), self._counter.check(),
-                  self._time_offset.check(), self._time_interval.check(),
-                  self._time_drift.check())
-        if all(x is None for x in checks):
-            return None
-        return all(x is not False for x in checks)
+        if any((self._secret.check(), self._counter.check(),
+                self._time_offset.check(), self._time_interval.check(),
+                self._time_drift.check())):
+            return True

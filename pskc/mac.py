@@ -57,22 +57,26 @@ class ValueMAC(object):
     def check(self, value):
         """Check if the provided value matches the MAC.
 
-        This will return None if the value cannot be checked (no value,
-        no key, etc.) or a boolean otherwise.
+        This will return None if there is no MAC to be checked. It will
+        return True if the MAC matches and raise an exception if it fails.
         """
+        from pskc.exceptions import DecryptionError
         if value is None or self._value_mac is None:
             return  # no MAC present or nothing to check
         key = self.mac.key
         if key is None:
-            return False  # no MAC key present
+            raise DecryptionError('No MAC key available')
         digestmod = None
         match = _hmac_url_re.search(self.mac.algorithm)
         if match:
             digestmod = getattr(hashlib, match.group('hash'), None)
         if digestmod is None:
-            return False  # unknown algorithm
+            raise DecryptionError(
+                'Unsupported MAC algorithm: %r' % self.mac.algorithm)
         h = hmac.new(key, value, digestmod).digest()
-        return h == self._value_mac
+        if h != self._value_mac:
+            raise DecryptionError('MAC value does not match')
+        return True
 
 
 class MAC(object):
