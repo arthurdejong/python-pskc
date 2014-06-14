@@ -25,6 +25,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
 >>> pskc.keys[0].secret
 '12345678901234567890'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#hmac-sha224'
+>>> pskc.mac.key
+'MacMacMacMacMacMacMa'
 
 
 >>> pskc = PSKC('tests/aes192-cbc.pskcxml')
@@ -36,12 +40,20 @@ DecryptionError: Invalid key length
 >>> pskc.encryption.key = '123456789012345678901234567890123456789012345678'.decode('hex')
 >>> pskc.keys[0].secret
 '12345678901234567890'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#hmac-sha256'
+>>> pskc.mac.key
+'MacMacMacMacMacMacMa'
 
 
 >>> pskc = PSKC('tests/aes256-cbc.pskcxml')
 >>> pskc.encryption.key = '1234567890123456789012345678901234567890123456789012345678901234'.decode('hex')
 >>> pskc.keys[0].secret
 '12345678901234567890'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#hmac-sha384'
+>>> pskc.mac.key
+'MacMacMacMacMacMacMa'
 
 
 >>> pskc = PSKC('tests/tripledes-cbc.pskcxml')
@@ -53,6 +65,10 @@ DecryptionError: Invalid key length
 >>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
 >>> pskc.keys[0].secret
 '12345678901234567890'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#hmac-sha512'
+>>> pskc.mac.key
+'MacMacMacMacMacMacMa'
 
 
 >>> pskc = PSKC('tests/kw-aes128.pskcxml')

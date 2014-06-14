@@ -12,6 +12,14 @@
  <EncryptionKey>
   <ds:KeyName>Pre-shared-key</ds:KeyName>
  </EncryptionKey>
+ <MACMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#hmac-sha256">
+  <MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes192-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>SVZJVklWSVZJVklWSVZJVmDaimFqjBwo8MSWUGmwDkqJvsb1xlkf0MHfyqeooZzM</xenc:CipherValue>
+   </xenc:CipherData>
+  </MACKey>
+ </MACMethod>
  <KeyPackage>
   <Key>
    <Data>
@@ -22,6 +30,7 @@
        <xenc:CipherValue>AAECAwQFBgcICQoLDA0OD/616ab2do/xcWNKuW1qE3rSzwqoZcpg5ucwpjiZ07tV</xenc:CipherValue>
       </xenc:CipherData>
      </EncryptedValue>
+     <ValueMAC>ADfYOligu/3jDK9QhUGO7gGMxNxmrBUy4qtv4HyKF8o=</ValueMAC>
     </Secret>
    </Data>
   </Key>
