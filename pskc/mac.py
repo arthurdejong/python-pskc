@@ -29,14 +29,22 @@ with the PSKC encryption key.
 """
 
 
-import hashlib
-import hmac
 import re
-
-from pskc.encryption import EncryptedValue
 
 
 _hmac_url_re = re.compile(r'^.*#hmac-(?P<hash>[a-z0-9]+)$')
+
+
+def get_hmac(algorithm):
+    """Return an HMAC function that takes a secret and a value and returns a
+    digest."""
+    import hashlib
+    import hmac
+    match = _hmac_url_re.search(algorithm)
+    if match:
+        digestmod = getattr(hashlib, match.group('hash'), None)
+        if digestmod is not None:
+            return lambda key, value: hmac.new(key, value, digestmod).digest()
 
 
 class ValueMAC(object):
@@ -66,15 +74,11 @@ class ValueMAC(object):
         key = self.mac.key
         if key is None:
             raise DecryptionError('No MAC key available')
-        digestmod = None
-        match = _hmac_url_re.search(self.mac.algorithm)
-        if match:
-            digestmod = getattr(hashlib, match.group('hash'), None)
-        if digestmod is None:
+        hmacfn = get_hmac(self.mac.algorithm)
+        if hmacfn is None:
             raise DecryptionError(
                 'Unsupported MAC algorithm: %r' % self.mac.algorithm)
-        h = hmac.new(key, value, digestmod).digest()
-        if h != self._value_mac:
+        if hmacfn(key, value) != self._value_mac:
             raise DecryptionError('MAC value does not match')
         return True
 
@@ -89,6 +93,7 @@ class MAC(object):
     """
 
     def __init__(self, pskc, mac_method=None):
+        from pskc.encryption import EncryptedValue
         self.algorithm = None
         self._mac_key = EncryptedValue(pskc.encryption)
         self.parse(mac_method)
