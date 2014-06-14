@@ -31,8 +31,12 @@ with the PSKC encryption key.
 
 import hashlib
 import hmac
+import re
 
 from pskc.encryption import EncryptedValue
+
+
+_hmac_url_re = re.compile(r'^.*#hmac-(?P<hash>[a-z0-9]+)$')
 
 
 class ValueMAC(object):
@@ -57,12 +61,18 @@ class ValueMAC(object):
         no key, etc.) or a boolean otherwise.
         """
         if value is None or self._value_mac is None:
-            return
-        algorithm = self.mac.algorithm
+            return  # no MAC present or nothing to check
         key = self.mac.key
-        if algorithm.endswith('#hmac-sha1') and key is not None:
-            h = hmac.new(key, value, hashlib.sha1).digest()
-            return h == self._value_mac
+        if key is None:
+            return False  # no MAC key present
+        digestmod = None
+        match = _hmac_url_re.search(self.mac.algorithm)
+        if match:
+            digestmod = getattr(hashlib, match.group('hash'), None)
+        if digestmod is None:
+            return False  # unknown algorithm
+        h = hmac.new(key, value, digestmod).digest()
+        return h == self._value_mac
 
 
 class MAC(object):
