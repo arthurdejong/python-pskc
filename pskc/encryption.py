@@ -55,7 +55,8 @@ class EncryptedValue(object):
         if encrypted_value is None:
             return
         encryption_method = find(encrypted_value, 'xenc:EncryptionMethod')
-        self.algorithm = encryption_method.get('Algorithm')
+        if encryption_method is not None:
+            self.algorithm = encryption_method.attrib.get('Algorithm')
         self.cipher_value = findbin(
             encrypted_value, 'xenc:CipherData/xenc:CipherValue')
 
