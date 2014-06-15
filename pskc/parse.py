@@ -27,16 +27,7 @@ This module provides some utility functions for parsing PSKC files.
 try:
     from lxml import etree
 except ImportError:  # pragma: no cover (different implementations)
-    try:
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                import cElementTree as etree
-            except ImportError:
-                import elementtree.ElementTree as etree
+    import xml.etree.ElementTree as etree
 
 
 # the relevant XML namespaces for PSKC
