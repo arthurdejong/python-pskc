@@ -95,3 +95,17 @@ def findbin(tree, match):
     if value:
         import base64
         return base64.b64decode(value)
+
+
+def getint(tree, attribute):
+    """Return an attribute value as an integer (or None)."""
+    value = tree.get(attribute)
+    if value:
+        return int(value)
+
+
+def getbool(tree, attribute):
+    """Return an attribute value as a boolean (or None)."""
+    value = tree.get(attribute)
+    if value:
+        return value.lower() == 'true'

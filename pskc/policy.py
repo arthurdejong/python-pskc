@@ -109,7 +109,8 @@ class Policy(object):
 
     def parse(self, policy):
         """Read key policy information from the provided <Policy> tree."""
-        from pskc.parse import find, findall, findtext, findint, findtime
+        from pskc.parse import (
+            find, findall, findtext, findint, findtime, getint)
         if policy is None:
             return
 
@@ -124,15 +125,10 @@ class Policy(object):
         if pin_policy is not None:
             self.pin_key_id = pin_policy.get('PINKeyId')
             self.pin_usage = pin_policy.get('PINUsageMode')
-            value = pin_policy.get('MaxFailedAttempts')
-            if value:
-                self.pin_max_failed_attemtps = int(value)
-            value = pin_policy.get('MinLength')
-            if value:
-                self.pin_min_length = int(value)
-            value = pin_policy.get('MaxLength')
-            if value:
-                self.pin_max_length = int(value)
+            self.pin_max_failed_attemtps = getint(
+                pin_policy, 'MaxFailedAttempts')
+            self.pin_min_length = getint(pin_policy, 'MinLength')
+            self.pin_max_length = getint(pin_policy, 'MaxLength')
             self.pin_encoding = pin_policy.get('PINEncoding')
             # TODO: check if there are any other attributes set for PINPolicy
             # of if there are any children and set unknown_policy_elementss

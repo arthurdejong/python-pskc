@@ -197,7 +197,7 @@ class Key(object):
 
     def parse(self, key_package):
         """Read key information from the provided <KeyPackage> tree."""
-        from pskc.parse import find, findtext, findtime
+        from pskc.parse import find, findtext, findtime, getint, getbool
         if key_package is None:
             return
 
@@ -248,27 +248,17 @@ class Key(object):
             'pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat')
         if challenge_format is not None:
             self.challenge_encoding = challenge_format.get('Encoding')
-            value = challenge_format.get('Min')
-            if value:
-                self.challenge_min_length = int(value)
-            value = challenge_format.get('Max')
-            if value:
-                self.challenge_max_length = int(value)
-            value = challenge_format.get('CheckDigits')
-            if value:
-                self.challenge_check = value.lower() == 'true'
+            self.challenge_min_length = getint(challenge_format, 'Min')
+            self.challenge_max_length = getint(challenge_format, 'Max')
+            self.challenge_check = getbool(challenge_format, 'CheckDigits')
 
         response_format = find(
             key_package,
             'pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat')
         if response_format is not None:
             self.response_encoding = response_format.get('Encoding')
-            value = response_format.get('Length')
-            if value:
-                self.response_length = int(value)
-            value = response_format.get('CheckDigits')
-            if value:
-                self.response_check = value.lower() == 'true'
+            self.response_length = getint(response_format, 'Length')
+            self.response_check = getbool(response_format, 'CheckDigits')
 
         self.policy.parse(find(key_package, 'pskc:Key/pskc:Policy'))
 
