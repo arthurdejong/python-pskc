@@ -44,11 +44,23 @@ Check creation of empty PSKC structure and adding an empty key to the list.
 >>> key.secret is None
 True
 
+
 Adding a key with unknown attributes raises an error.
+
 >>> key = pskc.add_key(foo='bar')
 Traceback (most recent call last):
     ...
 AttributeError
+
+
+Setting secret, counter, etc. also works
+
+>>> key = pskc.add_key(secret='VERYSECRET')
+>>> key.counter = 10
+>>> key.secret
+'VERYSECRET'
+>>> key.counter
+10
 
 
 Load an PSKC file with an odd namespace.

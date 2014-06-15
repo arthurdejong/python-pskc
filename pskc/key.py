@@ -58,6 +58,11 @@ class DataType(object):
         self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
         self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
+    def set_value(self, value):
+        """Save the plain value."""
+        self.plain_value = self.to_plain(value)
+        self.encrypted_value.cipher_value = None
+
     def check(self):
         """Check whether the embedded MAC is correct."""
         # this checks the encrypted value
@@ -76,6 +81,11 @@ class BinaryDataType(DataType):
         self.check()
         # encrypted value is in correct format
         return self.encrypted_value.decrypt()
+
+    def to_plain(self, value):
+        """Convert the value to an unencrypted string representation."""
+        if value:
+            return base64.b64encode(value)
 
 
 class IntegerDataType(DataType):
@@ -96,6 +106,11 @@ class IntegerDataType(DataType):
             for x in value:
                 v = (v << 8) + ord(x)
             return v
+
+    def to_plain(self, value):
+        """Convert the value to an unencrypted string representation."""
+        if value not in (None, ''):
+            return str(value)
 
 
 class Key(object):
@@ -257,30 +272,30 @@ class Key(object):
 
         self.policy.parse(find(key_package, 'pskc:Key/pskc:Policy'))
 
-    @property
-    def secret(self):
-        """The secret key itself."""
-        return self._secret.get_value()
+    secret = property(
+        fget=lambda self: self._secret.get_value(),
+        fset=lambda self, x: self._secret.set_value(x),
+        doc="The secret key itself.")
 
-    @property
-    def counter(self):
-        """An event counter for event-based OTP."""
-        return self._counter.get_value()
+    counter = property(
+        fget=lambda self: self._counter.get_value(),
+        fset=lambda self, x: self._counter.set_value(x),
+        doc="An event counter for event-based OTP.")
 
-    @property
-    def time_offset(self):
-        """A time offset for time-based OTP (number of intervals)."""
-        return self._time_offset.get_value()
+    time_offset = property(
+        fget=lambda self: self._time_offset.get_value(),
+        fset=lambda self, x: self._time_offset.set_value(x),
+        doc="A time offset for time-based OTP (number of intervals).")
 
-    @property
-    def time_interval(self):
-        """A time interval in seconds."""
-        return self._time_interval.get_value()
+    time_interval = property(
+        fget=lambda self: self._time_interval.get_value(),
+        fset=lambda self, x: self._time_interval.set_value(x),
+        doc="A time interval in seconds.")
 
-    @property
-    def time_drift(self):
-        """Device clock drift value (number of time intervals)."""
-        return self._time_drift.get_value()
+    time_drift = property(
+        fget=lambda self: self._time_drift.get_value(),
+        fset=lambda self, x: self._time_drift.set_value(x),
+        doc="Device clock drift value (number of time intervals).")
 
     def check(self):
         """Check if all MACs in the message are valid."""
