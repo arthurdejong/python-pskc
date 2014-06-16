@@ -2,7 +2,9 @@ Basic usage
 ===========
 
 The :mod:`pskc` module implements a simple and efficient API for parsing PSKC
-files.
+files. The :class:`~pskc.PSKC` class is used to access the file as a whole
+which provides access to a list of :class:`~pskc.key.Key` instances which
+contain most of the useful information from the PSKC file.
 
 
 Opening a PSKC file
@@ -10,17 +12,23 @@ Opening a PSKC file
 
 .. module:: pskc
 
-Importing data from a PSKC file can be done by instantiating a :class:`PSKC`
-class::
+Importing data from a PSKC file can be done by instantiating a
+:class:`~pskc.PSKC` class::
 
-   from pskc import PSKC
-   pskc = PSKC('somefile.pskcxml')
+    >>> from pskc import PSKC
+    >>> pskc = PSKC('somefile.pskcxml')
+    >>> pskc.version
+    '1.0'
 
-.. class:: PSKC(filename)
+
+.. class:: PSKC([filename])
 
    The :class:`PSKC` class is used as a wrapper to access information from a
-   PSKC file. The whole file is parsed in one go. Instances of this class
-   provide the following attributes:
+   PSKC file.
+
+   The whole file is parsed in one go. Instances of this class provide the
+   following attributes: If parsing the PSKC file fails, a
+   :exc:`~pskc.exceptions.ParseError` exception is raised.
 
    .. attribute:: version
 
@@ -34,18 +42,17 @@ class::
 
    .. attribute:: keys
 
-      A list of :class:`pskc.key.Key` instances that represent the keys
+      A list of :class:`~pskc.key.Key` instances that represent the keys
       within the PSKC file.
 
    .. attribute:: encryption
 
-      Instance of the :class:`pskc.encryption.Encryption` class that handles
-      PSKC file encryption.
+      :class:`~pskc.encryption.Encryption` instance that handles PSKC file
+      encryption.
 
    .. attribute:: mac
 
-      Instance of the :class:`pskc.mac.MAC` class that handles integrity
-      checking.
+      :class:`~pskc.mac.MAC` instance that handles integrity checking.
 
 
 Examining keys
@@ -53,15 +60,27 @@ Examining keys
 
 .. module:: pskc.key
 
-The :attr:`pskc.PSKC.keys` attribute provides access to the keys contained in
-the PSKC file. Instances of the :class:`Key` class provide access to a number
-of attributes that provide information on the transmitted keys::
+The :attr:`~pskc.PSKC.keys` attribute of a :class:`~pskc.PSKC` instance
+provides access to a list of keys contained in the PSKC file. :class:`Key`
+instances provide access to a number of attributes that provide information
+on the transmitted keys::
 
-   pskc = PSKC('somefile.pskcxml')
-   first_key = pskc.keys[0]
+    >>> pskc = PSKC('somefile.pskcxml')
+    >>> first_key = pskc.keys[0]
+    >>> first_key.id
+    'some-id'
+    >>> first_key.algorithm
+    'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+    >>> first_key.secret
+    'SOME_SECRET_VALUE'
 
 Attribute values will be ``None`` if it the value is not present in the PSKC
-file.
+file. If any of the :attr:`~pskc.key.Key.secret`,
+:attr:`~pskc.key.Key.counter`, :attr:`~pskc.key.Key.time_offset`,
+:attr:`~pskc.key.Key.time_interval` or :attr:`~pskc.key.Key.time_drift`
+values are accessed while they are encrypted and decryption is unsuccessful a
+:exc:`~pskc.exceptions.DecryptionError` exception is raised.
+
 
 .. class:: Key()
 
@@ -91,27 +110,33 @@ file.
 
       The binary value of the transported secret key. If the key information
       is encrypted in the PSKC file it is transparently decrypted if
-      possible.
+      possible. Accessing the value may raise
+      :exc:`~pskc.exceptions.DecryptionError` if decryption fails.
 
    .. attribute:: counter
 
-      The event counter for event-based OTP algorithms.
+      The event counter for event-based OTP algorithms. Will also be
+      transparently decrypted and may also raise
+      :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: time_offset
 
       The time offset offset for time-based OTP algorithms. If time intervals
       are used it carries the number of time intervals passed from an
-      algorithm-dependent start point.
+      algorithm-dependent start point. Will also be transparently decrypted
+      and may also raise :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: time_interval
 
       The time interval in seconds for time-based OTP algorithms (usually
-      ``30`` or ``60``).
+      ``30`` or ``60``). Will also be transparently decrypted and may also
+      raise :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: time_drift
 
       For time-based OTP algorithms this contains the device clock drift in
-      number of intervals.
+      number of intervals. Will also be transparently decrypted and may also
+      raise :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: issuer
 
@@ -155,8 +180,8 @@ file.
    .. attribute:: serial
 
       The serial number of the device to which the key is provisioned.
-      Together with :attr:`manufacturer` (and perhaps :attr:`issue_no`)
-      this should uniquely identify the device.
+      Together with :attr:`manufacturer` (and possibly :attr:`issue_no`) this
+      should uniquely identify the device.
 
    .. attribute:: model
 
@@ -243,11 +268,12 @@ file.
 
    .. attribute:: policy
 
-      Instance of :class:`pskc.policy.Policy` that provides key and PIN
-      policy information. See :doc:`policy`.
+      :class:`~pskc.policy.Policy` instance that provides key and PIN policy
+      information. See :doc:`policy`.
 
    .. function:: check()
 
       Check if any MACs in the key data embedded in the PSKC file are valid.
-      Will return a boolean or ``None`` if no MACs are defined for the key.
-      See :doc:`mac`.
+      This will return None if there is no MAC to be checked. It will return
+      True if all the MACs match. If any MAC fails a
+      :exc:`~pskc.exceptions.DecryptionError` exception is raised.

@@ -11,8 +11,9 @@ stored within the PSKC file.
 
    .. attribute:: algorithm
 
-      The name of the MAC algorithm to use (currently only ``HMAC_SHA1`` is
-      supported).
+      The name of the MAC algorithm to use (currently ``HMAC-MD5``,
+      ``HMAC-SHA1``, ``HMAC-SHA224``, ``HMAC-SHA256``, ``HMAC-SHA384`` and
+      ``HMAC-SHA512`` are supported).
 
    .. attribute:: key
 
@@ -21,9 +22,13 @@ stored within the PSKC file.
       the PSKC encryption key, so the PSKC file should be decrypted first
       (see :doc:`encryption`).
 
-Once the PSKC encryption key has been set up key values can be checked using
-the :func:`pskc.key.Key.check` method::
 
-   pskc = PSKC('somefile.pskcxml')
-   pskc.encryption.derive_key('qwerty')
-   all(key.check() for key in pskc.keys)
+Once the PSKC encryption key has been set up key values can be explicitly
+checked using the :func:`~pskc.key.Key.check` method::
+
+   >>> pskc = PSKC('somefile.pskcxml')
+   >>> pskc.encryption.derive_key('qwerty')
+   >>> pskc.mac.algorithm
+   'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
+   >>> all(key.check() for key in pskc.keys)
+   True

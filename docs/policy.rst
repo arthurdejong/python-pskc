@@ -6,7 +6,12 @@ Key usage policy
 The PSKC format allows for specifying `key and pin usage policy <https://tools.ietf.org/html/rfc6030#section-5>`__.
 
 Instances of the :class:`Policy` class provide attributes that describe
-limits that are placed on key usage and requirements for key PIN protection.
+limits that are placed on key usage and requirements for key PIN protection::
+
+   >>> key = pskc.keys[0]
+   >>> key.policy.may_use(key.policy.KEY_USE_OTP)
+   True
+
 
 .. class:: Policy
 
@@ -43,7 +48,7 @@ limits that are placed on key usage and requirements for key PIN protection.
 
    .. attribute:: pin_key
 
-      Instance of the :class:`pskc.key.Key` (if any) that contains the value
+      Instance of the :class:`~pskc.key.Key` (if any) that contains the value
       of the PIN referenced by :attr:`pin_key_id`.
 
    .. attribute:: pin
@@ -74,7 +79,7 @@ limits that are placed on key usage and requirements for key PIN protection.
 
       The encoding of the PIN which is one of ``DECIMAL``, ``HEXADECIMAL``,
       ``ALPHANUMERIC``, ``BASE64``, or ``BINARY`` (see
-      :attr:`pskc.key.Key.challenge_encoding`).
+      :attr:`~pskc.key.Key.challenge_encoding`).
 
    .. attribute:: unknown_policy_elements
 
@@ -92,7 +97,7 @@ limits that are placed on key usage and requirements for key PIN protection.
 .. _key-use-constants:
 
 The :class:`Policy` class provides the following key use constants (see
-:attr:`Policy.key_usage` and :func:`Policy.may_use`):
+:attr:`~Policy.key_usage` and :func:`~Policy.may_use`):
 
    .. autoattribute:: Policy.KEY_USE_OTP
 
@@ -147,7 +152,7 @@ The :class:`Policy` class provides the following key use constants (see
 .. _pin-use-constants:
 
 The following constants for PIN use are defined  in the :class:`Policy`
-class (see :attr:`Policy.pin_usage`):
+class (see :attr:`~Policy.pin_usage`):
 
    .. autoattribute:: Policy.PIN_USE_LOCAL
 

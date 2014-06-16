@@ -12,6 +12,7 @@ Contents
    encryption
    mac
    policy
+   exceptions
 
 
 Security considerations

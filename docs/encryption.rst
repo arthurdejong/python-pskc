@@ -3,25 +3,30 @@ PSKC encryption
 
 .. module:: pskc.encryption
 
-The keys (and some other data) in PSKC files can be encrypted. Encryption of
-embedded data is defined in a PSKC file with either pre-shared keys,
-passphrase-based keys or asymmetric keys (asymmetric keys are currently
-unimplemented).
+The keys (and some embedded data) in PSKC files can be encrypted with either
+pre-shared keys, passphrase-based keys or asymmetric keys (asymmetric keys
+are currently unimplemented).
 
 Embedded PSKC encryption is handled inside the :class:`Encryption` class that
-defines encryption key and means of deriving keys. It is accessed from
-:attr:`pskc.PSKC.encryption`::
+defines encryption key and means of deriving keys. It is accessed from the
+:attr:`~pskc.PSKC.encryption` attribute of a :class:`~pskc.PSKC` instance::
 
-   from pskc import PSKC
-   pskc = PSKC('somefile.pskcxml')
-   pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+   >>> from pskc import PSKC
+   >>> pskc = PSKC('somefile.pskcxml')
+   >>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
 
 or::
 
-   pskc.encryption.derive_key('qwerty')
+   >>> pskc.encryption.derive_key('qwerty')
 
 Once the encryption key has been set up any encrypted key values from the
 PSKC file are available transparently.
+
+If an incorrect key has been set up, only upon accessing encrypted
+information (e.g. the :attr:`~pskc.key.Key.secret` attribute of a
+:class:`~pskc.key.Key` instance) a :exc:`~pskc.exceptions.DecryptionError`
+exception will be raised.
+
 
 .. class:: Encryption
 
@@ -52,3 +57,6 @@ PSKC file are available transparently.
 
       Derive a key from the supplied password and information in the PSKC
       file (generally algorithm, salt, etc.).
+
+      This function may raise a :exc:`~pskc.exceptions.KeyDerivationError`
+      exception if key derivation fails for some reason.

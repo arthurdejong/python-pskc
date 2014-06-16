@@ -3,9 +3,9 @@ Python PSKC module
 
 A Python module to handle Portable Symmetric Key Container (PSKC) files as
 defined in `RFC 6030 <https://tools.ietf.org/html/rfc6030>`_. PSKC files are
-used to transport and provision symmetric keys and key related meta data to
-different types of crypto modules. The format is commonly used for one-time
-password tokens or other authentication devices.
+used to transport and provision symmetric keys and key meta data to different
+types of crypto modules. The format is commonly used for one-time password
+tokens or other authentication devices.
 
 The goal of this module is mainly to provide parsing of PSKC files in order
 to extract secret keys for use in an OTP authentication system. At a later
