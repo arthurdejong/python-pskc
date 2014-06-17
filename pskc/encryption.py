@@ -90,8 +90,8 @@ class EncryptedValue(object):
             cipher = DES3.new(key, DES3.MODE_CBC, iv)
             return unpad(cipher.decrypt(ciphertext))
         elif self.algorithm.endswith('#kw-aes128') or \
-             self.algorithm.endswith('#kw-aes192') or \
-             self.algorithm.endswith('#kw-aes256'):
+                self.algorithm.endswith('#kw-aes192') or \
+                self.algorithm.endswith('#kw-aes256'):
             from pskc.aeskw import unwrap
             from Crypto.Cipher import AES
             if len(key) * 8 != int(self.algorithm[-3:]) or \
