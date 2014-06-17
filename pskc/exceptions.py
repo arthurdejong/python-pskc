@@ -23,9 +23,7 @@
 
 class PSKCError(Exception):
     """General top-level exception."""
-
-    def __str__(self):
-        return getattr(self, 'message', '')
+    pass
 
 
 class ParseError(PSKCError):
