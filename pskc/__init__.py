@@ -42,8 +42,6 @@ signatures, asymmetric keys and writing files are on the wishlist (patches
 welcome).
 """
 
-import sys
-
 
 __all__ = ['PSKC', '__version__']
 
