@@ -75,7 +75,7 @@ class PSKC(object):
             from pskc.parse import etree
             try:
                 tree = etree.parse(filename)
-            except:
+            except Exception:
                 raise ParseError('Error parsing XML')
             self.parse(tree.getroot())
         else:
