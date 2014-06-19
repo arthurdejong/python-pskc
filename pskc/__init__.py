@@ -47,7 +47,7 @@ __all__ = ['PSKC', '__version__']
 
 
 # the version number of the library
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 class PSKC(object):

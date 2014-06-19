@@ -34,7 +34,8 @@ Importing data from a PSKC file can be done by instantiating a
 
       The PSKC format version used. Only version ``1.0`` is currently
       specified in
-      `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-1.2>`__.
+      `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-1.2>`__
+      and supported.
 
    .. attribute:: id
 

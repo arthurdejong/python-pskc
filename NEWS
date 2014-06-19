@@ -1,1 +1,24 @@
+changes from 0.1 to 0.2
+-----------------------
+
+* raise exceptions on parsing, decryption and other problems
+* support Python 2.6 and multiple ElementTree implementations (lxml is
+  required when using Python 2.6)
+* support more encryption algorithms (AES128-CBC, AES192-CBC, AES256-CBC,
+  TripleDES-CBC, KW-AES128, KW-AES192, KW-AES256 and KW-TripleDES) and be
+  more lenient in accepting algorithm URIs
+* support all HMAC algorithms that Python's hashlib module has hash functions
+  for (HMAC-MD5, HMAC-SHA1, HMAC-SHA224, HMAC-SHA256, HMAC-SHA384 and
+  HMAC-SHA512)
+* support PRF attribute of PBKDF2 algorithm
+* support creating PSKC objects and keys
+* when accessing values for which a MAC is present, a MAC failure will raise
+  an exception (DecryptionError)
+* many code cleanups
+* improve test coverage
+
+
+changes in 0.1
+--------------
+
 Initial release

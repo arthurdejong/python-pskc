@@ -1,3 +1,352 @@
+2014-06-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [62c9af4] pskc/__init__.py: Only catch normal exceptions
+
+2014-06-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [deb57d7] pskc/__init__.py: Remove unused import
+
+2014-06-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [178ef1c] pskc/encryption.py: PEP8 fix
+
+2014-06-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7435552] pskc/exceptions.py: Remove __str__ from exception
+
+	  The message property has been deprecated as of Python 2.6 and
+	  printing the first argument is the default.
+
+2014-06-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f084735] README, docs/encryption.rst, docs/exceptions.rst,
+	  docs/index.rst, docs/mac.rst, docs/policy.rst, docs/usage.rst:
+	  Update documentation
+
+	  This updates the documentation with the current API, adding
+	  information on exceptions raised, HMAC algorithms supported and
+	  changes to the MAC checking.
+
+	  This also includes some editorial changes to some of the text and
+	  making references shorter by not including the full package path.
+
+2014-06-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d84e761] pskc/parse.py: Simplify finding ElementTree
+	  implementation
+
+	  These are the only ElementTree implementations that have been
+	  tested to provide the needed functionality (mostly namespaces).
+
+2014-06-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [50b429d] pskc/key.py, pskc/parse.py, pskc/policy.py: Refactor
+	  out some functions to parse
+
+	  This introduces the getint() and getbool() functions in parse
+	  to avoid some code duplication.
+
+2014-06-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9a16ce4] pskc/key.py, tests/test_misc.doctest: Add support for
+	  setting secret
+
+	  This supports setters for the secret, counter, time_offset,
+	  time_interval and time_drift properties. Setting these values
+	  stores the values unencrypted internally.
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1b9ee9f] pskc/encryption.py: Support PBKDF2 PRF argument
+
+	  Support specifying a pseudorandom function for PBKDF2 key
+	  derivation. It currently supports any HMAC that the MAC checking
+	  also supports.
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [79b9a7d] pskc/mac.py: Provide a get_hmac() function
+
+	  Refactor the functionality to find an HMAC function into a
+	  separate function.
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1417d4a] tests/invalid-mac-algorithm.pskcxml,
+	  tests/invalid-mac-value.pskcxml,
+	  tests/invalid-no-mac-method.pskcxml, tests/test_invalid.doctest:
+	  Add tests for missing or invalid MAC
+
+	  This tests for incomplete, unknown or invalid MACs in PSKC files.
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9d8aae0] pskc/key.py, pskc/mac.py: Raise exception when MAC
+	  validation fails
+
+	  This changes the way the check() function works to raise an
+	  exception when the MAC is not correct. The MAC is also now always
+	  checked before attempting decryption.
+
+	  This also renames the internal DataType.value property to a
+	  get_value() method for clarity.
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [699ecf8] pskc/encryption.py: Handle missing MAC algorithm properly
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [01e102b] tests/aes128-cbc.pskcxml, tests/aes192-cbc.pskcxml,
+	  tests/aes256-cbc.pskcxml, tests/test_encryption.doctest,
+	  tests/tripledes-cbc.pskcxml: Add MAC tests to all CBC encrypted
+	  keys
+
+	  This adds hmac-sha224, hmac-sha256, hmac-sha384 and hmac-sha512
+	  tests for values that are encrypted using CBC block cypher modes.
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [59e790e] pskc/mac.py: Automatically support all MACs in hashlib
+
+	  This uses the name of the hash to automatically get the correct
+	  hash object from Python's hashlib.
+
+2014-06-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [566e447] pskc/__init__.py, pskc/parse.py, setup.py: Support
+	  various ElementTree implementations
+
+	  When using a recent enough lxml, even Python 2.6 should work
+	  now. The most important requirement is that the findall()
+	  function supports the namespaces argument.
+
+	  This also now catches all exceptions when parsing the PSKC file
+	  fails and wraps it in ParseError because various implementations
+	  raise different exceptions, even between versions (Python 2.6's
+	  ElementTree raises ExpatError, lxml raises XMLSyntaxError).
+
+2014-06-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5d60ee2] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
+	  pskc/mac.py, pskc/parse.py, pskc/policy.py: Have parse module
+	  provide find() functions
+
+	  This changes the parse module functions to better match the
+	  ElementTree API and extends it with findint(), findtime()
+	  and findbin().
+
+	  It also passes the namespaces to all calls that require it
+	  without duplicating this throughout the normal code.
+
+2014-06-11  Arthur de Jong <arthur@west.nl>
+
+	* [6a34c01] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
+	  pskc/mac.py, pskc/policy.py: Use get() instead of attrib.get()
+	  (shorter)
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4d92b93] pskc/encryption.py, tests/kw-tripledes.pskcxml,
+	  tests/test_encryption.doctest: Support kw-tripledes decryption
+
+	  This adds support for key unwrapping using the RFC 3217 Triple
+	  DES key wrap algorithm if the PSKC file uses this.
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fd71f01] pskc/tripledeskw.py, tests/test_tripledeskw.doctest:
+	  Implement RFC 3217 Triple DES key wrapping
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f639318] tests/test_minimal.doctest, tests/test_misc.doctest:
+	  Merge test_minimal into test_misc
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1e7f861] tests/draft-keyprov-actividentity-3des.pskcxml,
+	  tests/test_draft_keyprov.doctest: Add an ActivIdentity-3DES test
+
+	  The test is taken from
+	  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to fit
+	  the schema as described in RFC 6030.
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b7cb928] tests/draft-keyprov-securid-aes-counter.pskcxml,
+	  tests/test_draft_keyprov.doctest: Add an SecurID-AES-Counter test
+
+	  The test is taken from
+	  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to be
+	  valid XML and to fit the schema as described in RFC 6030.
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [427319f] tests/draft-keyprov-totp.pskcxml,
+	  tests/test_draft_keyprov.doctest: Add an TOTP test
+
+	  The test is taken from
+	  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to fit
+	  the schema as described in RFC 6030.
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ba49d09] tests/draft-keyprov-ocra.pskcxml,
+	  tests/test_draft_keyprov.doctest: Add an OCRA test
+
+	  The test is taken from
+	  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to fit
+	  the schema as described in RFC 6030.
+
+2014-05-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0a66ede] tests/odd-namespace.pskcxml, tests/test_misc.doctest:
+	  Add a test for an odd namespace
+
+2014-05-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [287afa7] pskc/encryption.py, tests/kw-aes128.pskcxml,
+	  tests/kw-aes192.pskcxml, tests/kw-aes256.pskcxml,
+	  tests/test_encryption.doctest: Support kw-aes128, kw-aes192
+	  and kw-aes256
+
+	  This adds support for key unwrapping using the RFC 3394 or RFC
+	  5649 algorithm if the PSKC file uses this.
+
+2014-05-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [99ba287] pskc/aeskw.py, tests/test_aeskw.doctest: Implement
+	  padding as specified in RFC 5649
+
+	  This adds a pad argument with which padding can be forced or
+	  disabled.
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ebf8945] pskc/aeskw.py, tests/test_aeskw.doctest: Allow speciying
+	  an initial value for key wrapping
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5720fe5] pskc/aeskw.py, pskc/exceptions.py,
+	  tests/test_aeskw.doctest: Provide an RFC 3394 AES key wrapping
+	  algorithm
+
+	  This also introduces an EncryptionError exception.
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7164d89] README, docs/usage.rst, pskc/__init__.py,
+	  tests/rfc6030-figure10.pskcxml, tests/rfc6030-figure2.pskcxml,
+	  tests/rfc6030-figure3.pskcxml, tests/rfc6030-figure4.pskcxml,
+	  tests/rfc6030-figure5.pskcxml, tests/rfc6030-figure6.pskcxml,
+	  tests/rfc6030-figure7.pskcxml, tests/test_rfc6030.doctest:
+	  Always put a space between RFC and number
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ccebb69] pskc/encryption.py, tests/test_encryption.doctest,
+	  tests/tripledes-cbc.pskcxml: Support Tripple DES decryption
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a11f31f] tests/test_invalid.doctest: Add tests for key derivation
+	  problems
+
+	  This tests for unknown or missing algorithms and unknown
+	  derivation parameters.
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0738c94] pskc/encryption.py, pskc/exceptions.py: Raise exception
+	  when key derivation fails
+
+	  This also renames the internal function that implements the
+	  derivation.
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [76ef42b] pskc/encryption.py, pskc/exceptions.py,
+	  tests/invalid-encryption.pskcxml, tests/test_invalid.doctest:
+	  Add test for missing key encryption algorithm
+
+	  This also introduces a toplevel PSKCError exception that all
+	  exceptions have as parent.
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7f26dc6] tests/aes128-cbc.pskcxml, tests/aes192-cbc.pskcxml,
+	  tests/aes256-cbc.pskcxml, tests/test_encryption.doctest: Add
+	  test for all AES-CBC encryption schemes
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [28f2c1c] pskc/encryption.py: Support more AES-CBC encryption
+	  schemes
+
+	  This also moves the crypto imports to the places where they are
+	  used to avoid a depenency on pycrypto if no encryption is used.
+
+2014-05-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [678b127] tests/test_minimal.doctest: Add test for missing
+	  secret value
+
+2014-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bef2f7d] pskc/__init__.py, pskc/key.py,
+	  tests/test_minimal.doctest: Add a function for adding a new key
+
+2014-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [46f5749] pskc/__init__.py: Consistency improvement
+
+2014-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [83f5a4b] pskc/__init__.py, tests/test_minimal.doctest: Support
+	  creating an empty PSKC instance
+
+2014-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [820c83c] pskc/encryption.py, pskc/mac.py: Be more lenient in
+	  accepting algorithms
+
+2014-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [02bde47] pskc/key.py: Code simplification
+
+2014-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b62fec8] pskc/encryption.py, pskc/exceptions.py,
+	  tests/invalid-encryption.pskcxml, tests/test_invalid.doctest,
+	  tests/test_rfc6030.doctest: Raise an exception if decryption fails
+
+2014-05-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7bc2e6b] pskc/encryption.py: Make decryption code better readable
+
+2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [714f387] setup.cfg, tests/invalid-notxml.pskcxml,
+	  tests/invalid-wrongelement.pskcxml,
+	  tests/invalid-wrongversion.pskcxml, tests/test_invalid.doctest:
+	  Add tests for invalid PSKC files
+
+2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [803d24c] pskc/__init__.py, pskc/exceptions.py: Raise exceptions
+	  on some parsing problems
+
+2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8c37e26] setup.py: Fix install_requires
+
+2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8e1729e] ChangeLog, MANIFEST.in, NEWS: Get files ready for
+	  0.1 release
+
 2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [15ca643] README, pskc/__init__.py, tests/rfc6030-figure10.pskc,
