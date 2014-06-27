@@ -102,6 +102,14 @@ class PSKC(object):
         for key_package in findall(container, 'pskc:KeyPackage'):
             self.keys.append(Key(self, key_package))
 
+    def make_xml(self):
+        from pskc.parse import mk_elem
+        container = mk_elem('pskc:KeyContainer', Version=self.version,
+                            Id=self.id)
+        for key in self.keys:
+            key.make_xml(container)
+        return container
+
     def add_key(self, **kwargs):
         """Create a new key instance for the PSKC file.
 
