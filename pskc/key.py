@@ -34,13 +34,13 @@ class DataType(object):
     This class is meant to be subclassed to provide typed access to stored
     values. Instances of this class provide the following attributes:
 
-      plain_value: raw unencrypted value if present (possibly base64 encoded)
+      value: unencrypted value if present
       encrypted_value: reference to an EncryptedValue instance
       value_mac: reference to a ValueMAC instance
     """
 
     def __init__(self, key, element=None):
-        self.plain_value = None
+        self.value = None
         self.encrypted_value = EncryptedValue(key.pskc.encryption)
         self.value_mac = ValueMAC(key.pskc.mac)
         self.parse(element)
@@ -54,13 +54,24 @@ class DataType(object):
         from pskc.parse import find, findtext
         if element is None:
             return
-        self.plain_value = findtext(element, 'pskc:PlainValue')
+        value = findtext(element, 'pskc:PlainValue')
+        if value is not None:
+            self.value = self.from_text(value)
         self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
         self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
+    def get_value(self):
+        """Provide the raw binary value."""
+        if self.value is not None:
+            return self.value
+        if self.encrypted_value.cipher_value:
+            # check MAC and decrypt
+            self.check()
+            return self.from_bin(self.encrypted_value.decrypt())
+
     def set_value(self, value):
-        """Save the plain value."""
-        self.plain_value = self.to_plain(value)
+        """Set the unencrypted value."""
+        self.value = value
         self.encrypted_value.cipher_value = None
 
     def check(self):
@@ -72,45 +83,28 @@ class DataType(object):
 class BinaryDataType(DataType):
     """Subclass of DataType for binary data (e.g. keys)."""
 
-    def get_value(self):
-        """Provide the raw binary value."""
-        # plain value is base64 encoded
-        if self.plain_value is not None:
-            return base64.b64decode(self.plain_value)
-        # check MAC if present
-        self.check()
-        # encrypted value is in correct format
-        return self.encrypted_value.decrypt()
+    def from_text(self, value):
+        """Convert the plain value to native representation."""
+        return base64.b64decode(value)
 
-    def to_plain(self, value):
-        """Convert the value to an unencrypted string representation."""
-        if value:
-            return base64.b64encode(value)
+    def from_bin(self, value):
+        """Convert the unencrypted binary to native representation."""
+        return value
 
 
 class IntegerDataType(DataType):
     """Subclass of DataType for integer types (e.g. counters)."""
 
-    def get_value(self):
-        """Provide the raw integer value."""
-        # plain value is a string representation of the number
-        if self.plain_value:
-            return int(self.plain_value)
-        # check MAC if present
-        self.check()
-        # decrypted value is big endian encoded
-        value = self.encrypted_value.decrypt()
-        if value is not None:
-            # Python3 has int.from_bytes(value, byteorder='big')
-            v = 0
-            for x in value:
-                v = (v << 8) + ord(x)
-            return v
+    def from_text(self, value):
+        """Convert the plain value to native representation."""
+        return int(value)
 
-    def to_plain(self, value):
-        """Convert the value to an unencrypted string representation."""
-        if value not in (None, ''):
-            return str(value)
+    def from_bin(self, value):
+        """Convert the unencrypted binary to native representation."""
+        result = 0
+        for x in value:
+            result = (result << 8) + ord(x)
+        return result
 
 
 class Key(object):
