@@ -1,0 +1,143 @@
+test_write.doctest - tests for writing PSKC files
+
+Copyright (C) 2014 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+>>> import datetime
+>>> import sys
+>>> import tempfile
+>>> from dateutil.tz import tzutc
+>>> utc = tzutc()
+
+>>> from pskc import PSKC
+
+
+Build a PSKC structure.
+
+>>> pskc = PSKC()
+
+
+Add a key with all attributes set.
+
+>>> key = pskc.add_key(id='456', manufacturer='Manufacturer')
+>>> key.id = '123'
+>>> key.serial = '987654321'
+>>> key.model = 'Model'
+>>> key.issue_no = 2
+>>> key.start_date = datetime.datetime(2006, 5, 1, 0, 0, tzinfo=utc)
+>>> key.expiry_date = datetime.datetime(2014, 5, 31, 0, 0, tzinfo=utc)
+>>> key.device_userid = 'uid=arthur, dc=arthurdejong, dc=org'
+>>> key.crypto_module = 'CyrptoId'
+>>> key.algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:totp'
+>>> key.issuer = 'Issuer'
+>>> key.key_profile = 'key profile id'
+>>> key.key_reference = 'reference to some key'
+>>> key.friendly_name = 'a friendly key'
+>>> key.key_userid = 'cn=Arthur de Jong, dc=arthurdejong, dc=org'
+>>> key.algorithm_suite = 'Clubs'
+>>> key.challenge_encoding = 'DECIMAL'
+>>> key.challenge_min_length = 6
+>>> key.challenge_max_length = 8
+>>> key.challenge_check = True
+>>> key.response_encoding = 'DECIMAL'
+>>> key.response_length = 8
+>>> key.response_check = False
+>>> key.counter = 0
+>>> key.secret = '4e1790ba272406ba309c5a31'.decode('hex')
+
+
+Add policy information and a PIN.
+
+>>> key.policy.key_usage.append('OTP')
+>>> key.policy.key_usage.append(key.policy.KEY_USE_VERIFY)
+>>> key.policy.start_date = datetime.datetime(2008, 5, 1, 0, 0, tzinfo=utc)
+>>> key.policy.expiry_date = datetime.datetime(2012, 6, 13, 0, 0, tzinfo=utc)
+>>> key.policy.number_of_transactions = 42
+>>> key.policy.pin_key_id = 'pinID'
+>>> key.policy.pin_usage = 'Local'
+>>> key.policy.pin_max_failed_attemtps = 3
+>>> key.policy.pin_min_length = 4
+>>> key.policy.pin_max_length = 4
+>>> key.policy.pin_encoding = 'DECIMAL'
+>>> pin_key = pskc.add_key(id='pinID', secret='1234',
+...     algorithm='urn:ietf:params:xml:ns:keyprov:pskc:pin',
+...     response_encoding='DECIMAL', response_length=4)
+
+
+Write the PSKC file (use temporary file to test passing file name as
+argument).
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc.write(f.name)
+>>> sys.stdout.write(open(f.name, 'rb').read())
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>Manufacturer</pskc:Manufacturer>
+   <pskc:SerialNo>987654321</pskc:SerialNo>
+   <pskc:Model>Model</pskc:Model>
+   <pskc:IssueNo>2</pskc:IssueNo>
+   <pskc:StartDate>2006-05-01T00:00:00Z</pskc:StartDate>
+   <pskc:ExpiryDate>2014-05-31T00:00:00Z</pskc:ExpiryDate>
+   <pskc:UserId>uid=arthur, dc=arthurdejong, dc=org</pskc:UserId>
+  </pskc:DeviceInfo>
+  <pskc:CryptoModuleInfo>
+   <pskc:Id>CyrptoId</pskc:Id>
+  </pskc:CryptoModuleInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:totp" Id="123">
+   <pskc:Issuer>Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:Suite>Clubs</pskc:Suite>
+    <pskc:ChallengeFormat CheckDigits="true" Encoding="DECIMAL" Max="8" Min="6"/>
+    <pskc:ResponseFormat CheckDigits="false" Encoding="DECIMAL" Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:KeyProfileId>key profile id</pskc:KeyProfileId>
+   <pskc:KeyReference>reference to some key</pskc:KeyReference>
+   <pskc:FriendlyName>a friendly key</pskc:FriendlyName>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>TheQuickBrownFox</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>0</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+   <pskc:UserId>cn=Arthur de Jong, dc=arthurdejong, dc=org</pskc:UserId>
+   <pskc:Policy>
+    <pskc:StartDate>2008-05-01T00:00:00Z</pskc:StartDate>
+    <pskc:ExpiryDate>2012-06-13T00:00:00Z</pskc:ExpiryDate>
+    <pskc:PINPolicy MaxFailedAttempts="3" MaxLength="4" MinLength="4" PINEncoding="DECIMAL" PINKeyId="pinID" PINUsageMode="Local"/>
+    <pskc:KeyUsage>OTP</pskc:KeyUsage>
+    <pskc:KeyUsage>Verify</pskc:KeyUsage>
+    <pskc:NumberOfTransactions>42</pskc:NumberOfTransactions>
+   </pskc:Policy>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:pin" Id="pinID">
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="4"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNA==</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
