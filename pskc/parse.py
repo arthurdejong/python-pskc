@@ -45,6 +45,11 @@ namespaces = dict(
 )
 
 
+# register the namespaces so the correct short names will be used
+for ns, namespace in namespaces.items():
+    etree.register_namespace(ns, namespace)
+
+
 def findall(tree, match):
     """Find a child element (or None)."""
     return tree.findall(match, namespaces=namespaces)
@@ -100,3 +105,46 @@ def getbool(tree, attribute):
     value = tree.get(attribute)
     if value:
         return value.lower() == 'true'
+
+
+def _format(value):
+    import datetime
+    if isinstance(value, datetime.datetime):
+        value = value.isoformat()
+        if value.endswith('+00:00'):
+            value = value[:-6] + 'Z'
+        return value
+    elif value is True:
+        return 'true'
+    elif value is False:
+        return 'false'
+    return str(value)
+
+
+def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
+    """Add element as a child of parent."""
+    # special-case the top-level element
+    if tag is None:
+        tag = parent
+        parent = None
+        empty = True
+    # don't create empty elements
+    if not empty and text is None and \
+       all(x is None for x in kwargs.itervalues()):
+        return
+    # replace namespace identifier with URL
+    if ':' in tag:
+        ns, name = tag.split(':', 1)
+        tag = '{%s}%s' % (namespaces[ns], name)
+    if parent is None:
+        element = etree.Element(tag)
+    else:
+        element = etree.SubElement(parent, tag)
+    # set text of element
+    if text is not None:
+        element.text = _format(text)
+    # set kwargs as attributes
+    for k, v in kwargs.iteritems():
+        if v is not None:
+            element.set(k, _format(v))
+    return element
