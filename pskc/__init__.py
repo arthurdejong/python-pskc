@@ -124,3 +124,12 @@ class PSKC(object):
                 raise AttributeError()
             setattr(key, k, v)
         return key
+
+    def write(self, filename):
+        """Write the PSKC file to the provided file."""
+        from pskc.parse import tostring
+        if hasattr(filename, 'write'):
+            filename.write(tostring(self.make_xml()))
+        else:
+            with open(filename, 'wb') as output:
+                self.write(output)

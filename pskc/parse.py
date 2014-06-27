@@ -148,3 +148,11 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
         if v is not None:
             element.set(k, _format(v))
     return element
+
+
+def tostring(element):
+    """Return a serialised XML document for the element tree."""
+    from xml.dom import minidom
+    xml = etree.tostring(element, encoding='UTF-8')
+    return minidom.parseString(xml).toprettyxml(
+        indent=' ', encoding='UTF-8').strip()
