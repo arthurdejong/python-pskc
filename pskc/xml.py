@@ -175,6 +175,17 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
 def tostring(element):
     """Return a serialised XML document for the element tree."""
     from xml.dom import minidom
+    # if we are using lxml.etree move namespaces to toplevel element
+    if hasattr(element, 'nsmap'):
+        # get all used namespaces
+        nsmap = {}
+        for e in element.iter():
+            nsmap.update(e.nsmap)
+        # replace toplevel element with all namespaces
+        e = etree.Element(element.tag, attrib=element.attrib, nsmap=nsmap)
+        for a in element:
+            e.append(a)
+        element = e
     xml = etree.tostring(element, encoding='UTF-8')
     return minidom.parseString(xml).toprettyxml(
         indent=' ', encoding='UTF-8').strip()
