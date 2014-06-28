@@ -102,6 +102,14 @@ class PSKC(object):
         for key_package in findall(container, 'pskc:KeyPackage'):
             self.keys.append(Key(self, key_package))
 
+    def make_xml(self):
+        from pskc.parse import mk_elem
+        container = mk_elem('pskc:KeyContainer', Version=self.version,
+                            Id=self.id)
+        for key in self.keys:
+            key.make_xml(container)
+        return container
+
     def add_key(self, **kwargs):
         """Create a new key instance for the PSKC file.
 
@@ -116,3 +124,12 @@ class PSKC(object):
                 raise AttributeError()
             setattr(key, k, v)
         return key
+
+    def write(self, filename):
+        """Write the PSKC file to the provided file."""
+        from pskc.parse import tostring
+        if hasattr(filename, 'write'):
+            filename.write(tostring(self.make_xml()))
+        else:
+            with open(filename, 'wb') as output:
+                self.write(output)

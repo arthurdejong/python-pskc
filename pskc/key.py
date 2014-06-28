@@ -60,6 +60,19 @@ class DataType(object):
         self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
         self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
+    def make_xml(self, key, tag):
+        from pskc.parse import find, mk_elem
+        # skip empty values
+        value = self.get_value()
+        if value is None:
+            return
+        # find the data tag and create our tag under it
+        data = find(key, 'pskc:Data')
+        if data is None:
+            data = mk_elem(key, 'pskc:Data', empty=True)
+        element = mk_elem(data, tag, empty=True)
+        mk_elem(element, 'pskc:PlainValue', self.to_text(self.value))
+
     def get_value(self):
         """Provide the raw binary value."""
         if self.value is not None:
@@ -87,6 +100,10 @@ class BinaryDataType(DataType):
         """Convert the plain value to native representation."""
         return base64.b64decode(value)
 
+    def to_text(self, value):
+        """Convert the value to an unencrypted string representation."""
+        return base64.b64encode(value)
+
     def from_bin(self, value):
         """Convert the unencrypted binary to native representation."""
         return value
@@ -98,6 +115,10 @@ class IntegerDataType(DataType):
     def from_text(self, value):
         """Convert the plain value to native representation."""
         return int(value)
+
+    def to_text(self, value):
+        """Convert the value to an unencrypted string representation."""
+        return str(value)
 
     def from_bin(self, value):
         """Convert the unencrypted binary to native representation."""
@@ -255,6 +276,60 @@ class Key(object):
             self.response_check = getbool(response_format, 'CheckDigits')
 
         self.policy.parse(find(key_package, 'pskc:Key/pskc:Policy'))
+
+    def make_xml(self, container):
+        from pskc.parse import mk_elem
+
+        key_package = mk_elem(container, 'pskc:KeyPackage', empty=True)
+
+        if any(x is not None
+               for x in (self.manufacturer, self.serial, self.model,
+                         self.issue_no, self.device_binding, self.start_date,
+                         self.expiry_date, self.device_userid)):
+            device_info = mk_elem(key_package, 'pskc:DeviceInfo', empty=True)
+            mk_elem(device_info, 'pskc:Manufacturer', self.manufacturer)
+            mk_elem(device_info, 'pskc:SerialNo', self.serial)
+            mk_elem(device_info, 'pskc:Model', self.model)
+            mk_elem(device_info, 'pskc:IssueNo', self.issue_no)
+            mk_elem(device_info, 'pskc:DeviceBinding', self.device_binding)
+            mk_elem(device_info, 'pskc:StartDate', self.start_date)
+            mk_elem(device_info, 'pskc:ExpiryDate', self.expiry_date)
+            mk_elem(device_info, 'pskc:UserId', self.device_userid)
+
+        if self.crypto_module is not None:
+            crypto_module = mk_elem(key_package, 'pskc:CryptoModuleInfo',
+                                    empty=True)
+            mk_elem(crypto_module, 'pskc:Id', self.crypto_module)
+
+        key = mk_elem(key_package, 'pskc:Key', empty=True, Id=self.id,
+                      Algorithm=self.algorithm, )
+        mk_elem(key, 'pskc:Issuer', self.issuer)
+
+        if any((self.algorithm_suite, self.challenge_encoding,
+                self.response_encoding, self.response_length)):
+            parameters = mk_elem(key, 'pskc:AlgorithmParameters', empty=True)
+            mk_elem(parameters, 'pskc:Suite', self.algorithm_suite)
+            mk_elem(parameters, 'pskc:ChallengeFormat',
+                    Encoding=self.challenge_encoding,
+                    Min=self.challenge_min_length,
+                    Max=self.challenge_max_length,
+                    CheckDigits=self.challenge_check)
+            mk_elem(parameters, 'pskc:ResponseFormat',
+                    Encoding=self.response_encoding,
+                    Length=self.response_length,
+                    CheckDigits=self.response_check)
+
+        mk_elem(key, 'pskc:KeyProfileId', self.key_profile)
+        mk_elem(key, 'pskc:KeyReference', self.key_reference)
+        mk_elem(key, 'pskc:FriendlyName', self.friendly_name)
+        self._secret.make_xml(key, 'pskc:Secret')
+        self._counter.make_xml(key, 'pskc:Counter')
+        self._time_offset.make_xml(key, 'pskc:Time')
+        self._time_interval.make_xml(key, 'pskc:TimeInterval')
+        self._time_drift.make_xml(key, 'pskc:TimeDrift')
+        mk_elem(key, 'pskc:UserId', self.key_userid)
+
+        self.policy.make_xml(key)
 
     secret = property(
         fget=lambda self: self._secret.get_value(),
