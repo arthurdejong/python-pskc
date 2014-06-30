@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 >>> import re
->>> from pskc.tripledeskw import wrap, unwrap
+>>> from pskc.crypto.tripledeskw import wrap, unwrap
 >>> def fromhex(value):
 ...     return re.sub(r'\s', '', value).decode('hex')
 

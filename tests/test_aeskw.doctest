@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
->>> from pskc.aeskw import wrap, unwrap
+>>> from pskc.crypto.aeskw import wrap, unwrap
 
 
 Wrap 128 bits of Key Data with a 128-bit KEK (test vector 4.1 from RFC 3394).

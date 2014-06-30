@@ -92,14 +92,14 @@ class EncryptedValue(object):
         elif self.algorithm.endswith('#kw-aes128') or \
                 self.algorithm.endswith('#kw-aes192') or \
                 self.algorithm.endswith('#kw-aes256'):
-            from pskc.aeskw import unwrap
+            from pskc.crypto.aeskw import unwrap
             from Crypto.Cipher import AES
             if len(key) * 8 != int(self.algorithm[-3:]) or \
                len(key) not in AES.key_size:
                 raise DecryptionError('Invalid key length')
             return unwrap(self.cipher_value, key)
         elif self.algorithm.endswith('#kw-tripledes'):
-            from pskc.tripledeskw import unwrap
+            from pskc.crypto.tripledeskw import unwrap
             from Crypto.Cipher import DES3
             if len(key) not in DES3.key_size:
                 raise DecryptionError('Invalid key length')
