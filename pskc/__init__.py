@@ -72,9 +72,9 @@ class PSKC(object):
         self.mac = MAC(self)
         self.keys = []
         if filename is not None:
-            from pskc.parse import etree
+            from pskc.xml import parse
             try:
-                tree = etree.parse(filename)
+                tree = parse(filename)
             except Exception:
                 raise ParseError('Error parsing XML')
             self.parse(tree.getroot())
@@ -85,7 +85,7 @@ class PSKC(object):
         """Read information from the provided <KeyContainer> tree."""
         from pskc.exceptions import ParseError
         from pskc.key import Key
-        from pskc.parse import find, findall
+        from pskc.xml import find, findall
         if not container.tag.endswith('KeyContainer'):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
@@ -103,7 +103,7 @@ class PSKC(object):
             self.keys.append(Key(self, key_package))
 
     def make_xml(self):
-        from pskc.parse import mk_elem
+        from pskc.xml import mk_elem
         container = mk_elem('pskc:KeyContainer', Version=self.version,
                             Id=self.id)
         for key in self.keys:
@@ -127,7 +127,7 @@ class PSKC(object):
 
     def write(self, filename):
         """Write the PSKC file to the provided file."""
-        from pskc.parse import tostring
+        from pskc.xml import tostring
         if hasattr(filename, 'write'):
             filename.write(tostring(self.make_xml()))
         else:

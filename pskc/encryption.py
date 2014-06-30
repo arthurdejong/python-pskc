@@ -51,7 +51,7 @@ class EncryptedValue(object):
 
     def parse(self, encrypted_value):
         """Read encrypted data from the <EncryptedValue> XML tree."""
-        from pskc.parse import find, findbin
+        from pskc.xml import find, findbin
         if encrypted_value is None:
             return
         encryption_method = find(encrypted_value, 'xenc:EncryptionMethod')
@@ -131,7 +131,7 @@ class KeyDerivation(object):
 
     def parse(self, key_deriviation):
         """Read derivation parameters from a <KeyDerivationMethod> element."""
-        from pskc.parse import find, findint, findbin
+        from pskc.xml import find, findint, findbin
         if key_deriviation is None:
             return
         self.algorithm = key_deriviation.get('Algorithm')
@@ -199,7 +199,7 @@ class Encryption(object):
 
     def parse(self, key_info):
         """Read encryption information from the <EncryptionKey> XML tree."""
-        from pskc.parse import find, findall, findtext
+        from pskc.xml import find, findall, findtext
         if key_info is None:
             return
         self.id = key_info.get('Id')

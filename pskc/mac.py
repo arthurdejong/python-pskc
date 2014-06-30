@@ -57,7 +57,7 @@ class ValueMAC(object):
 
     def parse(self, value_mac):
         """Read MAC information from the <ValueMAC> XML tree."""
-        from pskc.parse import findbin
+        from pskc.xml import findbin
         if value_mac is None:
             return
         self._value_mac = findbin(value_mac, '.')
@@ -100,7 +100,7 @@ class MAC(object):
 
     def parse(self, mac_method):
         """Read MAC information from the <MACMethod> XML tree."""
-        from pskc.parse import find, findtext
+        from pskc.xml import find, findtext
         if mac_method is None:
             return
         self.algorithm = mac_method.get('Algorithm')

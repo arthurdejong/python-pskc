@@ -1,4 +1,4 @@
-# parse.py - module for reading PSKC files
+# xml.py - module for parsing and writing XML for PSKC files
 # coding: utf-8
 #
 # Copyright (C) 2014 Arthur de Jong
@@ -18,10 +18,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-"""Module for parsing PSKC files.
+"""Module for parsing XML in PSKC files.
 
-This module provides some utility functions for parsing PSKC files.
+This module provides some utility functions for parsing XML files.
 """
+
+from __future__ import absolute_import
 
 # try to find a usable ElementTree module
 try:
@@ -48,6 +50,11 @@ namespaces = dict(
 # register the namespaces so the correct short names will be used
 for ns, namespace in namespaces.items():
     etree.register_namespace(ns, namespace)
+
+
+def parse(source):
+    """Parse the provided file and return an element tree."""
+    return etree.parse(source)
 
 
 def findall(tree, match):
