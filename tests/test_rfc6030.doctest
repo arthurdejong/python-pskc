@@ -1,6 +1,6 @@
 test_rfc6030.doctest - test for examples from RFC 6030
 
-Copyright (C) 2014 Arthur de Jong
+Copyright (C) 2014-2015 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
 >>> from pskc import PSKC
 
 
@@ -25,7 +32,7 @@ This tests Figure 2 from RFC 6030. It is a basic key container example with a
 simple plain text secret key.
 
 >>> pskc = PSKC('tests/rfc6030-figure2.pskcxml')
->>> [key.secret for key in pskc.keys]
+>>> [tostr(key.secret) for key in pskc.keys]
 ['1234']
 >>> key = pskc.keys[0]
 >>> key.id
@@ -34,7 +41,7 @@ simple plain text secret key.
 'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
 >>> key.issuer
 'Issuer-A'
->>> key.secret
+>>> tostr(key.secret)
 '1234'
 
 
@@ -63,7 +70,7 @@ cryptographic module and user identification as well as some more parameters.
 'DECIMAL'
 >>> key.response_length
 8
->>> key.secret
+>>> tostr(key.secret)
 '12345678901234567890'
 >>> key.counter
 0
@@ -102,7 +109,7 @@ This tests the key policy properties as illustrated in Figure 5 from RFC
 8
 >>> key.response_encoding
 'DECIMAL'
->>> key1.secret
+>>> tostr(key1.secret)
 '12345678901234567890'
 >>> key1.counter
 0
@@ -134,7 +141,7 @@ False
 4
 >>> key2.response_encoding
 'DECIMAL'
->>> key2.secret
+>>> tostr(key2.secret)
 '1234'
 >>> key1.policy.pin
 '1234'
@@ -154,10 +161,10 @@ Traceback (most recent call last):
 DecryptionError: No key available
 >>> pskc.encryption.key_name
 'Pre-shared-key'
->>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
->>> pskc.mac.key.encode('hex')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(pskc.mac.key)
 '1122334455667788990011223344556677889900'
->>> key.secret.encode('hex')
+>>> b2a_hex(key.secret)
 '3132333435363738393031323334353637383930'
 >>> key.check()
 True
@@ -170,12 +177,12 @@ This tests a derived master key using PBKDF2 as seen in Figure 7 from RFC
 >>> pskc.encryption.key_name
 'My Password 1'
 >>> pskc.encryption.derive_key('qwerty')
->>> pskc.encryption.key.encode('hex')
+>>> b2a_hex(pskc.encryption.key)
 '651e63cd57008476af1ff6422cd02e41'
->>> pskc.mac.key.encode('hex')
+>>> b2a_hex(pskc.mac.key)
 'bdaab8d648e850d25a3289364f7d7eaaf53ce581'
 >>> key = pskc.keys[0]
->>> key.secret
+>>> tostr(key.secret)
 '12345678901234567890'
 >>> key.check()
 True
@@ -196,7 +203,7 @@ True
 True
 >>> all(key.response_encoding == 'DECIMAL' for key in pskc.keys)
 True
->>> all(key.secret == '12345678901234567890' for key in pskc.keys)
+>>> all(key.secret == b'12345678901234567890' for key in pskc.keys)
 True
 >>> all(key.counter == 0 for key in pskc.keys)
 True

@@ -66,7 +66,7 @@ def find(tree, *matches):
     """Find a child element that matches any of the patterns (or None)."""
     for match in matches:
         try:
-            return iter(findall(tree, match)).next()
+            return next(iter(findall(tree, match)))
         except StopIteration:
             pass
 
@@ -138,7 +138,7 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
         empty = True
     # don't create empty elements
     if not empty and text is None and \
-       all(x is None for x in kwargs.itervalues()):
+       all(x is None for x in kwargs.values()):
         return
     # replace namespace identifier with URL
     if ':' in tag:
@@ -152,7 +152,7 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
     if text is not None:
         element.text = _format(text)
     # set kwargs as attributes
-    for k, v in kwargs.iteritems():
+    for k, v in kwargs.items():
         if v is not None:
             element.set(k, _format(v))
     return element

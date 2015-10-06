@@ -18,13 +18,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
+>>> from binascii import b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
 >>> from pskc import PSKC
 
 
 This tests the most minimal valid PSKC file with one empty key.
 
->>> import StringIO
->>> minimal_pskc = StringIO.StringIO('''
+>>> try:
+...     from StringIO import StringIO
+... except ImportError:
+...     from io import StringIO
+>>> minimal_pskc = StringIO('''
 ... <?xml version="1.0"?>
 ... <KeyContainer xmlns="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
 ...   <KeyPackage/>
@@ -75,7 +85,7 @@ Load an PSKC file with an odd namespace.
 '12345678'
 >>> key.issuer
 'Issuer-A'
->>> key.secret
+>>> tostr(key.secret)
 '1234'
 
 
@@ -86,7 +96,7 @@ Load a PSKC file that uses the xenc11 namespace for the PBKDF2 parameters.
 'PassPhrase'
 >>> pskc.encryption.derive_key('3FCA3158035072D6')
 >>> key = pskc.keys[0]
->>> key.secret.encode('hex')
+>>> b2a_hex(key.secret)
 '09fbecfd0bf47910839e2eb05ffa10b95cd0390950ce32ab790583ed134171e0'
 >>> key.check()
 True

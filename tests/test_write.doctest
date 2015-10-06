@@ -1,6 +1,6 @@
 test_write.doctest - tests for writing PSKC files
 
-Copyright (C) 2014 Arthur de Jong
+Copyright (C) 2014-2015 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,15 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
+
+>>> from pskc import PSKC
+
 >>> import datetime
 >>> import sys
 >>> import tempfile
+>>> from binascii import a2b_hex
 >>> from dateutil.tz import tzutc
 >>> utc = tzutc()
-
->>> from pskc import PSKC
 
 
 Build a PSKC structure.
@@ -57,7 +59,7 @@ Add a key with all attributes set.
 >>> key.response_length = 8
 >>> key.response_check = False
 >>> key.counter = 0
->>> key.secret = '4e1790ba272406ba309c5a31'.decode('hex')
+>>> key.secret = a2b_hex('4e1790ba272406ba309c5a31')
 
 
 Add policy information and a PIN.
@@ -83,7 +85,7 @@ argument).
 
 >>> f = tempfile.NamedTemporaryFile()
 >>> pskc.write(f.name)
->>> sys.stdout.write(open(f.name, 'rb').read())
+>>> x = sys.stdout.write(open(f.name, 'r').read())
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
  <pskc:KeyPackage>

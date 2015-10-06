@@ -1,7 +1,7 @@
 # tripledeskw.py - implementation of Triple DES key wrapping
 # coding: utf-8
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,8 @@
 
 """Implement Triple DES key wrapping as described in RFC 3217."""
 
+import binascii
+
 from Crypto import Random
 from Crypto.Cipher import DES3
 from Crypto.Hash import SHA
@@ -32,7 +34,7 @@ def _cms_hash(value):
     return SHA.new(value).digest()[:8]
 
 
-RFC3217_IV = '4adda22c79e82105'.decode('hex')
+RFC3217_IV = binascii.a2b_hex('4adda22c79e82105')
 
 
 def wrap(plaintext, key, iv=None):
@@ -48,7 +50,7 @@ def wrap(plaintext, key, iv=None):
     cipher = DES3.new(key, DES3.MODE_CBC, iv)
     tmp = iv + cipher.encrypt(plaintext + _cms_hash(plaintext))
     cipher = DES3.new(key, DES3.MODE_CBC, RFC3217_IV)
-    return cipher.encrypt(''.join(reversed(tmp)))
+    return cipher.encrypt(tmp[::-1])
 
 
 def unwrap(ciphertext, key):
@@ -59,7 +61,7 @@ def unwrap(ciphertext, key):
     if len(ciphertext) % DES3.block_size != 0:
         raise DecryptionError('Ciphertext length wrong')
     cipher = DES3.new(key, DES3.MODE_CBC, RFC3217_IV)
-    tmp = ''.join(reversed(cipher.decrypt(ciphertext)))
+    tmp = cipher.decrypt(ciphertext)[::-1]
     cipher = DES3.new(key, DES3.MODE_CBC, tmp[:8])
     tmp = cipher.decrypt(tmp[8:])
     if tmp[-8:] == _cms_hash(tmp[:-8]):

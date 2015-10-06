@@ -1,7 +1,7 @@
 # __init__.py - main module
 # coding: utf-8
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,7 @@ The following prints all keys, decrypting using a password:
 >>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
 >>> pskc.encryption.derive_key('qwerty')
 >>> for key in pskc.keys:
-...     print key.serial, key.secret
+...     print('%s %s' % (key.serial, str(key.secret.decode())))
 987654321 12345678901234567890
 
 The module should be able to handle most common PSKC files. Checking embedded

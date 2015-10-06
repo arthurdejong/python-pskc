@@ -1,7 +1,7 @@
 # policy.py - module for handling PSKC policy information
 # coding: utf-8
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -181,4 +181,4 @@ class Policy(object):
         """PIN value referenced by PINKeyId if any."""
         key = self.pin_key
         if key:
-            return key.secret
+            return str(key.secret.decode())

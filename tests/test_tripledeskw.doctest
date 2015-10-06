@@ -1,6 +1,6 @@
 test_tripledeskw.doctest - test keywrap functions
 
-Copyright (C) 2014 Arthur de Jong
+Copyright (C) 2014-2015 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 >>> import re
+>>> from binascii import a2b_hex
 >>> from pskc.crypto.tripledeskw import wrap, unwrap
 >>> def fromhex(value):
-...     return re.sub(r'\s', '', value).decode('hex')
+...     return a2b_hex(re.sub(r'\s', '', value))
 
 
 Example from RFC 3217 section 3.2 wrapping a 192 bit Triple DES key with
@@ -79,7 +80,7 @@ True
 Traceback (most recent call last):
     ...
 DecryptionError: Ciphertext length wrong
->>> unwrap(ciphertext[:-1] + 'A', key)
+>>> unwrap(ciphertext[:-1] + b'A', key)
 Traceback (most recent call last):
     ...
 DecryptionError: CMS key checksum error

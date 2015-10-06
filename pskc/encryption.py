@@ -30,7 +30,7 @@ The encryption key can be derived using the KeyDerivation class.
 
 def unpad(value):
     """Remove padding from the plaintext."""
-    return value[0:-ord(value[-1])]
+    return value[0:-ord(value[-1:])]
 
 
 class EncryptedValue(object):

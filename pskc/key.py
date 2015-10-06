@@ -1,7 +1,7 @@
 # key.py - module for handling keys from pskc files
 # coding: utf-8
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -102,7 +102,10 @@ class BinaryDataType(DataType):
 
     def to_text(self, value):
         """Convert the value to an unencrypted string representation."""
-        return base64.b64encode(value)
+        # force conversion to bytestring on Python 3
+        if not isinstance(value, type(b'')):
+            value = value.encode()
+        return base64.b64encode(value).decode()
 
     def from_bin(self, value):
         """Convert the unencrypted binary to native representation."""

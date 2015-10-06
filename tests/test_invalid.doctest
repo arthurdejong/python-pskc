@@ -1,6 +1,6 @@
 test_invalid.doctest - test for invalid PSKC file
 
-Copyright (C) 2014 Arthur de Jong
+Copyright (C) 2014-2015 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
+>>> from binascii import a2b_hex
 >>> from pskc import PSKC
 
 
@@ -59,7 +60,7 @@ algorithm specified.
 Traceback (most recent call last):
     ...
 DecryptionError: No key available
->>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> key.secret
 Traceback (most recent call last):
     ...
@@ -106,7 +107,7 @@ KeyDerivationError: Pseudorandom function unsupported: ...
 There is a ValueMAC element but no MACMethod element.
 
 >>> pskc = PSKC('tests/invalid-no-mac-method.pskcxml')
->>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
@@ -119,7 +120,7 @@ DecryptionError: No MAC key available
 There is an unknown algorithm specified in MACMethod.
 
 >>> pskc = PSKC('tests/invalid-mac-algorithm.pskcxml')
->>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
@@ -133,7 +134,7 @@ The MAC value does not match the calculated MAC, something was modified in
 transit.
 
 >>> pskc = PSKC('tests/invalid-mac-value.pskcxml')
->>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
