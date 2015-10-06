@@ -1,7 +1,7 @@
 # encryption.py - module for handling encrypted values
 # coding: utf-8
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2015 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -136,18 +136,20 @@ class KeyDerivation(object):
             return
         self.algorithm = key_deriviation.get('Algorithm')
         # PBKDF2 properties
-        pbkdf2 = find(key_deriviation, 'xenc11:PBKDF2-params')
-        if pbkdf2 is None:
-            pbkdf2 = find(key_deriviation, 'pkcs5:PBKDF2-params')
+        pbkdf2 = find(
+            key_deriviation, 'xenc11:PBKDF2-params', 'pkcs5:PBKDF2-params')
         if pbkdf2 is not None:
             # get used salt
-            self.pbkdf2_salt = findbin(pbkdf2, 'Salt/Specified')
+            self.pbkdf2_salt = findbin(
+                pbkdf2, 'Salt/Specified', 'xenc11:Salt/xenc11:Specified')
             # required number of iterations
-            self.pbkdf2_iterations = findint(pbkdf2, 'IterationCount')
+            self.pbkdf2_iterations = findint(
+                pbkdf2, 'IterationCount', 'xenc11:IterationCount')
             # key length
-            self.pbkdf2_key_length = findint(pbkdf2, 'KeyLength')
+            self.pbkdf2_key_length = findint(
+                pbkdf2, 'KeyLength', 'xenc11:KeyLength')
             # pseudorandom function used
-            prf = find(pbkdf2, 'PRF')
+            prf = find(pbkdf2, 'PRF', 'xenc11:PRF')
             if prf is not None:
                 self.pbkdf2_prf = prf.get('Algorithm')
 

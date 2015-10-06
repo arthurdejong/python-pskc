@@ -1,6 +1,6 @@
 test_misc.doctest - miscellaneous tests
 
-Copyright (C) 2014 Arthur de Jong
+Copyright (C) 2014-2015 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -77,3 +77,16 @@ Load an PSKC file with an odd namespace.
 'Issuer-A'
 >>> key.secret
 '1234'
+
+
+Load a PSKC file that uses the xenc11 namespace for the PBKDF2 parameters.
+
+>>> pskc = PSKC('tests/SampleFullyQualifiedNS.xml')
+>>> pskc.encryption.key_name
+'PassPhrase'
+>>> pskc.encryption.derive_key('3FCA3158035072D6')
+>>> key = pskc.keys[0]
+>>> key.secret.encode('hex')
+'09fbecfd0bf47910839e2eb05ffa10b95cd0390950ce32ab790583ed134171e0'
+>>> key.check()
+True
