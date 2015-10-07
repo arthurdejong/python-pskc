@@ -37,9 +37,7 @@ The following prints all keys, decrypting using a password:
 ...     print('%s %s' % (key.serial, str(key.secret.decode())))
 987654321 12345678901234567890
 
-The module should be able to handle most common PSKC files. Checking embedded
-signatures, asymmetric keys and writing files are on the wishlist (patches
-welcome).
+The module should be able to handle most common PSKC files.
 """
 
 

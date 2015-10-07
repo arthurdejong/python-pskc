@@ -22,9 +22,9 @@ Exceptions
 
 .. exception:: DecryptionError
 
-   Raised when decrypting the embedded encrypted value fails due to missing
-   or incorrect key, unsupported decryption or MAC algorithm, failed message
-   authentication check or other error.
+   Raised when decrypting a value fails due to missing or incorrect key,
+   unsupported decryption or MAC algorithm, failed message authentication
+   check or other error.
 
    This exception is generally raised when accessing encrypted information
    (i.e. the :attr:`~pskc.key.Key.secret`, :attr:`~pskc.key.Key.counter`,

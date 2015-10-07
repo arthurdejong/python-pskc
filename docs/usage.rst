@@ -10,25 +10,74 @@ contain most of the useful information from the PSKC file.
 Opening a PSKC file
 -------------------
 
-.. module:: pskc
-
-Importing data from a PSKC file can be done by instantiating a
-:class:`~pskc.PSKC` class::
+Importing data from a PSKC file can be done by instantiating the
+:class:`~pskc.PSKC` class with a file name argument::
 
     >>> from pskc import PSKC
     >>> pskc = PSKC('somefile.pskcxml')
     >>> pskc.version
     '1.0'
 
+The :attr:`~pskc.PSKC.keys` attribute contains a list of keys in the PSKC
+file. :class:`~pskc.key.Key` instances have a number of attributes that
+provide information on the transmitted keys::
+
+    >>> key = pskc.keys[0]
+    >>> key.id
+    'some-id'
+    >>> key.algorithm
+    'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+    >>> key.secret
+    'SOME_SECRET_VALUE'
+
+Attribute values will be ``None`` if it the value is not present in the PSKC
+file.
+
+The :attr:`~pskc.key.Key.secret`, :attr:`~pskc.key.Key.counter`,
+:attr:`~pskc.key.Key.time_offset`, :attr:`~pskc.key.Key.time_interval` or
+:attr:`~pskc.key.Key.time_drift` attributes may be stored in encrypted form
+in the PSKC file. Decryption of these properties is done when they are
+accessed. If decryption is unsuccessful a
+:exc:`~pskc.exceptions.DecryptionError` exception is raised. See
+:doc:`encryption` for more information.
+
+
+Writing a PSKC file
+-------------------
+
+Creating a PSKC file can be done by creating a :class:`~pskc.PSKC` instance,
+adding keys with :func:`~pskc.PSKC.add_key()` and writing the result::
+
+    >>> from pskc import PSKC
+    >>> pskc = PSKC()
+    >>> key = pskc.add_key(id='456', manufacturer='Manufacturer')
+    >>> key.id
+    '456'
+    >>> key.secret = '987654321'
+    >>> key.algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+    >>> pskc.write('output.pskcxml')
+
+Writing the data in encrypted form in the PSKC file is not yet supported so
+currently opening an encrypted PSKC file, providing the encryption key and
+writing the file should result in the same file but with encryption removed.
+
+
+The PSKC class
+--------------
+
+.. module:: pskc
 
 .. class:: PSKC([filename])
 
    The :class:`PSKC` class is used as a wrapper to access information from a
    PSKC file.
 
-   The whole file is parsed in one go. Instances of this class provide the
-   following attributes: If parsing the PSKC file fails, a
-   :exc:`~pskc.exceptions.ParseError` exception is raised.
+   The `filename` argument can be either the name of a file or a file-like
+   object. The whole file is parsed in one go. If parsing the PSKC file
+   fails, a :exc:`~pskc.exceptions.ParseError` exception is raised.
+   If no argument is provided, an instance without any keys is created.
+
+   Instances of this class provide the following attributes and functions:
 
    .. attribute:: version
 
@@ -49,41 +98,34 @@ Importing data from a PSKC file can be done by instantiating a
    .. attribute:: encryption
 
       :class:`~pskc.encryption.Encryption` instance that handles PSKC file
-      encryption.
+      encryption. See :doc:`encryption` for more information.
 
    .. attribute:: mac
 
-      :class:`~pskc.mac.MAC` instance that handles integrity checking.
+      :class:`~pskc.mac.MAC` instance for handling integrity checking.
+      See :doc:`mac` for more information.
 
 
-Examining keys
---------------
+   .. function:: add_key([**kwargs])
+
+      Add a new key to the PSKC instance. The keyword arguments may refer to
+      any attributes of the :class:`~pskc.key.Key` class with which the new
+      key is initialised.
+
+   .. function:: write(filename)
+
+      Write the PSKC object to the provided file. The `filename` argument can
+      be either the name of a file or a file-like object.
+
+
+The Key class
+-------------
 
 .. module:: pskc.key
 
-The :attr:`~pskc.PSKC.keys` attribute of a :class:`~pskc.PSKC` instance
-provides access to a list of keys contained in the PSKC file. :class:`Key`
-instances provide access to a number of attributes that provide information
-on the transmitted keys::
-
-    >>> pskc = PSKC('somefile.pskcxml')
-    >>> first_key = pskc.keys[0]
-    >>> first_key.id
-    'some-id'
-    >>> first_key.algorithm
-    'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
-    >>> first_key.secret
-    'SOME_SECRET_VALUE'
-
-Attribute values will be ``None`` if it the value is not present in the PSKC
-file. If any of the :attr:`~pskc.key.Key.secret`,
-:attr:`~pskc.key.Key.counter`, :attr:`~pskc.key.Key.time_offset`,
-:attr:`~pskc.key.Key.time_interval` or :attr:`~pskc.key.Key.time_drift`
-values are accessed while they are encrypted and decryption is unsuccessful a
-:exc:`~pskc.exceptions.DecryptionError` exception is raised.
-
-
 .. class:: Key()
+
+   Instances of this class provide the following attributes and functions:
 
    .. attribute:: id
 
@@ -97,15 +139,18 @@ values are accessed while they are encrypted and decryption is unsuccessful a
       associates specific semantics to the key. Some `known profiles
       <https://www.iana.org/assignments/pskc/#alg-profiles>`__ are:
 
-      * ``urn:ietf:params:xml:ns:keyprov:pskc:pin``:
-        `Symmetric static credential comparison <https://tools.ietf.org/html/rfc6030#section-10.2>`_
-      * ``urn:ietf:params:xml:ns:keyprov:pskc:hotp``:
-        `OATH event-based OTP <https://tools.ietf.org/html/rfc6030#section-10.1>`_
-      * ``urn:ietf:params:xml:ns:keyprov:pskc#totp`` or
-        ``urn:ietf:params:xml:ns:keyprov:pskc:totp``:
-        `OATH time-based OTP <http://tools.ietf.org/html/draft-hoyer-keyprov-pskc-algorithm-profiles-01#section-4>`_
-      * ``urn:ietf:params:xml:ns:keyprov:pskc#OCRA-1``:
-        `OATH challenge-response algorithm <https://tools.ietf.org/html/draft-hoyer-keyprov-pskc-algorithm-profiles-01#section-3>`_
+      +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+      | URI                                            | Purpose                                                                                                                     |
+      +================================================+=============================================================================================================================+
+      | ``urn:ietf:params:xml:ns:keyprov:pskc:pin``    | `Symmetric static credential comparison <https://tools.ietf.org/html/rfc6030#section-10.2>`_                                |
+      +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+      | ``urn:ietf:params:xml:ns:keyprov:pskc:hotp``   | `OATH event-based OTP <https://tools.ietf.org/html/rfc6030#section-10.1>`_                                                  |
+      +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+      | ``urn:ietf:params:xml:ns:keyprov:pskc#totp``   | `OATH time-based OTP <http://tools.ietf.org/html/draft-hoyer-keyprov-pskc-algorithm-profiles-01#section-4>`_                |
+      | ``urn:ietf:params:xml:ns:keyprov:pskc:totp``   |                                                                                                                             |
+      +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
+      | ``urn:ietf:params:xml:ns:keyprov:pskc#OCRA-1`` | `OATH challenge-response algorithm <https://tools.ietf.org/html/draft-hoyer-keyprov-pskc-algorithm-profiles-01#section-3>`_ |
+      +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
 
    .. attribute:: secret
 
@@ -116,28 +161,28 @@ values are accessed while they are encrypted and decryption is unsuccessful a
 
    .. attribute:: counter
 
-      The event counter for event-based OTP algorithms. Will also be
+      The event counter (integer) for event-based OTP algorithms. Will also be
       transparently decrypted and may also raise
       :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: time_offset
 
-      The time offset offset for time-based OTP algorithms. If time intervals
-      are used it carries the number of time intervals passed from an
-      algorithm-dependent start point. Will also be transparently decrypted
+      The time offset (integer) for time-based OTP algorithms. If time
+      intervals are used it carries the number of time intervals passed from
+      an algorithm-dependent start point. Will also be transparently decrypted
       and may also raise :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: time_interval
 
-      The time interval in seconds for time-based OTP algorithms (usually
-      ``30`` or ``60``). Will also be transparently decrypted and may also
-      raise :exc:`~pskc.exceptions.DecryptionError`.
+      The time interval in seconds (integer) for time-based OTP algorithms
+      (usually ``30`` or ``60``). Will also be transparently decrypted and may
+      also raise :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: time_drift
 
       For time-based OTP algorithms this contains the device clock drift in
-      number of intervals. Will also be transparently decrypted and may also
-      raise :exc:`~pskc.exceptions.DecryptionError`.
+      number of intervals (integer). Will also be transparently decrypted and
+      may also raise :exc:`~pskc.exceptions.DecryptionError`.
 
    .. attribute:: issuer
 
@@ -186,7 +231,7 @@ values are accessed while they are encrypted and decryption is unsuccessful a
 
    .. attribute:: model
 
-      A manufacturer specific description of the model of the device.
+      A manufacturer-specific description of the model of the device.
 
    .. attribute:: issue_no
 
@@ -223,8 +268,8 @@ values are accessed while they are encrypted and decryption is unsuccessful a
 
    .. attribute:: algorithm_suite
 
-      Additional algorithm specific characteristics. For example, in an
-      HMAC-based algorithm it could designate the hash algorithm used (SHA1
+      Additional algorithm-specific characteristics. For example, in an
+      HMAC-based algorithm it could specify the hash algorithm used (SHA1
       or SHA256).
 
    .. attribute:: challenge_encoding
@@ -249,7 +294,7 @@ values are accessed while they are encrypted and decryption is unsuccessful a
    .. attribute:: challenge_check
 
       Boolean that indicates whether the device will check an embedded
-      `Luhn check digit <http://arthurdejong.org/python-stdnum/doc/0.9/stdnum.luhn.html>`_
+      `Luhn check digit <http://arthurdejong.org/python-stdnum/doc/stdnum.luhn.html>`_
       contained in the challenge.
 
    .. attribute:: response_encoding
@@ -264,7 +309,7 @@ values are accessed while they are encrypted and decryption is unsuccessful a
    .. attribute:: response_check
 
       Boolean that indicates whether the device will append a
-      `Luhn check digit <http://arthurdejong.org/python-stdnum/doc/0.9/stdnum.luhn.html>`_
+      `Luhn check digit <http://arthurdejong.org/python-stdnum/doc/stdnum.luhn.html>`_
       to the response.
 
    .. attribute:: policy

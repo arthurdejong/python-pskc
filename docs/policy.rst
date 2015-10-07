@@ -3,7 +3,8 @@ Key usage policy
 
 .. module:: pskc.policy
 
-The PSKC format allows for specifying `key and pin usage policy <https://tools.ietf.org/html/rfc6030#section-5>`__.
+The PSKC format allows for specifying `key and pin usage policy <https://tools.ietf.org/html/rfc6030#section-5>`__
+per key.
 
 Instances of the :class:`Policy` class provide attributes that describe
 limits that are placed on key usage and requirements for key PIN protection::
@@ -12,6 +13,9 @@ limits that are placed on key usage and requirements for key PIN protection::
    >>> key.policy.may_use(key.policy.KEY_USE_OTP)
    True
 
+
+The Policy class
+----------------
 
 .. class:: Policy
 
@@ -38,13 +42,12 @@ limits that are placed on key usage and requirements for key PIN protection::
       A list of `valid usage scenarios
       <https://www.iana.org/assignments/pskc/#key-usage>`__ for the
       key that the recipient should check against the intended usage of the
-      key. Also see :func:`may_use` and :ref:`the list of key usage constants
-      below <key-use-constants>`.
+      key. Also see :func:`may_use` and :ref:`key-use-constants` below.
 
    .. attribute:: pin_key_id
 
-      The unique `id` value used to reference the key within the PSKC file
-      that contains the value of the PIN that protects this key.
+      The unique `id` of the key within the PSKC file that contains the value
+      of the PIN that protects this key.
 
    .. attribute:: pin_key
 
@@ -58,8 +61,8 @@ limits that are placed on key usage and requirements for key PIN protection::
 
    .. attribute:: pin_usage
 
-      Describe how the PIN is used during the usage of the key. See :ref:`the
-      list of pin usage constants below <pin-use-constants>`.
+      Describe how the PIN is used during the usage of the key. See
+      :ref:`pin-use-constants` below.
 
    .. attribute:: pin_max_failed_attemtps
 
@@ -92,9 +95,13 @@ limits that are placed on key usage and requirements for key PIN protection::
    .. function:: may_use(usage)
 
       Check whether the key may be used for the provided purpose. See
-      :ref:`the list of key usage constants below <key-use-constants>`.
+      :ref:`key-use-constants` below.
+
 
 .. _key-use-constants:
+
+Key usage constants
+-------------------
 
 The :class:`Policy` class provides the following key use constants (see
 :attr:`~Policy.key_usage` and :func:`~Policy.may_use`):
@@ -149,7 +156,11 @@ The :class:`Policy` class provides the following key use constants (see
       The key is used to generate a new key based on a random number and the
       previous value of the key.
 
+
 .. _pin-use-constants:
+
+Pin usage constants
+-------------------
 
 The following constants for PIN use are defined  in the :class:`Policy`
 class (see :attr:`~Policy.pin_usage`):

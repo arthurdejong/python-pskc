@@ -8,8 +8,7 @@ types of crypto modules. The format is commonly used for one-time password
 tokens or other authentication devices.
 
 The goal of this module is mainly to provide parsing of PSKC files in order
-to extract secret keys for use in an OTP authentication system. At a later
-time support for writing files may be added.
+to extract secret keys for use in an OTP authentication system.
 
 http://arthurdejong.org/python-pskc/
 
@@ -20,7 +19,7 @@ API
 The module provides a straightforward API that is mostly geared towards
 parsing existing PSKC files.
 
-Extracting key matarial from PSKC files is as simple as.
+Extracting key matarial from encrypted PSKC files is as simple as.
 
 >>> from pskc import PSKC
 >>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
@@ -45,7 +44,7 @@ private key material.
 Copyright
 ---------
 
-Copyright (C) 2014 Arthur de Jong
+Copyright (C) 2014-2015 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

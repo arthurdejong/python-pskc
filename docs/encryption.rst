@@ -8,25 +8,29 @@ pre-shared keys, passphrase-based keys or asymmetric keys (asymmetric keys
 are currently unimplemented).
 
 Embedded PSKC encryption is handled inside the :class:`Encryption` class that
-defines encryption key and means of deriving keys. It is accessed from the
+defines encryption key or means of deriving keys. It is accessed from the
 :attr:`~pskc.PSKC.encryption` attribute of a :class:`~pskc.PSKC` instance::
 
+   >>> rom binascii import a2b_hex
    >>> from pskc import PSKC
    >>> pskc = PSKC('somefile.pskcxml')
-   >>> pskc.encryption.key = '12345678901234567890123456789012'.decode('hex')
+   >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 
 or::
 
    >>> pskc.encryption.derive_key('qwerty')
 
-Once the encryption key has been set up any encrypted key values from the
+Once the encryption key has been set up, any encrypted key values from the
 PSKC file are available transparently.
 
-If an incorrect key has been set up, only upon accessing encrypted
+If an incorrect key has been set up, upon accessing encrypted
 information (e.g. the :attr:`~pskc.key.Key.secret` attribute of a
 :class:`~pskc.key.Key` instance) a :exc:`~pskc.exceptions.DecryptionError`
 exception will be raised.
 
+
+The Encryption class
+--------------------
 
 .. class:: Encryption
 
