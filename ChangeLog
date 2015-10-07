@@ -1,3 +1,129 @@
+2015-10-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cf0c9e6] README, docs/conf.py, docs/encryption.rst,
+	  docs/exceptions.rst, docs/mac.rst, docs/policy.rst, docs/usage.rst,
+	  pskc/__init__.py: Update documentation
+
+	  This updates the documentation with the new features (writing PSKC
+	  files) as well as many editorial improvements, some rewording
+	  and a few typo fixes. Some things were moved around a little in
+	  order to be more easily readable and easier to find.
+
+2015-10-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [671b6e2] pskc/__init__.py, pskc/crypto/aeskw.py,
+	  pskc/crypto/tripledeskw.py, pskc/encryption.py, pskc/key.py,
+	  pskc/policy.py, pskc/xml.py, setup.py, tests/test_aeskw.doctest,
+	  tests/test_draft_keyprov.doctest, tests/test_encryption.doctest,
+	  tests/test_invalid.doctest, tests/test_misc.doctest,
+	  tests/test_rfc6030.doctest, tests/test_tripledeskw.doctest,
+	  tests/test_write.doctest: Support Python 3
+
+	  This enables support for Python 3 together with Python 2 support
+	  with a single codebase.
+
+	  On Python 3 key data is passed around as bytestrings which makes
+	  the doctests a little harder to maintain across Python versions.
+
+2015-10-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [68b20e2] pskc/encryption.py, pskc/xml.py,
+	  tests/SampleFullyQualifiedNS.xml, tests/test_misc.doctest:
+	  Fix issue with namespaced PBKDF2 parameters
+
+	  The find() utility functions now allow specifying multiple paths
+	  to be searched where the first match is returned.
+
+	  This allows handling PSKC files where the PBKDF2 salt, iteration
+	  count, key length and PRF elements are prefixed with the xenc11
+	  namespace.
+
+	  A test including such a PSKC file has been included.
+
+	  Thanks to Eric Plet for reporting this.
+
+2014-10-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ebe46f2] pskc2csv.py: Provide a sample pskc2csv script
+
+	  This is a simple command-line utility that reads a PSKC file
+	  and outputs information on keys as CSV.
+
+2014-06-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1363564] pskc/aeskw.py, pskc/crypto/__init__.py,
+	  pskc/crypto/aeskw.py, pskc/crypto/tripledeskw.py,
+	  pskc/encryption.py, pskc/tripledeskw.py, tests/test_aeskw.doctest,
+	  tests/test_tripledeskw.doctest: Move encryption functions in
+	  pskc.crypto package
+
+	  This moves the encryption functions under the pskc.crypto package
+	  to more clearly separate it from the other code. Ideally this
+	  should be replaced by third-party library code.
+
+2014-06-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e468ebe] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
+	  pskc/mac.py, pskc/parse.py, pskc/policy.py, pskc/xml.py: Rename
+	  pskc.parse to pskc.xml
+
+	  This renames the parse module to xml to better reflect the
+	  purpose of the module and it's functions.
+
+	  This also introduces a parse() function that wraps etree.parse().
+
+2014-06-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [480e2d0] : Support writing unencrypted PSKC files
+
+2014-06-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [37dc64a] tests/test_write.doctest: Add test for writing PSKC files
+
+	  This makes a simple doctest that checks the writing of the XML
+	  representation of the PSKC data.
+
+2014-06-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [865a755] pskc/__init__.py, pskc/parse.py: Add function for
+	  writing XML
+
+	  This provides a function for pretty-printing the generated
+	  XML document.
+
+2014-06-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [61a192f] pskc/__init__.py, pskc/key.py, pskc/policy.py: Construct
+	  XML document with basic PKSC information
+
+	  This introduces make_xml() functions to build an XML document
+	  that contains the basic PSKC information and keys. This currently
+	  only supports writing unencrypted PSKC files.
+
+2014-06-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [69aec9f] pskc/parse.py: Introduce mk_elem() to create elements
+
+	  This introduces the mk_elem() function that can be used to create
+	  ElementTree elements for building XML documents. This function
+	  transparetly handles namespaces, translation of values into
+	  XML etc.
+
+2014-06-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7591271] pskc/key.py: Simplify DataType value handling
+
+	  Only store the native value of the property, not the text
+	  representation. This also results in the BinaryDataType and
+	  IntegerDataType subclasses only needing from_text() and from_bin()
+	  functions.
+
+2014-06-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [09eb6b3] ChangeLog, NEWS, docs/changes.rst, docs/index.rst,
+	  docs/usage.rst, pskc/__init__.py, setup.py: Get files ready for
+	  0.2 release
+
 2014-06-19  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [62c9af4] pskc/__init__.py: Only catch normal exceptions

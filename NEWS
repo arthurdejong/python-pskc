@@ -1,3 +1,13 @@
+changes from 0.2 to 0.3
+-----------------------
+
+* support writing unencrypted PSKC files
+* include a sample pskc2csv script in the source code
+* fix an issue with XML namespaces for PBKDF2 parameters
+* support Python 3
+* update documentation
+
+
 changes from 0.1 to 0.2
 -----------------------
 
