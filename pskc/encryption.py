@@ -120,24 +120,24 @@ class KeyDerivation(object):
       pbkdf2_prf: name of pseudorandom function used
     """
 
-    def __init__(self, key_deriviation=None):
+    def __init__(self, key_derivation=None):
         self.algorithm = None
         # PBKDF2 properties
         self.pbkdf2_salt = None
         self.pbkdf2_iterations = None
         self.pbkdf2_key_length = None
         self.pbkdf2_prf = None
-        self.parse(key_deriviation)
+        self.parse(key_derivation)
 
-    def parse(self, key_deriviation):
+    def parse(self, key_derivation):
         """Read derivation parameters from a <KeyDerivationMethod> element."""
         from pskc.xml import find, findint, findbin
-        if key_deriviation is None:
+        if key_derivation is None:
             return
-        self.algorithm = key_deriviation.get('Algorithm')
+        self.algorithm = key_derivation.get('Algorithm')
         # PBKDF2 properties
         pbkdf2 = find(
-            key_deriviation, 'xenc11:PBKDF2-params', 'pkcs5:PBKDF2-params')
+            key_derivation, 'xenc11:PBKDF2-params', 'pkcs5:PBKDF2-params')
         if pbkdf2 is not None:
             # get used salt
             self.pbkdf2_salt = findbin(
