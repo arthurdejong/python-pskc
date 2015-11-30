@@ -39,6 +39,11 @@ The following prints all keys, decrypting using a password:
 
 The module should be able to handle most common PSKC files.
 """
+from pskc.encryption import Encryption
+from pskc.exceptions import ParseError
+from pskc.key import Key
+from pskc.mac import MAC
+from pskc.xml import find, findall, mk_elem, parse, tostring
 
 
 __all__ = ['PSKC', '__version__']
@@ -61,16 +66,12 @@ class PSKC(object):
     """
 
     def __init__(self, filename=None):
-        from pskc.encryption import Encryption
-        from pskc.exceptions import ParseError
-        from pskc.mac import MAC
         self.version = None
         self.id = None
         self.encryption = Encryption()
         self.mac = MAC(self)
         self.keys = []
         if filename is not None:
-            from pskc.xml import parse
             try:
                 tree = parse(filename)
             except Exception:
@@ -81,9 +82,6 @@ class PSKC(object):
 
     def parse(self, container):
         """Read information from the provided <KeyContainer> tree."""
-        from pskc.exceptions import ParseError
-        from pskc.key import Key
-        from pskc.xml import find, findall
         if not container.tag.endswith('KeyContainer'):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
@@ -101,7 +99,6 @@ class PSKC(object):
             self.keys.append(Key(self, key_package))
 
     def make_xml(self):
-        from pskc.xml import mk_elem
         container = mk_elem('pskc:KeyContainer', Version=self.version,
                             Id=self.id)
         for key in self.keys:
@@ -113,7 +110,6 @@ class PSKC(object):
 
         The new key is initialised with properties from the provided keyword
         arguments if any."""
-        from pskc.key import Key
         key = Key(self)
         self.keys.append(key)
         # assign the kwargs as key properties
@@ -125,7 +121,6 @@ class PSKC(object):
 
     def write(self, filename):
         """Write the PSKC file to the provided file."""
-        from pskc.xml import tostring
         if hasattr(filename, 'write'):
             filename.write(tostring(self.make_xml()))
         else:

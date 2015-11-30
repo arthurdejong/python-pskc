@@ -26,6 +26,12 @@ encryption key.
 
 The encryption key can be derived using the KeyDerivation class.
 """
+from Crypto.Cipher import AES, DES3
+from Crypto.Protocol.KDF import PBKDF2
+from pskc.crypto import aeskw, tripledeskw
+from pskc.exceptions import DecryptionError, KeyDerivationError
+from pskc.mac import get_hmac
+from pskc.xml import find, findall, findint, findbin, findtext
 
 
 def unpad(value):
@@ -51,7 +57,6 @@ class EncryptedValue(object):
 
     def parse(self, encrypted_value):
         """Read encrypted data from the <EncryptedValue> XML tree."""
-        from pskc.xml import find, findbin
         if encrypted_value is None:
             return
         encryption_method = find(encrypted_value, 'xenc:EncryptionMethod')
@@ -62,7 +67,6 @@ class EncryptedValue(object):
 
     def decrypt(self):
         """Decrypt the linked value and return the plaintext value."""
-        from pskc.exceptions import DecryptionError
         if self.cipher_value is None:
             return
         key = self.encryption.key
@@ -73,7 +77,6 @@ class EncryptedValue(object):
         if self.algorithm.endswith('#aes128-cbc') or \
            self.algorithm.endswith('#aes192-cbc') or \
            self.algorithm.endswith('#aes256-cbc'):
-            from Crypto.Cipher import AES
             if len(key) * 8 != int(self.algorithm[-7:-4]) or \
                len(key) not in AES.key_size:
                 raise DecryptionError('Invalid key length')
@@ -82,7 +85,6 @@ class EncryptedValue(object):
             cipher = AES.new(key, AES.MODE_CBC, iv)
             return unpad(cipher.decrypt(ciphertext))
         elif self.algorithm.endswith('#tripledes-cbc'):
-            from Crypto.Cipher import DES3
             if len(key) not in DES3.key_size:
                 raise DecryptionError('Invalid key length')
             iv = self.cipher_value[:DES3.block_size]
@@ -92,18 +94,14 @@ class EncryptedValue(object):
         elif self.algorithm.endswith('#kw-aes128') or \
                 self.algorithm.endswith('#kw-aes192') or \
                 self.algorithm.endswith('#kw-aes256'):
-            from pskc.crypto.aeskw import unwrap
-            from Crypto.Cipher import AES
             if len(key) * 8 != int(self.algorithm[-3:]) or \
                len(key) not in AES.key_size:
                 raise DecryptionError('Invalid key length')
-            return unwrap(self.cipher_value, key)
+            return aeskw.unwrap(self.cipher_value, key)
         elif self.algorithm.endswith('#kw-tripledes'):
-            from pskc.crypto.tripledeskw import unwrap
-            from Crypto.Cipher import DES3
             if len(key) not in DES3.key_size:
                 raise DecryptionError('Invalid key length')
-            return unwrap(self.cipher_value, key)
+            return tripledeskw.unwrap(self.cipher_value, key)
         else:
             raise DecryptionError('Unsupported algorithm: %r' % self.algorithm)
 
@@ -120,24 +118,23 @@ class KeyDerivation(object):
       pbkdf2_prf: name of pseudorandom function used
     """
 
-    def __init__(self, key_deriviation=None):
+    def __init__(self, key_derivation=None):
         self.algorithm = None
         # PBKDF2 properties
         self.pbkdf2_salt = None
         self.pbkdf2_iterations = None
         self.pbkdf2_key_length = None
         self.pbkdf2_prf = None
-        self.parse(key_deriviation)
+        self.parse(key_derivation)
 
-    def parse(self, key_deriviation):
+    def parse(self, key_derivation):
         """Read derivation parameters from a <KeyDerivationMethod> element."""
-        from pskc.xml import find, findint, findbin
-        if key_deriviation is None:
+        if key_derivation is None:
             return
-        self.algorithm = key_deriviation.get('Algorithm')
+        self.algorithm = key_derivation.get('Algorithm')
         # PBKDF2 properties
         pbkdf2 = find(
-            key_deriviation, 'xenc11:PBKDF2-params', 'pkcs5:PBKDF2-params')
+            key_derivation, 'xenc11:PBKDF2-params', 'pkcs5:PBKDF2-params')
         if pbkdf2 is not None:
             # get used salt
             self.pbkdf2_salt = findbin(
@@ -155,12 +152,9 @@ class KeyDerivation(object):
 
     def derive(self, password):
         """Derive a key from the password."""
-        from pskc.exceptions import KeyDerivationError
         if self.algorithm is None:
             raise KeyDerivationError('No algorithm specified')
         if self.algorithm.endswith('#pbkdf2'):
-            from Crypto.Protocol.KDF import PBKDF2
-            from pskc.mac import get_hmac
             prf = None
             if self.pbkdf2_prf:
                 prf = get_hmac(self.pbkdf2_prf)
@@ -201,7 +195,6 @@ class Encryption(object):
 
     def parse(self, key_info):
         """Read encryption information from the <EncryptionKey> XML tree."""
-        from pskc.xml import find, findall, findtext
         if key_info is None:
             return
         self.id = key_info.get('Id')

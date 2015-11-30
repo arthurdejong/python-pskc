@@ -26,6 +26,7 @@ import base64
 from pskc.encryption import EncryptedValue
 from pskc.mac import ValueMAC
 from pskc.policy import Policy
+from pskc.xml import find, findtext, findtime, getint, getbool, mk_elem
 
 
 class DataType(object):
@@ -51,17 +52,31 @@ class DataType(object):
         The element is expected to contain <PlainValue>, <EncryptedValue>
         and/or ValueMAC elements that contain information on the actual
         value."""
-        from pskc.xml import find, findtext
         if element is None:
             return
         value = findtext(element, 'pskc:PlainValue')
         if value is not None:
-            self.value = self.from_text(value)
+
+            self.value = self._from_text(value)
         self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
         self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
+    @staticmethod
+    def _from_text(value):
+        """Convert the plain value to native representation."""
+        raise NotImplementedError
+
+    @staticmethod
+    def _to_text(value):
+        """Convert the value to an unencrypted string representation."""
+        raise NotImplementedError
+
+    @staticmethod
+    def _from_bin(value):
+        """Convert the unencrypted binary to native representation."""
+        return value
+
     def make_xml(self, key, tag):
-        from pskc.xml import find, mk_elem
         # skip empty values
         value = self.get_value()
         if value is None:
@@ -71,7 +86,7 @@ class DataType(object):
         if data is None:
             data = mk_elem(key, 'pskc:Data', empty=True)
         element = mk_elem(data, tag, empty=True)
-        mk_elem(element, 'pskc:PlainValue', self.to_text(self.value))
+        mk_elem(element, 'pskc:PlainValue', self._to_text(self.value))
 
     def get_value(self):
         """Provide the raw binary value."""
@@ -80,7 +95,7 @@ class DataType(object):
         if self.encrypted_value.cipher_value:
             # check MAC and decrypt
             self.check()
-            return self.from_bin(self.encrypted_value.decrypt())
+            return self._from_bin(self.encrypted_value.decrypt())
 
     def set_value(self, value):
         """Set the unencrypted value."""
@@ -96,34 +111,35 @@ class DataType(object):
 class BinaryDataType(DataType):
     """Subclass of DataType for binary data (e.g. keys)."""
 
-    def from_text(self, value):
+    @staticmethod
+    def _from_text(value):
         """Convert the plain value to native representation."""
         return base64.b64decode(value)
 
-    def to_text(self, value):
+    @staticmethod
+    def _to_text(value):
         """Convert the value to an unencrypted string representation."""
         # force conversion to bytestring on Python 3
         if not isinstance(value, type(b'')):
             value = value.encode()
         return base64.b64encode(value).decode()
 
-    def from_bin(self, value):
-        """Convert the unencrypted binary to native representation."""
-        return value
-
 
 class IntegerDataType(DataType):
     """Subclass of DataType for integer types (e.g. counters)."""
 
-    def from_text(self, value):
+    @staticmethod
+    def _from_text(value):
         """Convert the plain value to native representation."""
         return int(value)
 
-    def to_text(self, value):
+    @staticmethod
+    def _to_text(value):
         """Convert the value to an unencrypted string representation."""
         return str(value)
 
-    def from_bin(self, value):
+    @staticmethod
+    def _from_bin(value):
         """Convert the unencrypted binary to native representation."""
         result = 0
         for x in value:
@@ -215,7 +231,6 @@ class Key(object):
 
     def parse(self, key_package):
         """Read key information from the provided <KeyPackage> tree."""
-        from pskc.xml import find, findtext, findtime, getint, getbool
         if key_package is None:
             return
 
@@ -281,8 +296,6 @@ class Key(object):
         self.policy.parse(find(key_package, 'pskc:Key/pskc:Policy'))
 
     def make_xml(self, container):
-        from pskc.xml import mk_elem
-
         key_package = mk_elem(container, 'pskc:KeyPackage', empty=True)
 
         if any(x is not None

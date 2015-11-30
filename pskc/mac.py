@@ -27,9 +27,11 @@ class that provides (H)MAC checking for PSKC key data.
 The MAC key is generated specifically for each PSKC file and encrypted
 with the PSKC encryption key.
 """
-
-
+import hashlib
+import hmac
 import re
+from pskc.exceptions import DecryptionError
+from pskc.xml import find, findbin, findtext
 
 
 _hmac_url_re = re.compile(r'^.*#hmac-(?P<hash>[a-z0-9]+)$')
@@ -38,8 +40,6 @@ _hmac_url_re = re.compile(r'^.*#hmac-(?P<hash>[a-z0-9]+)$')
 def get_hmac(algorithm):
     """Return an HMAC function that takes a secret and a value and returns a
     digest."""
-    import hashlib
-    import hmac
     match = _hmac_url_re.search(algorithm)
     if match:
         digestmod = getattr(hashlib, match.group('hash'), None)
@@ -57,7 +57,6 @@ class ValueMAC(object):
 
     def parse(self, value_mac):
         """Read MAC information from the <ValueMAC> XML tree."""
-        from pskc.xml import findbin
         if value_mac is None:
             return
         self._value_mac = findbin(value_mac, '.')
@@ -68,7 +67,6 @@ class ValueMAC(object):
         This will return None if there is no MAC to be checked. It will
         return True if the MAC matches and raise an exception if it fails.
         """
-        from pskc.exceptions import DecryptionError
         if value is None or self._value_mac is None:
             return  # no MAC present or nothing to check
         key = self.mac.key
@@ -93,14 +91,13 @@ class MAC(object):
     """
 
     def __init__(self, pskc, mac_method=None):
-        from pskc.encryption import EncryptedValue
+        from pskc.encryption import EncryptedValue  # FIXME Circular imports
         self.algorithm = None
         self._mac_key = EncryptedValue(pskc.encryption)
         self.parse(mac_method)
 
     def parse(self, mac_method):
         """Read MAC information from the <MACMethod> XML tree."""
-        from pskc.xml import find, findtext
         if mac_method is None:
             return
         self.algorithm = mac_method.get('Algorithm')
