@@ -20,6 +20,9 @@
 
 """Module that provides PSKC key policy information."""
 
+from pskc.xml import mk_elem
+from pskc.xml import find, findall, findtext, findint, findtime, getint
+
 
 class Policy(object):
     """Representation of a policy that describes key and pin usage.
@@ -109,8 +112,6 @@ class Policy(object):
 
     def parse(self, policy):
         """Read key policy information from the provided <Policy> tree."""
-        from pskc.xml import (
-            find, findall, findtext, findint, findtime, getint)
         if policy is None:
             return
 
@@ -137,7 +138,6 @@ class Policy(object):
         # policy rejects any key usage (set unknown_policy_elements)
 
     def make_xml(self, key):
-        from pskc.xml import mk_elem
         # check if any policy attribute is set
         if not self.key_usage and all(x is None for x in (
                 self.start_date, self.expiry_date,

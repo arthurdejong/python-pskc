@@ -26,6 +26,7 @@ import base64
 from pskc.encryption import EncryptedValue
 from pskc.mac import ValueMAC
 from pskc.policy import Policy
+from pskc.xml import find, findtext, findtime, getint, getbool, mk_elem
 
 
 class DataType(object):
@@ -51,7 +52,6 @@ class DataType(object):
         The element is expected to contain <PlainValue>, <EncryptedValue>
         and/or ValueMAC elements that contain information on the actual
         value."""
-        from pskc.xml import find, findtext
         if element is None:
             return
         value = findtext(element, 'pskc:PlainValue')
@@ -61,7 +61,6 @@ class DataType(object):
         self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
     def make_xml(self, key, tag):
-        from pskc.xml import find, mk_elem
         # skip empty values
         value = self.get_value()
         if value is None:
@@ -215,7 +214,6 @@ class Key(object):
 
     def parse(self, key_package):
         """Read key information from the provided <KeyPackage> tree."""
-        from pskc.xml import find, findtext, findtime, getint, getbool
         if key_package is None:
             return
 
@@ -281,8 +279,6 @@ class Key(object):
         self.policy.parse(find(key_package, 'pskc:Key/pskc:Policy'))
 
     def make_xml(self, container):
-        from pskc.xml import mk_elem
-
         key_package = mk_elem(container, 'pskc:KeyPackage', empty=True)
 
         if any(x is not None
