@@ -56,19 +56,23 @@ class DataType(object):
             return
         value = findtext(element, 'pskc:PlainValue')
         if value is not None:
-            self.value = self.from_text(value)
+
+            self.value = self._from_text(value)
         self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
         self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
-    def from_text(self, value):
+    @staticmethod
+    def _from_text(value):
         """Convert the plain value to native representation."""
         raise NotImplementedError
 
-    def to_text(self, value):
+    @staticmethod
+    def _to_text(value):
         """Convert the value to an unencrypted string representation."""
         raise NotImplementedError
 
-    def from_bin(self, value):
+    @staticmethod
+    def _from_bin(value):
         """Convert the unencrypted binary to native representation."""
         return value
 
@@ -83,7 +87,7 @@ class DataType(object):
         if data is None:
             data = mk_elem(key, 'pskc:Data', empty=True)
         element = mk_elem(data, tag, empty=True)
-        mk_elem(element, 'pskc:PlainValue', self.to_text(self.value))
+        mk_elem(element, 'pskc:PlainValue', self._to_text(self.value))
 
     def get_value(self):
         """Provide the raw binary value."""
@@ -92,7 +96,7 @@ class DataType(object):
         if self.encrypted_value.cipher_value:
             # check MAC and decrypt
             self.check()
-            return self.from_bin(self.encrypted_value.decrypt())
+            return self._from_bin(self.encrypted_value.decrypt())
 
     def set_value(self, value):
         """Set the unencrypted value."""
@@ -108,11 +112,13 @@ class DataType(object):
 class BinaryDataType(DataType):
     """Subclass of DataType for binary data (e.g. keys)."""
 
-    def from_text(self, value):
+    @staticmethod
+    def _from_text(value):
         """Convert the plain value to native representation."""
         return base64.b64decode(value)
 
-    def to_text(self, value):
+    @staticmethod
+    def _to_text(value):
         """Convert the value to an unencrypted string representation."""
         # force conversion to bytestring on Python 3
         if not isinstance(value, type(b'')):
@@ -123,15 +129,18 @@ class BinaryDataType(DataType):
 class IntegerDataType(DataType):
     """Subclass of DataType for integer types (e.g. counters)."""
 
-    def from_text(self, value):
+    @staticmethod
+    def _from_text(value):
         """Convert the plain value to native representation."""
         return int(value)
 
-    def to_text(self, value):
+    @staticmethod
+    def _to_text(value):
         """Convert the value to an unencrypted string representation."""
         return str(value)
 
-    def from_bin(self, value):
+    @staticmethod
+    def _from_bin(value):
         """Convert the unencrypted binary to native representation."""
         result = 0
         for x in value:
