@@ -43,7 +43,7 @@ ParseError: Missing KeyContainer
 
 This file has an unknown PSKC version.
 
->>> pskc = PSKC('tests/invalid-wrongversion.pskcxml')
+>>> pskc = PSKC('tests/invalid-wrongversion.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 ParseError: Unsupported version
@@ -61,7 +61,7 @@ Traceback (most recent call last):
     ...
 DecryptionError: No key available
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
->>> key.secret
+>>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Unsupported algorithm: ...
@@ -81,7 +81,7 @@ Specify an unknown key derivation algorithm specified.
 >>> pskc.encryption.derive_key('qwerty')
 Traceback (most recent call last):
     ...
-KeyDerivationError: Unsupported algorithm: ...
+KeyDerivationError: Unsupported algorithm: 'unknown'
 
 
 Figure 6 does use encryption but with a pre-shared key. Attempting key
@@ -101,7 +101,7 @@ Specify an unknown PBKDF2 PRF (pseudorandom function).
 >>> pskc.encryption.derive_key('qwerty')
 Traceback (most recent call last):
     ...
-KeyDerivationError: Pseudorandom function unsupported: ...
+KeyDerivationError: Pseudorandom function unsupported: 'unknown'
 
 
 There is a ValueMAC element but no MACMethod element.
@@ -124,7 +124,7 @@ There is an unknown algorithm specified in MACMethod.
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
->>> key.secret
+>>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Unsupported MAC algorithm: ...
