@@ -60,6 +60,18 @@ class DataType(object):
         self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
         self.value_mac.parse(find(element, 'pskc:ValueMAC'))
 
+    def from_text(self, value):
+        """Convert the plain value to native representation."""
+        raise NotImplementedError
+
+    def to_text(self, value):
+        """Convert the value to an unencrypted string representation."""
+        raise NotImplementedError
+
+    def from_bin(self, value):
+        """Convert the unencrypted binary to native representation."""
+        return value
+
     def make_xml(self, key, tag):
         # skip empty values
         value = self.get_value()
@@ -105,10 +117,6 @@ class BinaryDataType(DataType):
         if not isinstance(value, type(b'')):
             value = value.encode()
         return base64.b64encode(value).decode()
-
-    def from_bin(self, value):
-        """Convert the unencrypted binary to native representation."""
-        return value
 
 
 class IntegerDataType(DataType):
