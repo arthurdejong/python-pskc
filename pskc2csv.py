@@ -20,6 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+from __future__ import print_function
 import argparse
 import csv
 import operator
@@ -53,7 +54,7 @@ class VersionAction(argparse.Action):
             help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print version_string
+        print(version_string)
         parser.exit()
 
 epilog = '''
