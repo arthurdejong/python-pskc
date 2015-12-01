@@ -11,7 +11,7 @@ Embedded PSKC encryption is handled inside the :class:`Encryption` class that
 defines encryption key or means of deriving keys. It is accessed from the
 :attr:`~pskc.PSKC.encryption` attribute of a :class:`~pskc.PSKC` instance::
 
-   >>> rom binascii import a2b_hex
+   >>> from binascii import a2b_hex
    >>> from pskc import PSKC
    >>> pskc = PSKC('somefile.pskcxml')
    >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
