@@ -60,3 +60,12 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
+
+
+Development notes
+-----------------
+
+This package should use a mostly standard source code layout and support both
+Python 2 (2.6 but 2.7 is recommended) and Python 3 (most recent versions
+should work). The tests can be run with nosetests and the aim is to have
+maximum code coverage.

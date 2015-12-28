@@ -3,9 +3,9 @@ PSKC encryption
 
 .. module:: pskc.encryption
 
-The keys (and some embedded data) in PSKC files can be encrypted with either
-pre-shared keys, passphrase-based keys or asymmetric keys (asymmetric keys
-are currently unimplemented).
+Some of the information in PSKC files (e.g. key material) can be encrypted
+with either pre-shared keys, passphrase-based keys or asymmetric keys
+(asymmetric keys are currently unimplemented).
 
 Embedded PSKC encryption is handled inside the :class:`Encryption` class that
 defines encryption key or means of deriving keys. It is accessed from the
@@ -23,7 +23,7 @@ or::
 Once the encryption key has been set up, any encrypted key values from the
 PSKC file are available transparently.
 
-If an incorrect key has been set up, upon accessing encrypted
+If no key or an incorrect key has been set configured, upon accessing encrypted
 information (e.g. the :attr:`~pskc.key.Key.secret` attribute of a
 :class:`~pskc.key.Key` instance) a :exc:`~pskc.exceptions.DecryptionError`
 exception will be raised.
