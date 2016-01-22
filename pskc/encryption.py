@@ -28,6 +28,48 @@ The encryption key can be derived using the KeyDerivation class.
 """
 
 
+# cannonical URIs of known encryption algorithms
+_algorithms = {
+    'tripledes-cbc': 'http://www.w3.org/2001/04/xmlenc#tripledes-cbc',
+    'kw-tripledes': 'http://www.w3.org/2001/04/xmlenc#kw-tripledes',
+    'aes128-cbc': 'http://www.w3.org/2001/04/xmlenc#aes128-cbc',
+    'aes192-cbc': 'http://www.w3.org/2001/04/xmlenc#aes192-cbc',
+    'aes256-cbc': 'http://www.w3.org/2001/04/xmlenc#aes256-cbc',
+    'kw-aes128': 'http://www.w3.org/2001/04/xmlenc#kw-aes128',
+    'kw-aes192': 'http://www.w3.org/2001/04/xmlenc#kw-aes192',
+    'kw-aes256': 'http://www.w3.org/2001/04/xmlenc#kw-aes256',
+    'camellia128': 'http://www.w3.org/2001/04/xmldsig-more#camellia128',
+    'camellia192': 'http://www.w3.org/2001/04/xmldsig-more#camellia192',
+    'camellia256': 'http://www.w3.org/2001/04/xmldsig-more#camellia256',
+    'kw-camellia128': 'http://www.w3.org/2001/04/xmldsig-more#kw-camellia128',
+    'kw-camellia192': 'http://www.w3.org/2001/04/xmldsig-more#kw-camellia192',
+    'kw-camellia256': 'http://www.w3.org/2001/04/xmldsig-more#kw-camellia256',
+}
+
+# translation table to change old encryption names to new names
+_algorithm_aliases = {
+    '3des-cbc': 'tripledes-cbc',
+    '3des112-cbc': 'tripledes-cbc',
+    '3des168-cbc': 'tripledes-cbc',
+    'kw-3des': 'kw-tripledes',
+    'pbe-3des112-cbc': 'tripledes-cbc',
+    'pbe-3des168-cbc': 'tripledes-cbc',
+    'pbe-aes128-cbc': 'aes128-cbc',
+    'pbe-aes192-cbc': 'aes192-cbc',
+    'pbe-aes256-cbc': 'aes256-cbc',
+    'rsa-1_5': 'rsa-1_5',
+    'rsa-oaep-mgf1p': 'rsa-oaep-mgf1p',
+}
+
+
+def normalise_algorithm(algorithm):
+    """Return the canonical URI for the provided algorithm."""
+    if not algorithm or algorithm.lower() == 'none':
+        return None
+    algorithm = _algorithm_aliases.get(algorithm.lower(), algorithm)
+    return _algorithms.get(algorithm.rsplit('#', 1)[-1].lower(), algorithm)
+
+
 def unpad(value):
     """Remove padding from the plaintext."""
     return value[0:-ord(value[-1:])]
@@ -57,7 +99,8 @@ class EncryptedValue(object):
             return
         encryption_method = find(encrypted_value, 'EncryptionMethod')
         if encryption_method is not None:
-            self.algorithm = encryption_method.attrib.get('Algorithm')
+            self.algorithm = normalise_algorithm(
+                encryption_method.attrib.get('Algorithm'))
         self.cipher_value = findbin(
             encrypted_value, 'CipherData/CipherValue')
 
@@ -235,7 +278,7 @@ class Encryption(object):
 
     @algorithm.setter
     def algorithm(self, value):
-        self._algorithm = value
+        self._algorithm = normalise_algorithm(value)
 
     def derive_key(self, password):
         """Derive a key from the password."""

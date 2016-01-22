@@ -79,7 +79,7 @@ Setting encryption key name and algorithm also works.
 >>> pskc.encryption.key_names
 ['Test encryption key']
 >>> pskc.encryption.algorithm
->>> pskc.encryption.algorithm = 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> pskc.encryption.algorithm = 'aes128-cbc'
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
 
