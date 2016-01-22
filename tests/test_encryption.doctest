@@ -1,6 +1,6 @@
 test_encryption.doctest - test various encryption schemes
 
-Copyright (C) 2014-2015 Arthur de Jong
+Copyright (C) 2014-2016 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 
 >>> pskc = PSKC('tests/aes128-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
 >>> tostr(pskc.keys[0].secret)
 '12345678901234567890'
 >>> pskc.mac.algorithm
@@ -55,6 +57,8 @@ DecryptionError: Invalid key length
 
 >>> pskc = PSKC('tests/aes256-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('1234567890123456789012345678901234567890123456789012345678901234')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes256-cbc'
 >>> tostr(pskc.keys[0].secret)
 '12345678901234567890'
 >>> pskc.mac.algorithm

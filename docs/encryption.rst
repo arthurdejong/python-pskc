@@ -38,6 +38,10 @@ The Encryption class
 
       Optional identifier of the encryption key.
 
+   .. attribute:: algorithm
+
+      A URI of the encryption algorithm used.
+
    .. attribute:: key_names
 
       List of names provided for the encryption key.
@@ -46,7 +50,7 @@ The Encryption class
 
       Since usually only one name is defined for a key but the schema allows
       for multiple names, this is a shortcut for accessing the first value of
-      :attr:`key_names`.
+      :attr:`key_names`. It will return ``None`` if no name is available.
 
    .. attribute:: key
 

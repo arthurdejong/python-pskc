@@ -45,6 +45,7 @@ class EncryptedValue(object):
     def __init__(self, encryption, encrypted_value=None):
         """Initialise an encrypted value for the provided Key."""
         self.encryption = encryption
+        encryption._encrypted_values.append(self)
         self.algorithm = None
         self.cipher_value = None
         self.parse(encrypted_value)
@@ -180,6 +181,7 @@ class Encryption(object):
     class provides the following values:
 
       id: identifier of the key
+      algorithm: the encryption algorithm used
       key_names: list of names for the key
       key_name: (first) name of the key (usually there is only one)
       key: the key value itself (binary form)
@@ -192,6 +194,8 @@ class Encryption(object):
         self.id = None
         self.key_names = []
         self.key = None
+        self._algorithm = None
+        self._encrypted_values = []
         self.derivation = KeyDerivation()
         self.parse(key_info)
 
@@ -213,6 +217,25 @@ class Encryption(object):
         """Provide the name of the (first) key."""
         if self.key_names:
             return self.key_names[0]
+
+    @key_name.setter
+    def key_name(self, value):
+        self.key_names = [value]
+
+    @property
+    def algorithm(self):
+        """Provide the encryption algorithm used."""
+        # if one is explicitly set, use that
+        if self._algorithm:
+            return self._algorithm
+        # fall back to finding the algorithm in any encrypted value
+        for encrypted_value in self._encrypted_values:
+            if encrypted_value.algorithm:
+                return encrypted_value.algorithm
+
+    @algorithm.setter
+    def algorithm(self, value):
+        self._algorithm = value
 
     def derive_key(self, password):
         """Derive a key from the password."""

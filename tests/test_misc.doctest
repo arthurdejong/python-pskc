@@ -1,6 +1,6 @@
 test_misc.doctest - miscellaneous tests
 
-Copyright (C) 2014-2015 Arthur de Jong
+Copyright (C) 2014-2016 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -71,6 +71,17 @@ Setting secret, counter, etc. also works
 'VERYSECRET'
 >>> key.counter
 10
+
+
+Setting encryption key name and algorithm also works.
+
+>>> pskc.encryption.key_name = 'Test encryption key'
+>>> pskc.encryption.key_names
+['Test encryption key']
+>>> pskc.encryption.algorithm
+>>> pskc.encryption.algorithm = 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
 
 
 Load an PSKC file with an odd namespace.
