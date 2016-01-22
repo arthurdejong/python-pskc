@@ -143,3 +143,24 @@ argument).
   </pskc:Key>
  </pskc:KeyPackage>
 </pskc:KeyContainer>
+
+
+Read an encrypted PSKC file and write it out as an unencrypted file.
+
+>>> pskc = PSKC('tests/kw-aes128.pskcxml')
+>>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f')
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc.write(f.name)
+>>> x = sys.stdout.write(open(f.name, 'r').read())
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
+ <pskc:KeyPackage>
+  <pskc:Key>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>ABEiM0RVZneImaq7zN3u/w==</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>

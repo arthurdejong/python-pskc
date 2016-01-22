@@ -86,7 +86,7 @@ class DataType(object):
         if data is None:
             data = mk_elem(key, 'pskc:Data', empty=True)
         element = mk_elem(data, tag, empty=True)
-        mk_elem(element, 'pskc:PlainValue', self._to_text(self.value))
+        mk_elem(element, 'pskc:PlainValue', self._to_text(value))
 
     def get_value(self):
         """Provide the raw binary value."""
