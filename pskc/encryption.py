@@ -1,7 +1,7 @@
 # encryption.py - module for handling encrypted values
 # coding: utf-8
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -54,11 +54,11 @@ class EncryptedValue(object):
         from pskc.xml import find, findbin
         if encrypted_value is None:
             return
-        encryption_method = find(encrypted_value, 'xenc:EncryptionMethod')
+        encryption_method = find(encrypted_value, 'EncryptionMethod')
         if encryption_method is not None:
             self.algorithm = encryption_method.attrib.get('Algorithm')
         self.cipher_value = findbin(
-            encrypted_value, 'xenc:CipherData/xenc:CipherValue')
+            encrypted_value, 'CipherData/CipherValue')
 
     def decrypt(self):
         """Decrypt the linked value and return the plaintext value."""
@@ -136,20 +136,16 @@ class KeyDerivation(object):
             return
         self.algorithm = key_derivation.get('Algorithm')
         # PBKDF2 properties
-        pbkdf2 = find(
-            key_derivation, 'xenc11:PBKDF2-params', 'pkcs5:PBKDF2-params')
+        pbkdf2 = find(key_derivation, 'PBKDF2-params')
         if pbkdf2 is not None:
             # get used salt
-            self.pbkdf2_salt = findbin(
-                pbkdf2, 'Salt/Specified', 'xenc11:Salt/xenc11:Specified')
+            self.pbkdf2_salt = findbin(pbkdf2, 'Salt/Specified')
             # required number of iterations
-            self.pbkdf2_iterations = findint(
-                pbkdf2, 'IterationCount', 'xenc11:IterationCount')
+            self.pbkdf2_iterations = findint(pbkdf2, 'IterationCount')
             # key length
-            self.pbkdf2_key_length = findint(
-                pbkdf2, 'KeyLength', 'xenc11:KeyLength')
+            self.pbkdf2_key_length = findint(pbkdf2, 'KeyLength')
             # pseudorandom function used
-            prf = find(pbkdf2, 'PRF', 'xenc11:PRF')
+            prf = find(pbkdf2, 'PRF')
             if prf is not None:
                 self.pbkdf2_prf = prf.get('Algorithm')
 
@@ -205,13 +201,12 @@ class Encryption(object):
         if key_info is None:
             return
         self.id = key_info.get('Id')
-        for name in findall(key_info, 'ds:KeyName'):
+        for name in findall(key_info, 'KeyName'):
             self.key_names.append(findtext(name, '.'))
-        for name in findall(
-                key_info, 'xenc11:DerivedKey/xenc11:MasterKeyName'):
+        for name in findall(key_info, 'DerivedKey/MasterKeyName'):
             self.key_names.append(findtext(name, '.'))
         self.derivation.parse(find(
-            key_info, 'xenc11:DerivedKey/xenc11:KeyDerivationMethod'))
+            key_info, 'DerivedKey/KeyDerivationMethod'))
 
     @property
     def key_name(self):

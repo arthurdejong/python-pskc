@@ -1,7 +1,7 @@
 # policy.py - module for handling PSKC policy information
 # coding: utf-8
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -114,14 +114,14 @@ class Policy(object):
         if policy is None:
             return
 
-        self.start_date = findtime(policy, 'pskc:StartDate')
-        self.expiry_date = findtime(policy, 'pskc:ExpiryDate')
+        self.start_date = findtime(policy, 'StartDate')
+        self.expiry_date = findtime(policy, 'ExpiryDate')
         self.number_of_transactions = findint(
-            policy, 'pskc:NumberOfTransactions')
-        for key_usage in findall(policy, 'pskc:KeyUsage'):
+            policy, 'NumberOfTransactions')
+        for key_usage in findall(policy, 'KeyUsage'):
             self.key_usage.append(findtext(key_usage, '.'))
 
-        pin_policy = find(policy, 'pskc:PINPolicy')
+        pin_policy = find(policy, 'PINPolicy')
         if pin_policy is not None:
             self.pin_key_id = pin_policy.get('PINKeyId')
             self.pin_usage = pin_policy.get('PINUsageMode')

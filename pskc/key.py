@@ -1,7 +1,7 @@
 # key.py - module for handling keys from pskc files
 # coding: utf-8
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -54,12 +54,11 @@ class DataType(object):
         from pskc.xml import find, findtext
         if element is None:
             return
-        value = findtext(element, 'pskc:PlainValue')
+        value = findtext(element, 'PlainValue')
         if value is not None:
-
             self.value = self._from_text(value)
-        self.encrypted_value.parse(find(element, 'pskc:EncryptedValue'))
-        self.value_mac.parse(find(element, 'pskc:ValueMAC'))
+        self.encrypted_value.parse(find(element, 'EncryptedValue'))
+        self.value_mac.parse(find(element, 'ValueMAC'))
 
     @staticmethod
     def _from_text(value):
@@ -236,51 +235,43 @@ class Key(object):
         if key_package is None:
             return
 
-        key = find(key_package, 'pskc:Key')
+        key = find(key_package, 'Key')
         if key is not None:
             self.id = key.get('Id')
             self.algorithm = key.get('Algorithm')
 
-        data = find(key_package, 'pskc:Key/pskc:Data')
+        data = find(key_package, 'Key/Data')
         if data is not None:
-            self._secret.parse(find(data, 'pskc:Secret'))
-            self._counter.parse(find(data, 'pskc:Counter'))
-            self._time_offset.parse(find(data, 'pskc:Time'))
-            self._time_interval.parse(find(data, 'pskc:TimeInterval'))
-            self._time_drift.parse(find(data, 'pskc:TimeDrift'))
+            self._secret.parse(find(data, 'Secret'))
+            self._counter.parse(find(data, 'Counter'))
+            self._time_offset.parse(find(data, 'Time'))
+            self._time_interval.parse(find(data, 'TimeInterval'))
+            self._time_drift.parse(find(data, 'TimeDrift'))
 
-        self.issuer = findtext(key_package, 'pskc:Key/pskc:Issuer')
-        self.key_profile = findtext(key_package, 'pskc:Key/pskc:KeyProfileId')
-        self.key_reference = findtext(
-            key_package, 'pskc:Key/pskc:KeyReference')
-        self.friendly_name = findtext(
-            key_package, 'pskc:Key/pskc:FriendlyName')
+        self.issuer = findtext(key_package, 'Key/Issuer')
+        self.key_profile = findtext(key_package, 'Key/KeyProfileId')
+        self.key_reference = findtext(key_package, 'Key/KeyReference')
+        self.friendly_name = findtext(key_package, 'Key/FriendlyName')
         # TODO: support multi-language values of <FriendlyName>
-        self.key_userid = findtext(key_package, 'pskc:Key/pskc:UserId')
+        self.key_userid = findtext(key_package, 'Key/UserId')
 
-        self.manufacturer = findtext(
-            key_package, 'pskc:DeviceInfo/pskc:Manufacturer')
-        self.serial = findtext(key_package, 'pskc:DeviceInfo/pskc:SerialNo')
-        self.model = findtext(key_package, 'pskc:DeviceInfo/pskc:Model')
-        self.issue_no = findtext(key_package, 'pskc:DeviceInfo/pskc:IssueNo')
+        self.manufacturer = findtext(key_package, 'DeviceInfo/Manufacturer')
+        self.serial = findtext(key_package, 'DeviceInfo/SerialNo')
+        self.model = findtext(key_package, 'DeviceInfo/Model')
+        self.issue_no = findtext(key_package, 'DeviceInfo/IssueNo')
         self.device_binding = findtext(
-            key_package, 'pskc:DeviceInfo/pskc:DeviceBinding')
-        self.start_date = findtime(
-            key_package, 'pskc:DeviceInfo/pskc:StartDate')
-        self.expiry_date = findtime(
-            key_package, 'pskc:DeviceInfo/pskc:ExpiryDate')
-        self.device_userid = findtext(
-            key_package, 'pskc:DeviceInfo/pskc:UserId')
+            key_package, 'DeviceInfo/DeviceBinding')
+        self.start_date = findtime(key_package, 'DeviceInfo/StartDate')
+        self.expiry_date = findtime(key_package, 'DeviceInfo/ExpiryDate')
+        self.device_userid = findtext(key_package, 'DeviceInfo/UserId')
 
-        self.crypto_module = findtext(
-            key_package, 'pskc:CryptoModuleInfo/pskc:Id')
+        self.crypto_module = findtext(key_package, 'CryptoModuleInfo/Id')
 
         self.algorithm_suite = findtext(
-            key_package, 'pskc:Key/pskc:AlgorithmParameters/pskc:Suite')
+            key_package, 'Key/AlgorithmParameters/Suite')
 
         challenge_format = find(
-            key_package,
-            'pskc:Key/pskc:AlgorithmParameters/pskc:ChallengeFormat')
+            key_package, 'Key/AlgorithmParameters/ChallengeFormat')
         if challenge_format is not None:
             self.challenge_encoding = challenge_format.get('Encoding')
             self.challenge_min_length = getint(challenge_format, 'Min')
@@ -289,13 +280,13 @@ class Key(object):
 
         response_format = find(
             key_package,
-            'pskc:Key/pskc:AlgorithmParameters/pskc:ResponseFormat')
+            'Key/AlgorithmParameters/ResponseFormat')
         if response_format is not None:
             self.response_encoding = response_format.get('Encoding')
             self.response_length = getint(response_format, 'Length')
             self.response_check = getbool(response_format, 'CheckDigits')
 
-        self.policy.parse(find(key_package, 'pskc:Key/pskc:Policy'))
+        self.policy.parse(find(key_package, 'Key/Policy'))
 
     def make_xml(self, container):
         from pskc.xml import mk_elem

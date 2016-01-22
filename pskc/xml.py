@@ -1,7 +1,7 @@
 # xml.py - module for parsing and writing XML for PSKC files
 # coding: utf-8
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -57,45 +57,52 @@ def parse(source):
     return etree.parse(source)
 
 
+def remove_namespaces(tree):
+    """Remove namespaces from all elements in the tree."""
+    import re
+    for elem in tree.getiterator():
+        if isinstance(elem.tag, ''.__class__):
+            elem.tag = re.sub(r'^\{[^}]*\}', '', elem.tag)
+
+
 def findall(tree, match):
     """Find the child elements."""
     return tree.findall(match, namespaces=namespaces)
 
 
-def find(tree, *matches):
+def find(tree, match):
     """Find a child element that matches any of the patterns (or None)."""
-    for match in matches:
-        try:
-            return next(iter(findall(tree, match)))
-        except StopIteration:
-            pass
+    try:
+        return next(iter(findall(tree, match)))
+    except StopIteration:
+        pass
 
 
-def findtext(tree, *matches):
+def findtext(tree, match):
     """Get the text value of an element (or None)."""
-    element = find(tree, *matches)
+    element = find(tree, match)
     if element is not None:
         return element.text.strip()
 
 
-def findint(tree, *matches):
+def findint(tree, match):
     """Return an element value as an int (or None)."""
-    value = findtext(tree, *matches)
+    value = findtext(tree, match)
     if value:
         return int(value)
 
 
-def findtime(tree, *matches):
+def findtime(tree, match):
     """Return an element value as a datetime (or None)."""
-    value = findtext(tree, *matches)
+    value = findtext(tree, match)
     if value:
         import dateutil.parser
         return dateutil.parser.parse(value)
 
 
-def findbin(tree, *matches):
+def findbin(tree, match):
     """Return the binary element value base64 decoded."""
-    value = findtext(tree, *matches)
+    value = findtext(tree, match)
     if value:
         import base64
         return base64.b64decode(value)

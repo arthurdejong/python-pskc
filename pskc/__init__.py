@@ -1,7 +1,7 @@
 # __init__.py - main module
 # coding: utf-8
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -70,11 +70,12 @@ class PSKC(object):
         self.mac = MAC(self)
         self.keys = []
         if filename is not None:
-            from pskc.xml import parse
+            from pskc.xml import parse, remove_namespaces
             try:
                 tree = parse(filename)
             except Exception:
                 raise ParseError('Error parsing XML')
+            remove_namespaces(tree)
             self.parse(tree.getroot())
         else:
             self.version = '1.0'
@@ -84,7 +85,7 @@ class PSKC(object):
         from pskc.exceptions import ParseError
         from pskc.key import Key
         from pskc.xml import find, findall
-        if not container.tag.endswith('KeyContainer'):
+        if container.tag != 'KeyContainer':
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
         self.version = container.get('Version')
@@ -93,11 +94,11 @@ class PSKC(object):
         # unique identifier for the container
         self.id = container.get('Id')
         # handle EncryptionKey entries
-        self.encryption.parse(find(container, 'pskc:EncryptionKey'))
+        self.encryption.parse(find(container, 'EncryptionKey'))
         # handle MACMethod entries
-        self.mac.parse(find(container, 'pskc:MACMethod'))
+        self.mac.parse(find(container, 'MACMethod'))
         # handle KeyPackage entries
-        for key_package in findall(container, 'pskc:KeyPackage'):
+        for key_package in findall(container, 'KeyPackage'):
             self.keys.append(Key(self, key_package))
 
     def make_xml(self):

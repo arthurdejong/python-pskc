@@ -1,7 +1,7 @@
 # mac.py - module for checking value signatures
 # coding: utf-8
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -104,8 +104,8 @@ class MAC(object):
         if mac_method is None:
             return
         self.algorithm = mac_method.get('Algorithm')
-        self._mac_key.parse(find(mac_method, 'pskc:MACKey'))
-        mac_key_reference = findtext(mac_method, 'pskc:MACKeyReference')
+        self._mac_key.parse(find(mac_method, 'MACKey'))
+        mac_key_reference = findtext(mac_method, 'MACKeyReference')
 
     @property
     def key(self):
