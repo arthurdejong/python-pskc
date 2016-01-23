@@ -111,3 +111,13 @@ Load a PSKC file that uses the xenc11 namespace for the PBKDF2 parameters.
 '09fbecfd0bf47910839e2eb05ffa10b95cd0390950ce32ab790583ed134171e0'
 >>> key.check()
 True
+
+
+Empty PSKC files should raise a useful exception when trying to derive an
+encryption key from a password.
+
+>>> pskc = PSKC()
+>>> pskc.encryption.derive_key('123456')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+KeyDerivationError: No algorithm specified
