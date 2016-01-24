@@ -31,7 +31,7 @@ for use in an OTP authentication system.
 The following prints all keys, decrypting using a password:
 
 >>> from pskc import PSKC
->>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.derive_key('qwerty')
 >>> for key in pskc.keys:
 ...     print('%s %s' % (key.serial, str(key.secret.decode())))

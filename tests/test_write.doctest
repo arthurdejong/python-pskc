@@ -147,7 +147,7 @@ argument).
 
 Read an encrypted PSKC file and write it out as an unencrypted file.
 
->>> pskc = PSKC('tests/kw-aes128.pskcxml')
+>>> pskc = PSKC('tests/encryption/kw-aes128.pskcxml')
 >>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f')
 >>> f = tempfile.NamedTemporaryFile()
 >>> pskc.write(f.name)

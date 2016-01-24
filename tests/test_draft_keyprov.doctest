@@ -29,7 +29,7 @@ This tests an OCRA (OATH Challenge Response Algorithm) key contained within
 a PSKC file as described in section 3 of
 draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 
->>> pskc = PSKC('tests/draft-keyprov-ocra.pskcxml')
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/ocra.pskcxml')
 >>> pskc.version
 '1.0'
 >>> key = pskc.keys[0]
@@ -64,7 +64,7 @@ draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 This tests an TOTP (OATH Time based OTP) key contained within a PSKC file as
 described in section 4 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 
->>> pskc = PSKC('tests/draft-keyprov-totp.pskcxml')
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/totp.pskcxml')
 >>> pskc.version
 '1.0'
 >>> key = pskc.keys[0]
@@ -97,7 +97,7 @@ described in section 4 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 This tests an SecurID-AES-Counter key contained within a PSKC file as
 described in section 6 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 
->>> pskc = PSKC('tests/draft-keyprov-securid-aes-counter.pskcxml')
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/securid-aes-counter.pskcxml')
 >>> pskc.version
 '1.0'
 >>> key = pskc.keys[0]
@@ -130,7 +130,7 @@ datetime.datetime(2010, 9, 30, 0, 0, tzinfo=tzutc())
 This tests an ActivIdentity-3DES key contained within a PSKC file as
 described in section 8 of draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 
->>> pskc = PSKC('tests/draft-keyprov-actividentity-3des.pskcxml')
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/actividentity-3des.pskcxml')
 >>> pskc.version
 '1.0'
 >>> key = pskc.keys[0]

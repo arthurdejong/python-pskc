@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> from pskc import PSKC
 
 
->>> pskc = PSKC('tests/aes128-cbc.pskcxml')
+>>> pskc = PSKC('tests/encryption/aes128-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
@@ -40,7 +40,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 'MacMacMacMacMacMacMa'
 
 
->>> pskc = PSKC('tests/aes192-cbc.pskcxml')
+>>> pskc = PSKC('tests/encryption/aes192-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> pskc.keys[0].secret
 Traceback (most recent call last):
@@ -55,7 +55,7 @@ DecryptionError: Invalid key length
 'MacMacMacMacMacMacMa'
 
 
->>> pskc = PSKC('tests/aes256-cbc.pskcxml')
+>>> pskc = PSKC('tests/encryption/aes256-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('1234567890123456789012345678901234567890123456789012345678901234')
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes256-cbc'
@@ -67,7 +67,7 @@ DecryptionError: Invalid key length
 'MacMacMacMacMacMacMa'
 
 
->>> pskc = PSKC('tests/tripledes-cbc.pskcxml')
+>>> pskc = PSKC('tests/encryption/tripledes-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('1234')
 >>> pskc.keys[0].secret
 Traceback (most recent call last):
@@ -82,7 +82,7 @@ DecryptionError: Invalid key length
 'MacMacMacMacMacMacMa'
 
 
->>> pskc = PSKC('tests/kw-aes128.pskcxml')
+>>> pskc = PSKC('tests/encryption/kw-aes128.pskcxml')
 >>> pskc.encryption.key = a2b_hex('1234')
 >>> pskc.keys[0].secret
 Traceback (most recent call last):
@@ -93,7 +93,7 @@ DecryptionError: Invalid key length
 '00112233445566778899aabbccddeeff'
 
 
->>> pskc = PSKC('tests/kw-aes192.pskcxml')
+>>> pskc = PSKC('tests/encryption/kw-aes192.pskcxml')
 >>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f')
 >>> pskc.keys[0].secret
 Traceback (most recent call last):
@@ -104,13 +104,13 @@ DecryptionError: Invalid key length
 '00112233445566778899aabbccddeeff'
 
 
->>> pskc = PSKC('tests/kw-aes256.pskcxml')
+>>> pskc = PSKC('tests/encryption/kw-aes256.pskcxml')
 >>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f')
 >>> b2a_hex(pskc.keys[0].secret)
 '00112233445566778899aabbccddeeff0001020304050607'
 
 
->>> pskc = PSKC('tests/kw-tripledes.pskcxml')
+>>> pskc = PSKC('tests/encryption/kw-tripledes.pskcxml')
 >>> pskc.encryption.key = a2b_hex('255e0d1c07b646dfb3134cc843ba8aa71f')
 >>> pskc.keys[0].secret
 Traceback (most recent call last):

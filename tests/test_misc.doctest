@@ -86,7 +86,7 @@ Setting encryption key name and algorithm also works.
 
 Load an PSKC file with an odd namespace.
 
->>> pskc = PSKC('tests/odd-namespace.pskcxml')
+>>> pskc = PSKC('tests/misc/odd-namespace.pskcxml')
 >>> pskc.version
 '1.0'
 >>> pskc.id
@@ -102,7 +102,7 @@ Load an PSKC file with an odd namespace.
 
 Load a PSKC file that uses the xenc11 namespace for the PBKDF2 parameters.
 
->>> pskc = PSKC('tests/SampleFullyQualifiedNS.xml')
+>>> pskc = PSKC('tests/misc/SampleFullyQualifiedNS.xml')
 >>> pskc.encryption.key_name
 'PassPhrase'
 >>> pskc.encryption.derive_key('3FCA3158035072D6')

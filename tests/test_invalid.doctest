@@ -27,7 +27,7 @@ Load a number of invalid files.
 
 This file is plain invalid XML.
 
->>> pskc = PSKC('tests/invalid-notxml.pskcxml')
+>>> pskc = PSKC('tests/invalid/notxml.pskcxml')
 Traceback (most recent call last):
     ...
 ParseError: Error parsing XML
@@ -35,7 +35,7 @@ ParseError: Error parsing XML
 
 This XML file has a wrong top-level element.
 
->>> pskc = PSKC('tests/invalid-wrongelement.pskcxml')
+>>> pskc = PSKC('tests/invalid/wrongelement.pskcxml')
 Traceback (most recent call last):
     ...
 ParseError: Missing KeyContainer
@@ -43,7 +43,7 @@ ParseError: Missing KeyContainer
 
 This file has an unknown PSKC version.
 
->>> pskc = PSKC('tests/invalid-wrongversion.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
+>>> pskc = PSKC('tests/invalid/wrongversion.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 ParseError: Unsupported version
@@ -52,7 +52,7 @@ ParseError: Unsupported version
 This PSKC file has one key with an unknown algorithm and one key without an
 algorithm specified.
 
->>> pskc = PSKC('tests/invalid-encryption.pskcxml')
+>>> pskc = PSKC('tests/invalid/encryption.pskcxml')
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
@@ -76,7 +76,7 @@ DecryptionError: No algorithm specified
 
 Specify an unknown key derivation algorithm specified.
 
->>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.derivation.algorithm = 'unknown'
 >>> pskc.encryption.derive_key('qwerty')
 Traceback (most recent call last):
@@ -87,7 +87,7 @@ KeyDerivationError: Unsupported algorithm: 'unknown'
 Figure 6 does use encryption but with a pre-shared key. Attempting key
 derivation with such a PSKC file should result in an exception.
 
->>> pskc = PSKC('tests/rfc6030-figure6.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure6.pskcxml')
 >>> pskc.encryption.derive_key('qwerty')
 Traceback (most recent call last):
     ...
@@ -96,7 +96,7 @@ KeyDerivationError: No algorithm specified
 
 Specify an unknown PBKDF2 PRF (pseudorandom function).
 
->>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.derivation.pbkdf2_prf = 'unknown'
 >>> pskc.encryption.derive_key('qwerty')
 Traceback (most recent call last):
@@ -106,7 +106,7 @@ KeyDerivationError: Pseudorandom function unsupported: 'unknown'
 
 There is a ValueMAC element but no MACMethod element.
 
->>> pskc = PSKC('tests/invalid-no-mac-method.pskcxml')
+>>> pskc = PSKC('tests/invalid/no-mac-method.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> key = pskc.keys[0]
 >>> key.id
@@ -119,7 +119,7 @@ DecryptionError: No MAC key available
 
 There is an unknown algorithm specified in MACMethod.
 
->>> pskc = PSKC('tests/invalid-mac-algorithm.pskcxml')
+>>> pskc = PSKC('tests/invalid/mac-algorithm.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> key = pskc.keys[0]
 >>> key.id
@@ -133,7 +133,7 @@ DecryptionError: Unsupported MAC algorithm: ...
 The MAC value does not match the calculated MAC, something was modified in
 transit.
 
->>> pskc = PSKC('tests/invalid-mac-value.pskcxml')
+>>> pskc = PSKC('tests/invalid/mac-value.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> key = pskc.keys[0]
 >>> key.id

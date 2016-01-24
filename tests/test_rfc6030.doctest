@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 This tests Figure 2 from RFC 6030. It is a basic key container example with a
 simple plain text secret key.
 
->>> pskc = PSKC('tests/rfc6030-figure2.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure2.pskcxml')
 >>> [tostr(key.secret) for key in pskc.keys]
 ['1234']
 >>> key = pskc.keys[0]
@@ -48,7 +48,7 @@ simple plain text secret key.
 This tests Figure 3 from RFC 6030. Relative to Figure 2 this includes device,
 cryptographic module and user identification as well as some more parameters.
 
->>> pskc = PSKC('tests/rfc6030-figure3.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure3.pskcxml')
 >>> pskc.id
 'exampleID1'
 >>> key = pskc.keys[0]
@@ -82,7 +82,7 @@ This tests Figure 4 from RFC 6030. In this case the key value itself is not
 contained but can be derived using the serial and out-of-band agreements on
 the meanings of key_profile and key_reference.
 
->>> pskc = PSKC('tests/rfc6030-figure4.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure4.pskcxml')
 >>> key = pskc.keys[0]
 >>> key.serial
 '987654321'
@@ -97,7 +97,7 @@ the meanings of key_profile and key_reference.
 This tests the key policy properties as illustrated in Figure 5 from RFC
 6030.
 
->>> pskc = PSKC('tests/rfc6030-figure5.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure5.pskcxml')
 >>> len(pskc.keys)
 2
 >>> key1, key2 = pskc.keys
@@ -151,7 +151,7 @@ This tests key encryption based on pre-shared keys as illustrated in Figure 6
 from RFC 6030. The first attempt at extracting the key will fail due to the
 encryption.
 
->>> pskc = PSKC('tests/rfc6030-figure6.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure6.pskcxml')
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
@@ -173,7 +173,7 @@ True
 This tests a derived master key using PBKDF2 as seen in Figure 7 from RFC
 6030.
 
->>> pskc = PSKC('tests/rfc6030-figure7.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.key_name
 'My Password 1'
 >>> pskc.encryption.derive_key('qwerty')
@@ -190,7 +190,7 @@ True
 
 This tests bulk provisioning as shown in Figure 10 From RFC 6030.
 
->>> pskc = PSKC('tests/rfc6030-figure10.pskcxml')
+>>> pskc = PSKC('tests/rfc6030/figure10.pskcxml')
 >>> all(key.manufacturer == 'TokenVendorAcme' for key in pskc.keys)
 True
 >>> [key.serial for key in pskc.keys]
