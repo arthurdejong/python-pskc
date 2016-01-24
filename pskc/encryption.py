@@ -20,9 +20,8 @@
 
 """Module that handles encrypted PSKC values.
 
-This module defines an Encryption class that handles the encryption key
-and an EncryptedValue wrapper class that can decrypt values using the
-encryption key.
+This module defines an Encryption class that handles the encryption key,
+algorithms and decryption.
 
 The encryption key can be derived using the KeyDerivation class.
 """
@@ -73,83 +72,6 @@ def normalise_algorithm(algorithm):
 def unpad(value):
     """Remove padding from the plaintext."""
     return value[0:-ord(value[-1:])]
-
-
-class EncryptedValue(object):
-    """Wrapper class to handle encrypted values.
-
-    Instances of this class provide the following attributes:
-
-      algorithm: name of the encryption algorithm used
-      cipher_value: binary encrypted data
-    """
-
-    def __init__(self, encryption, encrypted_value=None):
-        """Initialise an encrypted value for the provided Key."""
-        self.encryption = encryption
-        encryption._encrypted_values.append(self)
-        self.algorithm = None
-        self.cipher_value = None
-        self.parse(encrypted_value)
-
-    def parse(self, encrypted_value):
-        """Read encrypted data from the <EncryptedValue> XML tree."""
-        from pskc.xml import find, findbin
-        if encrypted_value is None:
-            return
-        encryption_method = find(encrypted_value, 'EncryptionMethod')
-        if encryption_method is not None:
-            self.algorithm = normalise_algorithm(
-                encryption_method.attrib.get('Algorithm'))
-        self.cipher_value = findbin(
-            encrypted_value, 'CipherData/CipherValue')
-
-    def decrypt(self):
-        """Decrypt the linked value and return the plaintext value."""
-        from pskc.exceptions import DecryptionError
-        if self.cipher_value is None:
-            return
-        key = self.encryption.key
-        if key is None:
-            raise DecryptionError('No key available')
-        if self.algorithm is None:
-            raise DecryptionError('No algorithm specified')
-        if self.algorithm.endswith('#aes128-cbc') or \
-           self.algorithm.endswith('#aes192-cbc') or \
-           self.algorithm.endswith('#aes256-cbc'):
-            from Crypto.Cipher import AES
-            if len(key) * 8 != int(self.algorithm[-7:-4]) or \
-               len(key) not in AES.key_size:
-                raise DecryptionError('Invalid key length')
-            iv = self.cipher_value[:AES.block_size]
-            ciphertext = self.cipher_value[AES.block_size:]
-            cipher = AES.new(key, AES.MODE_CBC, iv)
-            return unpad(cipher.decrypt(ciphertext))
-        elif self.algorithm.endswith('#tripledes-cbc'):
-            from Crypto.Cipher import DES3
-            if len(key) not in DES3.key_size:
-                raise DecryptionError('Invalid key length')
-            iv = self.cipher_value[:DES3.block_size]
-            ciphertext = self.cipher_value[DES3.block_size:]
-            cipher = DES3.new(key, DES3.MODE_CBC, iv)
-            return unpad(cipher.decrypt(ciphertext))
-        elif self.algorithm.endswith('#kw-aes128') or \
-                self.algorithm.endswith('#kw-aes192') or \
-                self.algorithm.endswith('#kw-aes256'):
-            from pskc.crypto.aeskw import unwrap
-            from Crypto.Cipher import AES
-            if len(key) * 8 != int(self.algorithm[-3:]) or \
-               len(key) not in AES.key_size:
-                raise DecryptionError('Invalid key length')
-            return unwrap(self.cipher_value, key)
-        elif self.algorithm.endswith('#kw-tripledes'):
-            from pskc.crypto.tripledeskw import unwrap
-            from Crypto.Cipher import DES3
-            if len(key) not in DES3.key_size:
-                raise DecryptionError('Invalid key length')
-            return unwrap(self.cipher_value, key)
-        else:
-            raise DecryptionError('Unsupported algorithm: %r' % self.algorithm)
 
 
 class KeyDerivation(object):
@@ -268,13 +190,8 @@ class Encryption(object):
     @property
     def algorithm(self):
         """Provide the encryption algorithm used."""
-        # if one is explicitly set, use that
         if self._algorithm:
             return self._algorithm
-        # fall back to finding the algorithm in any encrypted value
-        for encrypted_value in self._encrypted_values:
-            if encrypted_value.algorithm:
-                return encrypted_value.algorithm
 
     @algorithm.setter
     def algorithm(self, value):
@@ -283,3 +200,49 @@ class Encryption(object):
     def derive_key(self, password):
         """Derive a key from the password."""
         self.key = self.derivation.derive(password)
+
+    def decrypt_value(self, cipher_value, algorithm=None):
+        """Decrypt the cipher_value and return the plaintext value."""
+        from pskc.exceptions import DecryptionError
+        key = self.key
+        if key is None:
+            raise DecryptionError('No key available')
+        algorithm = algorithm or self.algorithm
+        if algorithm is None:
+            raise DecryptionError('No algorithm specified')
+        if algorithm.endswith('#aes128-cbc') or \
+           algorithm.endswith('#aes192-cbc') or \
+           algorithm.endswith('#aes256-cbc'):
+            from Crypto.Cipher import AES
+            if len(key) * 8 != int(algorithm[-7:-4]) or \
+               len(key) not in AES.key_size:
+                raise DecryptionError('Invalid key length')
+            iv = cipher_value[:AES.block_size]
+            ciphertext = cipher_value[AES.block_size:]
+            cipher = AES.new(key, AES.MODE_CBC, iv)
+            return unpad(cipher.decrypt(ciphertext))
+        elif algorithm.endswith('#tripledes-cbc'):
+            from Crypto.Cipher import DES3
+            if len(key) not in DES3.key_size:
+                raise DecryptionError('Invalid key length')
+            iv = cipher_value[:DES3.block_size]
+            ciphertext = cipher_value[DES3.block_size:]
+            cipher = DES3.new(key, DES3.MODE_CBC, iv)
+            return unpad(cipher.decrypt(ciphertext))
+        elif algorithm.endswith('#kw-aes128') or \
+                algorithm.endswith('#kw-aes192') or \
+                algorithm.endswith('#kw-aes256'):
+            from pskc.crypto.aeskw import unwrap
+            from Crypto.Cipher import AES
+            if len(key) * 8 != int(algorithm[-3:]) or \
+               len(key) not in AES.key_size:
+                raise DecryptionError('Invalid key length')
+            return unwrap(cipher_value, key)
+        elif algorithm.endswith('#kw-tripledes'):
+            from pskc.crypto.tripledeskw import unwrap
+            from Crypto.Cipher import DES3
+            if len(key) not in DES3.key_size:
+                raise DecryptionError('Invalid key length')
+            return unwrap(cipher_value, key)
+        else:
+            raise DecryptionError('Unsupported algorithm: %r' % algorithm)

@@ -47,42 +47,6 @@ def get_hmac(algorithm):
             return lambda key, value: hmac.new(key, value, digestmod).digest()
 
 
-class ValueMAC(object):
-    """Provide MAC checking ability to PSKC data values."""
-
-    def __init__(self, mac, value_mac=None):
-        self.mac = mac
-        self._value_mac = None
-        self.parse(value_mac)
-
-    def parse(self, value_mac):
-        """Read MAC information from the <ValueMAC> XML tree."""
-        from pskc.xml import findbin
-        if value_mac is None:
-            return
-        self._value_mac = findbin(value_mac, '.')
-
-    def check(self, value):
-        """Check if the provided value matches the MAC.
-
-        This will return None if there is no MAC to be checked. It will
-        return True if the MAC matches and raise an exception if it fails.
-        """
-        from pskc.exceptions import DecryptionError
-        if value is None or self._value_mac is None:
-            return  # no MAC present or nothing to check
-        key = self.mac.key
-        if key is None:
-            raise DecryptionError('No MAC key available')
-        hmacfn = get_hmac(self.mac.algorithm)
-        if hmacfn is None:
-            raise DecryptionError(
-                'Unsupported MAC algorithm: %r' % self.mac.algorithm)
-        if hmacfn(key, value) != self._value_mac:
-            raise DecryptionError('MAC value does not match')
-        return True
-
-
 class MAC(object):
     """Class describing the MAC algorithm to use and how to get the key.
 
@@ -93,21 +57,49 @@ class MAC(object):
     """
 
     def __init__(self, pskc, mac_method=None):
-        from pskc.encryption import EncryptedValue
+        self.pskc = pskc
         self.algorithm = None
-        self._mac_key = EncryptedValue(pskc.encryption)
+        self.key_cipher_value = None
+        self.key_algorithm = None
         self.parse(mac_method)
 
     def parse(self, mac_method):
         """Read MAC information from the <MACMethod> XML tree."""
-        from pskc.xml import find, findtext
+        from pskc.xml import find, findtext, findbin
         if mac_method is None:
             return
         self.algorithm = mac_method.get('Algorithm')
-        self._mac_key.parse(find(mac_method, 'MACKey'))
+        mac_key = find(mac_method, 'MACKey')
+        if mac_key is not None:
+            self.key_cipher_value = findbin(mac_key, 'CipherData/CipherValue')
+            encryption_method = find(mac_key, 'EncryptionMethod')
+            if encryption_method is not None:
+                self.key_algorithm = encryption_method.attrib.get('Algorithm')
         mac_key_reference = findtext(mac_method, 'MACKeyReference')
 
     @property
     def key(self):
         """Provides access to the MAC key binary value if available."""
-        return self._mac_key.decrypt()
+        if self.key_cipher_value:
+            return self.pskc.encryption.decrypt_value(
+                self.key_cipher_value, self.key_algorithm)
+
+    def check_value(self, value, value_mac):
+        """Check if the provided value matches the MAC.
+
+        This will return None if there is no MAC to be checked. It will
+        return True if the MAC matches and raise an exception if it fails.
+        """
+        from pskc.exceptions import DecryptionError
+        if value is None or value_mac is None:
+            return  # no MAC present or nothing to check
+        key = self.key
+        if key is None:
+            raise DecryptionError('No MAC key available')
+        hmacfn = get_hmac(self.algorithm)
+        if hmacfn is None:
+            raise DecryptionError(
+                'Unsupported MAC algorithm: %r' % self.algorithm)
+        if hmacfn(key, value) != value_mac:
+            raise DecryptionError('MAC value does not match')
+        return True

@@ -23,8 +23,6 @@
 
 import base64
 
-from pskc.encryption import EncryptedValue
-from pskc.mac import ValueMAC
 from pskc.policy import Policy
 
 
@@ -34,31 +32,48 @@ class DataType(object):
     This class is meant to be subclassed to provide typed access to stored
     values. Instances of this class provide the following attributes:
 
-      value: unencrypted value if present
-      encrypted_value: reference to an EncryptedValue instance
-      value_mac: reference to a ValueMAC instance
+      value: unencrypted value
+      cipher_value: encrypted value
+      algorithm: encryption algorithm of encrypted value
+      value_mac: MAC of the encrypted value
     """
 
     def __init__(self, key, element=None):
+        self.pskc = key.pskc
         self.value = None
-        self.encrypted_value = EncryptedValue(key.pskc.encryption)
-        self.value_mac = ValueMAC(key.pskc.mac)
+        self.cipher_value = None
+        self.algorithm = None
+        self.value_mac = None
         self.parse(element)
 
     def parse(self, element):
         """Read information from the provided element.
 
         The element is expected to contain <PlainValue>, <EncryptedValue>
-        and/or ValueMAC elements that contain information on the actual
+        and/or <ValueMAC> elements that contain information on the actual
         value."""
-        from pskc.xml import find, findtext
+        from pskc.xml import find, findtext, findbin
         if element is None:
             return
-        value = findtext(element, 'PlainValue')
-        if value is not None:
-            self.value = self._from_text(value)
-        self.encrypted_value.parse(find(element, 'EncryptedValue'))
-        self.value_mac.parse(find(element, 'ValueMAC'))
+        # read plaintext value from <PlainValue>
+        plain_value = findtext(element, 'PlainValue')
+        if plain_value is not None:
+            self.value = self._from_text(plain_value)
+        # read encrypted data from <EncryptedValue>
+        encrypted_value = find(element, 'EncryptedValue')
+        if encrypted_value is not None:
+            self.cipher_value = findbin(
+                encrypted_value, 'CipherData/CipherValue')
+            encryption_method = find(encrypted_value, 'EncryptionMethod')
+            if encryption_method is not None:
+                self.algorithm = encryption_method.attrib.get('Algorithm')
+                # store the found algorithm in the pskc.encryption property
+                if not self.pskc.encryption.algorithm and self.algorithm:
+                    self.pskc.encryption.algorithm = self.algorithm
+        # read MAC information from <ValueMAC>
+        value_mac = findbin(element, 'ValueMAC')
+        if value_mac is not None:
+            self.value_mac = value_mac
 
     @staticmethod
     def _from_text(value):
@@ -66,14 +81,14 @@ class DataType(object):
         raise NotImplementedError
 
     @staticmethod
-    def _to_text(value):
-        """Convert the value to an unencrypted string representation."""
+    def _from_bin(value):
+        """Convert the unencrypted binary to native representation."""
         raise NotImplementedError
 
     @staticmethod
-    def _from_bin(value):
-        """Convert the unencrypted binary to native representation."""
-        return value
+    def _to_text(value):
+        """Convert the value to an unencrypted string representation."""
+        raise NotImplementedError
 
     def make_xml(self, key, tag):
         from pskc.xml import find, mk_elem
@@ -89,23 +104,28 @@ class DataType(object):
         mk_elem(element, 'pskc:PlainValue', self._to_text(value))
 
     def get_value(self):
-        """Provide the raw binary value."""
+        """Provide the attribute value, decrypting as needed."""
         if self.value is not None:
             return self.value
-        if self.encrypted_value.cipher_value:
+        if self.cipher_value:
             # check MAC and decrypt
             self.check()
-            return self._from_bin(self.encrypted_value.decrypt())
+            return self._from_bin(self.pskc.encryption.decrypt_value(
+                self.cipher_value, self.algorithm))
 
     def set_value(self, value):
         """Set the unencrypted value."""
         self.value = value
-        self.encrypted_value.cipher_value = None
+        self.cipher_value = None
+        self.algorithm = None
+        self.value_mac = None
 
     def check(self):
         """Check whether the embedded MAC is correct."""
         # this checks the encrypted value
-        return self.value_mac.check(self.encrypted_value.cipher_value)
+        if self.cipher_value and self.value_mac:
+            return self.pskc.mac.check_value(
+                self.cipher_value, self.value_mac)
 
 
 class BinaryDataType(DataType):
@@ -115,6 +135,11 @@ class BinaryDataType(DataType):
     def _from_text(value):
         """Convert the plain value to native representation."""
         return base64.b64decode(value)
+
+    @staticmethod
+    def _from_bin(value):
+        """Convert the unencrypted binary to native representation."""
+        return value
 
     @staticmethod
     def _to_text(value):
@@ -134,17 +159,17 @@ class IntegerDataType(DataType):
         return int(value)
 
     @staticmethod
-    def _to_text(value):
-        """Convert the value to an unencrypted string representation."""
-        return str(value)
-
-    @staticmethod
     def _from_bin(value):
         """Convert the unencrypted binary to native representation."""
         result = 0
         for x in value:
             result = (result << 8) + ord(x)
         return result
+
+    @staticmethod
+    def _to_text(value):
+        """Convert the value to an unencrypted string representation."""
+        return str(value)
 
 
 class Key(object):
