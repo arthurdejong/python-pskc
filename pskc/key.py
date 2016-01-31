@@ -21,6 +21,7 @@
 """Module that handles keys stored in PSKC files."""
 
 
+import array
 import base64
 
 from pskc.policy import Policy
@@ -156,14 +157,24 @@ class IntegerDataType(DataType):
     @staticmethod
     def _from_text(value):
         """Convert the plain value to native representation."""
-        return int(value)
+        # try normal integer string parsing
+        try:
+            return int(value)
+        except ValueError:
+            pass
+        # fall back to base64 decoding
+        return IntegerDataType._from_bin(base64.b64decode(value))
 
     @staticmethod
     def _from_bin(value):
         """Convert the unencrypted binary to native representation."""
+        # try to handle value as ASCII representation
+        if value.isdigit():
+            return int(value)
+        # fall back to do big-endian decoding
         result = 0
-        for x in value:
-            result = (result << 8) + ord(x)
+        for x in array.array('B', value):
+            result = (result << 8) + x
         return result
 
     @staticmethod

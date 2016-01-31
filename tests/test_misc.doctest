@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
->>> from binascii import b2a_hex
+>>> from binascii import a2b_hex, b2a_hex
 >>> def tostr(x):
 ...     return str(x.decode())
 >>> def decode(f):
@@ -121,3 +121,11 @@ encryption key from a password.
 Traceback (most recent call last):
     ...
 KeyDerivationError: No algorithm specified
+
+
+Integers can be represented in different ways in PSKC files.
+
+>>> pskc = PSKC('tests/misc/integers.pskcxml')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> [key.counter for key in pskc.keys]
+[831791, 709791, 405834, 298507, 961392]

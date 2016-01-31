@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  This test file contains various ways of storing integer values.
+
+  Test that holds an aes128-cbc encrypted value. Key is
+  12345678901234567890123456789012.
+-->
+
+<KeyContainer Version="1.0"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <EncryptionKey>
+  <ds:KeyName>Pre-shared-key</ds:KeyName>
+ </EncryptionKey>
+ <!-- value 831791 as plain value ASCII encoded -->
+ <KeyPackage><Key><Data><Counter>
+  <PlainValue>831791</PlainValue>
+ </Counter></Data></Key></KeyPackage>
+ <!-- value 709791 ASCII encoded and then base64 encoded -->
+ <KeyPackage><Key><Data><Counter>
+  <PlainValue>NzA5Nzkx</PlainValue>
+ </Counter></Data></Key></KeyPackage>
+ <!-- value 405834 big endian encoded and then base64 encoded -->
+ <KeyPackage><Key><Data><Counter>
+  <PlainValue>AAYxSg==</PlainValue>
+ </Counter></Data></Key></KeyPackage>
+ <!-- value 298507 ASCII encoded and then encrypted -->
+ <KeyPackage><Key><Data><Counter>
+  <EncryptedValue>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>I9Ro0yqZSyNhPY43+fZue7JvyPxbAqtNPuFiu3HprxY=</xenc:CipherValue>
+   </xenc:CipherData>
+  </EncryptedValue>
+ </Counter></Data></Key></KeyPackage>
+ <!-- value 961392 big endian encoded and then encrypted -->
+ <KeyPackage><Key><Data><Counter>
+  <EncryptedValue>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>juW3FkXwJwOoyJJ24vfY+ug/J3qAnaEMrhDeJgAMWMg=</xenc:CipherValue>
+   </xenc:CipherData>
+  </EncryptedValue>
+ </Counter></Data></Key></KeyPackage>
+</KeyContainer>
