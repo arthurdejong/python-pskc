@@ -1,0 +1,104 @@
+test_vendors.doctest - test for PSKC files provided by vendors
+
+Copyright (C) 2016 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc import PSKC
+
+
+This tests a simple non-encrypted PSKC file from Feitian. The PSKC file
+contains two HOTP keys and four TOTP keys.
+
+>>> pskc = PSKC('tests/feitian/file1.pskcxml')
+>>> pskc.keys[0].manufacturer
+'Feitian Technology Co.,Ltd'
+>>> print('\n'.join(key.serial for key in pskc.keys))  #doctest: +REPORT_UDIFF
+1000133508267
+1000133508255
+2600124809778
+2600124809787
+2600135004012
+2600135004013
+>>> print('\n'.join(key.algorithm for key in pskc.keys))  #doctest: +REPORT_UDIFF
+urn:ietf:params:xml:ns:keyprov:pskc:hotp
+urn:ietf:params:xml:ns:keyprov:pskc:hotp
+urn:ietf:params:xml:ns:keyprov:pskc:totp
+urn:ietf:params:xml:ns:keyprov:pskc:totp
+urn:ietf:params:xml:ns:keyprov:pskc:totp
+urn:ietf:params:xml:ns:keyprov:pskc:totp
+>>> pskc.keys[5].time_interval
+60
+
+
+This tests a sample seed file originally provided by GOOZE for Feitian
+c100 / c200 hardware tokens. There is one TOTP key and one HTOP key in
+the file.
+
+>>> pskc = PSKC('tests/feitian/20120919-test001-4282.xml')
+>>> pskc.keys[0].manufacturer
+'FeiTian Technology Co.,Ltd'
+>>> print('\n'.join(key.serial for key in pskc.keys))
+2600215704919
+1000117803294
+>>> key = pskc.keys[0]
+>>> key.algorithm, key.response_length, key.time_offset, key.time_interval
+('urn:ietf:params:xml:ns:keyprov:pskc:totp', 6, 0, 60)
+>>> key.policy.start_date
+datetime.datetime(2012, 9, 19, 0, 0, tzinfo=tzutc())
+>>> key.policy.expiry_date
+datetime.datetime(2022, 9, 1, 0, 0, tzinfo=tzutc())
+>>> key = pskc.keys[1]
+>>> key.algorithm, key.response_length, key.counter
+('urn:ietf:params:xml:ns:keyprov:pskc:hotp', 6, 0)
+>>> key.policy.start_date
+datetime.datetime(2012, 9, 19, 0, 0, tzinfo=tzutc())
+>>> key.policy.expiry_date
+datetime.datetime(2022, 9, 1, 0, 0, tzinfo=tzutc())
+
+
+This tests a simple PSKC file from NagraID which is protected by a pre-shared
+key. The file contains three OCRA keys.
+
+>>> pskc = PSKC('tests/nagraid/file1.pskcxml')
+>>> print('\n'.join(key.serial for key in pskc.keys))  #doctest: +REPORT_UDIFF
+306EUO4-00960
+306EUO4-00954
+306EUO4-00958
+>>> key = pskc.keys[0]
+>>> bool(key.secret)  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: No key available
+>>> pskc.encryption.key_name
+'Pre-shared-key'
+>>> pskc.encryption.key = a2b_hex('4A057F6AB6FCB57AB5408E46A9835E68')
+>>> bool(key.secret)
+True
+>>> key.check()
+True
+>>> print('\n'.join(key.algorithm_suite for key in pskc.keys))  #doctest: +REPORT_UDIFF
+OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1
+OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1
+OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1
