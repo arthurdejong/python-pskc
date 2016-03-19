@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Test PSKC file for testing the check digit attributes in the
+  ChallengeFormat and ResponseFormat configuration.
+-->
+
+<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <Key>
+      <AlgorithmParameters>
+        <ChallengeFormat Encoding="DECIMAL" Min="12" Max="34" CheckDigits="true"/>
+        <ResponseFormat Encoding="DECIMAL" Length="8" CheckDigits="false"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <Key>
+      <AlgorithmParameters>
+        <ChallengeFormat Encoding="DECIMAL" Min="56" Max="78" CheckDigits="FALSE"/>
+        <ResponseFormat Encoding="DECIMAL" Length="9" CheckDigits="1"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <Key>
+      <AlgorithmParameters>
+        <!-- note the singular CheckDigit here -->
+        <ChallengeFormat Encoding="DECIMAL" Min="16" Max="87" CheckDigit="false"/>
+        <ResponseFormat Encoding="DECIMAL" Length="3" CheckDigit="true"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <Key>
+      <AlgorithmParameters>
+        <ChallengeFormat Encoding="HEXADECIMAL" Min="4" Max="6"/>
+        <ResponseFormat Encoding="ALPHANUMERIC" Length="6"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+    </Key>
+  </KeyPackage>
+</KeyContainer>

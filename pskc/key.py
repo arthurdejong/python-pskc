@@ -312,7 +312,9 @@ class Key(object):
             self.challenge_encoding = challenge_format.get('Encoding')
             self.challenge_min_length = getint(challenge_format, 'Min')
             self.challenge_max_length = getint(challenge_format, 'Max')
-            self.challenge_check = getbool(challenge_format, 'CheckDigits')
+            self.challenge_check = getbool(
+                challenge_format, 'CheckDigits', getbool(
+                challenge_format, 'CheckDigit'))
 
         response_format = find(
             key_package,
@@ -320,7 +322,9 @@ class Key(object):
         if response_format is not None:
             self.response_encoding = response_format.get('Encoding')
             self.response_length = getint(response_format, 'Length')
-            self.response_check = getbool(response_format, 'CheckDigits')
+            self.response_check = getbool(
+                response_format, 'CheckDigits', getbool(
+                response_format, 'CheckDigit'))
 
         self.policy.parse(find(key_package, 'Key/Policy'))
 

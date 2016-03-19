@@ -170,3 +170,24 @@ False
 True
 >>> key.policy.may_use('OTP')
 False
+
+
+This checks the ChallengeFormat and ResponseFormat handling of keys and
+specifically the attribute indicating presence of check digits.
+
+>>> pskc = PSKC('tests/misc/checkdigits.pskcxml')
+>>> for key in pskc.keys:
+...     print('challenge %r %r %r %r' % (
+...         key.challenge_encoding, key.challenge_min_length,
+...         key.challenge_max_length, key.challenge_check))
+...     print('response  %r %r %r' % (
+...         key.response_encoding, key.response_length,
+...         key.response_check))  #doctest: +REPORT_UDIFF
+challenge 'DECIMAL' 12 34 True
+response  'DECIMAL' 8 False
+challenge 'DECIMAL' 56 78 False
+response  'DECIMAL' 9 True
+challenge 'DECIMAL' 16 87 False
+response  'DECIMAL' 3 True
+challenge 'HEXADECIMAL' 4 6 None
+response  'ALPHANUMERIC' 6 None

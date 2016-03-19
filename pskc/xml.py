@@ -115,11 +115,18 @@ def getint(tree, attribute):
         return int(value)
 
 
-def getbool(tree, attribute):
+def getbool(tree, attribute, default=None):
     """Return an attribute value as a boolean (or None)."""
     value = tree.get(attribute)
     if value:
-        return value.lower() == 'true'
+        value = value.lower()
+        if value in ('1', 'true'):
+            return True
+        elif value in ('0', 'false'):
+            return False
+        else:
+            raise ValueError('invalid boolean value: %r' % value)
+    return default
 
 
 def _format(value):
