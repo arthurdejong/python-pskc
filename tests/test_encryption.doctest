@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> def decode(f):
 ...     return lambda x: tostr(f(x))
 >>> b2a_hex = decode(b2a_hex)
+>>> import base64
 
 >>> from pskc import PSKC
 
@@ -148,3 +149,60 @@ specified.
 28
 >>> len(pskc.mac.key)
 28
+
+
+Test PBKDF2 key derivation set-up. Only specifying a passphrase picks
+reasonable defaults.
+
+>>> pskc = PSKC()
+>>> pskc.encryption.setup_pbkdf2('test')
+>>> pskc.encryption.derivation.algorithm
+'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
+>>> pskc.encryption.derivation.pbkdf2_iterations
+12000
+>>> len(pskc.encryption.derivation.pbkdf2_salt)
+16
+>>> pskc.encryption.derivation.pbkdf2_key_length
+16
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> len(pskc.encryption.key)
+16
+
+>>> pskc = PSKC()
+>>> pskc.encryption.algorithm = 'aes256-cbc'
+>>> pskc.encryption.setup_pbkdf2('test')
+>>> pskc.encryption.derivation.algorithm
+'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
+>>> pskc.encryption.derivation.pbkdf2_iterations
+12000
+>>> len(pskc.encryption.derivation.pbkdf2_salt)
+16
+>>> pskc.encryption.derivation.pbkdf2_key_length
+32
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes256-cbc'
+>>> len(pskc.encryption.key)
+32
+
+
+All properties can also be manually specified.
+
+>>> pskc.encryption.setup_pbkdf2(
+...    'qwerty', iterations=1000, algorithm='aes256-cbc', key_length=24,
+...    salt=base64.b64decode('Ej7/PEpyEpw='),
+...    key_name='PBKDF2 passphrase')
+>>> pskc.encryption.derivation.algorithm
+'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
+>>> pskc.encryption.derivation.pbkdf2_iterations
+1000
+>>> b2a_hex(pskc.encryption.derivation.pbkdf2_salt)
+'123eff3c4a72129c'
+>>> pskc.encryption.derivation.pbkdf2_key_length
+24
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes256-cbc'
+>>> pskc.encryption.key_name
+'PBKDF2 passphrase'
+>>> b2a_hex(pskc.encryption.key)
+'651e63cd57008476af1ff6422cd02e41a13be8f92db69ec9'

@@ -51,6 +51,8 @@ _algorithms = {
     'hmac-sha384': 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha384',
     'hmac-sha512': 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha512',
     'hmac-ripemd160': 'http://www.w3.org/2001/04/xmldsig-more#hmac-ripemd160',
+    'pbkdf2': 'http://www.rsasecurity.com/rsalabs/pkcs/schemas/' +
+              'pkcs-5v2-0#pbkdf2',
 }
 
 # translation table to change old encryption names to new names
@@ -147,27 +149,46 @@ class KeyDerivation(object):
         for name in key_names:
             mk_elem(derived_key, 'xenc11:MasterKeyName', name)
 
+    def derive_pbkdf2(self, password):
+        from Crypto.Protocol.KDF import PBKDF2
+        from pskc.mac import get_hmac
+        from pskc.exceptions import KeyDerivationError
+        prf = None
+        if self.pbkdf2_prf:
+            prf = get_hmac(self.pbkdf2_prf)
+            if prf is None:
+                raise KeyDerivationError(
+                    'Pseudorandom function unsupported: %r' %
+                    self.pbkdf2_prf)
+        return PBKDF2(
+            password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
+            count=self.pbkdf2_iterations, prf=prf)
+
     def derive(self, password):
         """Derive a key from the password."""
         from pskc.exceptions import KeyDerivationError
         if self.algorithm is None:
             raise KeyDerivationError('No algorithm specified')
         if self.algorithm.endswith('#pbkdf2'):
-            from Crypto.Protocol.KDF import PBKDF2
-            from pskc.mac import get_hmac
-            prf = None
-            if self.pbkdf2_prf:
-                prf = get_hmac(self.pbkdf2_prf)
-                if prf is None:
-                    raise KeyDerivationError(
-                        'Pseudorandom function unsupported: %r' %
-                        self.pbkdf2_prf)
-            return PBKDF2(
-                password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
-                count=self.pbkdf2_iterations, prf=prf)
+            return self.derive_pbkdf2(password)
         else:
             raise KeyDerivationError(
                 'Unsupported algorithm: %r' % self.algorithm)
+
+    def setup_pbkdf2(self, password, salt=None, salt_length=16,
+                     key_length=None, iterations=None, prf=None):
+        from Crypto import Random
+        self.algorithm = normalise_algorithm('pbkdf2')
+        if salt is None:
+            salt = Random.get_random_bytes(salt_length)
+        self.pbkdf2_salt = salt
+        if iterations:
+            self.pbkdf2_iterations = iterations
+        elif self.pbkdf2_iterations is None:
+            self.pbkdf2_iterations = 12 * 1000
+        if key_length:
+            self.pbkdf2_key_length = key_length
+        return self.derive_pbkdf2(password)
 
 
 class Encryption(object):
@@ -247,6 +268,42 @@ class Encryption(object):
     def derive_key(self, password):
         """Derive a key from the password."""
         self.key = self.derivation.derive(password)
+
+    def setup_pbkdf2(self, password, **kwargs):
+        """Configure password-based PSKC encryption.
+
+        The following arguments may be supplied:
+          password: the password to use (required)
+          id: encryption key identifier
+          algorithm: encryption algorithm
+          key_length: encryption key length in bytes
+          key_name: a name for the key
+          key_names: a number of names for the key
+          fields: a list of fields to encrypt
+          salt: PBKDF2 salt
+          salt_length: used when generating random salt
+          iterations: number of PBKDF2 iterations
+          prf: PBKDF2 pseudorandom function
+
+        Only password is required, for the other arguments reasonable
+        defaults will be chosen.
+        """
+        for k in ('id', 'algorithm', 'key_name', 'key_names', 'fields'):
+            v = kwargs.pop(k, None)
+            if v is not None:
+                setattr(self, k, v)
+        # default encryption to AES128-CBC
+        if not self.algorithm:
+            self.algorithm = 'aes128-cbc'
+        # default to encrypting the secret only
+        if not self.fields:
+            self.fields = ['secret', ]
+        # if we're using a CBC mode of encryption, add a MAC
+        if self.algorithm.endswith('-cbc'):
+            self.pskc.mac.setup()
+        # pass a key length to PBKDF2
+        kwargs.setdefault('key_length', self.algorithm_key_lengths[-1])
+        self.key = self.derivation.setup_pbkdf2(password, **kwargs)
 
     @property
     def algorithm_key_lengths(self):
