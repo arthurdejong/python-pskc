@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Quick test with a non-integer value for an attribute.
+-->
+
+<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <Key>
+      <Policy>
+        <PINPolicy MinLength="FOUR"/>
+      </Policy>
+    </Key>
+  </KeyPackage>
+</KeyContainer>

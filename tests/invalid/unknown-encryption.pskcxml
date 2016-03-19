@@ -2,7 +2,7 @@
 
 <!--
   Based on the Figure 6 example, this file includes an unknown encryption
-  algorithm and a key without an algorithm specified.
+  algorithm.
 -->
 
 <KeyContainer Version="1.0"
@@ -18,22 +18,6 @@
         <Secret>
           <EncryptedValue>
             <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#unknown"/>
-            <xenc:CipherData>
-              <xenc:CipherValue>
-AAECAwQFBgcICQoLDA0OD+cIHItlB3Wra1DUpxVvOx2lef1VmNPCMl8jwZqIUqGv
-                </xenc:CipherValue>
-            </xenc:CipherData>
-          </EncryptedValue>
-        </Secret>
-      </Data>
-    </Key>
-  </KeyPackage>
-  <KeyPackage>
-    <Key Id="45678901" Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
-      <Data>
-        <Secret>
-          <EncryptedValue>
-            <xenc:EncryptionMethod/>
             <xenc:CipherData>
               <xenc:CipherValue>
 AAECAwQFBgcICQoLDA0OD+cIHItlB3Wra1DUpxVvOx2lef1VmNPCMl8jwZqIUqGv

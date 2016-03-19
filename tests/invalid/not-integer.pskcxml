@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Quick test with a non-integer element value.
+-->
+
+<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <Key>
+      <Policy>
+        <NumberOfTransactions>TWELVE</NumberOfTransactions>
+      </Policy>
+    </Key>
+  </KeyPackage>
+</KeyContainer>

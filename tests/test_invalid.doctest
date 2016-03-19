@@ -1,6 +1,6 @@
 test_invalid.doctest - test for invalid PSKC file
 
-Copyright (C) 2014-2015 Arthur de Jong
+Copyright (C) 2014-2016 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
->>> from binascii import a2b_hex
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
 >>> from pskc import PSKC
 
 
@@ -27,7 +33,7 @@ Load a number of invalid files.
 
 This file is plain invalid XML.
 
->>> pskc = PSKC('tests/invalid/notxml.pskcxml')
+>>> pskc = PSKC('tests/invalid/notxml.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 ParseError: Error parsing XML
@@ -35,7 +41,7 @@ ParseError: Error parsing XML
 
 This XML file has a wrong top-level element.
 
->>> pskc = PSKC('tests/invalid/wrongelement.pskcxml')
+>>> pskc = PSKC('tests/invalid/wrongelement.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 ParseError: Missing KeyContainer
@@ -49,14 +55,13 @@ Traceback (most recent call last):
 ParseError: Unsupported version
 
 
-This PSKC file has one key with an unknown algorithm and one key without an
-algorithm specified.
+This PSKC file has a key with an unknown algorithm specified.
 
->>> pskc = PSKC('tests/invalid/encryption.pskcxml')
+>>> pskc = PSKC('tests/invalid/unknown-encryption.pskcxml')
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
->>> key.secret
+>>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: No key available
@@ -65,20 +70,29 @@ DecryptionError: No key available
 Traceback (most recent call last):
     ...
 DecryptionError: Unsupported algorithm: ...
->>> key = pskc.keys[1]
+
+
+This PSKC file has a key without an algorithm specified.
+
+>>> pskc = PSKC('tests/invalid/missing-encryption.pskcxml')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> key = pskc.keys[0]
 >>> key.id
 '45678901'
->>> key.secret
+>>> b2a_hex(key.secret)  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: No algorithm specified
+>>> pskc.encryption.algorithm = 'aes128-cbc'
+>>> b2a_hex(key.secret)
+'3132333435363738393031323334353637383930'
 
 
-Specify an unknown key derivation algorithm specified.
+Specify an unknown key derivation algorithm.
 
 >>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.derivation.algorithm = 'unknown'
->>> pskc.encryption.derive_key('qwerty')
+>>> pskc.encryption.derive_key('qwerty')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 KeyDerivationError: Unsupported algorithm: 'unknown'
@@ -88,7 +102,7 @@ Figure 6 does use encryption but with a pre-shared key. Attempting key
 derivation with such a PSKC file should result in an exception.
 
 >>> pskc = PSKC('tests/rfc6030/figure6.pskcxml')
->>> pskc.encryption.derive_key('qwerty')
+>>> pskc.encryption.derive_key('qwerty')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 KeyDerivationError: No algorithm specified
@@ -98,7 +112,7 @@ Specify an unknown PBKDF2 PRF (pseudorandom function).
 
 >>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.derivation.pbkdf2_prf = 'unknown'
->>> pskc.encryption.derive_key('qwerty')
+>>> pskc.encryption.derive_key('qwerty')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 KeyDerivationError: Pseudorandom function unsupported: 'unknown'
@@ -111,7 +125,7 @@ There is a ValueMAC element but no MACMethod element.
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
->>> key.secret
+>>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: No MAC key available
@@ -138,7 +152,23 @@ transit.
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
->>> key.secret
+>>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: MAC value does not match
+
+
+Checks to see that invalid values are detected.
+
+>>> pskc = PSKC('tests/invalid/not-integer.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+ValueError: invalid literal for int() with base 10: 'TWELVE'
+>>> pskc = PSKC('tests/invalid/not-integer2.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+ValueError: invalid literal for int() with base 10: 'FOUR'
+>>> pskc = PSKC('tests/invalid/not-boolean.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+ValueError: invalid boolean value: 'not really'

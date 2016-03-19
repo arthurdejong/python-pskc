@@ -1,6 +1,6 @@
 test_tripledeskw.doctest - test keywrap functions
 
-Copyright (C) 2014-2015 Arthur de Jong
+Copyright (C) 2014-2016 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -65,7 +65,7 @@ True
 >>> short_plaintext = fromhex('''
 ... 2923 bf85 e06d d6ae 5291 49f1 f1ba e9
 ... ''')
->>> wrap(short_plaintext, key)
+>>> wrap(short_plaintext, key)  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 EncryptionError: Plaintext length wrong
@@ -76,11 +76,11 @@ size) and unwrapping is also authenticated.
 
 >>> unwrap(ciphertext, key) == plaintext
 True
->>> unwrap(ciphertext[:-1], key)
+>>> unwrap(ciphertext[:-1], key)  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Ciphertext length wrong
->>> unwrap(ciphertext[:-1] + b'A', key)
+>>> unwrap(ciphertext[:-1] + b'A', key)  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: CMS key checksum error

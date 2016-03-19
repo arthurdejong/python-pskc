@@ -1,6 +1,6 @@
 test_rfc6030.doctest - test for examples from RFC 6030
 
-Copyright (C) 2014-2015 Arthur de Jong
+Copyright (C) 2014-2016 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -155,7 +155,7 @@ encryption.
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
->>> key.secret
+>>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: No key available
@@ -168,6 +168,12 @@ DecryptionError: No key available
 '3132333435363738393031323334353637383930'
 >>> key.check()
 True
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+>>> key.response_length
+8
+>>> key.manufacturer
+'Manufacturer'
 
 
 This tests a derived master key using PBKDF2 as seen in Figure 7 from RFC
@@ -186,6 +192,12 @@ This tests a derived master key using PBKDF2 as seen in Figure 7 from RFC
 '12345678901234567890'
 >>> key.check()
 True
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+>>> key.response_length
+8
+>>> key.manufacturer
+'TokenVendorAcme'
 
 
 This tests bulk provisioning as shown in Figure 10 From RFC 6030.

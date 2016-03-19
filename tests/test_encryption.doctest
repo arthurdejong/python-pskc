@@ -42,7 +42,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 
 >>> pskc = PSKC('tests/encryption/aes192-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
->>> pskc.keys[0].secret
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes192-cbc'
+>>> pskc.keys[0].secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Invalid key length
@@ -69,7 +71,7 @@ DecryptionError: Invalid key length
 
 >>> pskc = PSKC('tests/encryption/tripledes-cbc.pskcxml')
 >>> pskc.encryption.key = a2b_hex('1234')
->>> pskc.keys[0].secret
+>>> pskc.keys[0].secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Invalid key length
@@ -84,7 +86,7 @@ DecryptionError: Invalid key length
 
 >>> pskc = PSKC('tests/encryption/kw-aes128.pskcxml')
 >>> pskc.encryption.key = a2b_hex('1234')
->>> pskc.keys[0].secret
+>>> pskc.keys[0].secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Invalid key length
@@ -95,7 +97,7 @@ DecryptionError: Invalid key length
 
 >>> pskc = PSKC('tests/encryption/kw-aes192.pskcxml')
 >>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f')
->>> pskc.keys[0].secret
+>>> pskc.keys[0].secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Invalid key length
@@ -112,7 +114,7 @@ DecryptionError: Invalid key length
 
 >>> pskc = PSKC('tests/encryption/kw-tripledes.pskcxml')
 >>> pskc.encryption.key = a2b_hex('255e0d1c07b646dfb3134cc843ba8aa71f')
->>> pskc.keys[0].secret
+>>> pskc.keys[0].secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Invalid key length

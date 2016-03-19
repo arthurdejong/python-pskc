@@ -57,7 +57,7 @@ True
 
 Adding a key with unknown attributes raises an error.
 
->>> key = pskc.add_key(foo='bar')
+>>> key = pskc.add_key(foo='bar')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 AttributeError
@@ -78,10 +78,14 @@ Setting encryption key name and algorithm also works.
 >>> pskc.encryption.key_name = 'Test encryption key'
 >>> pskc.encryption.key_names
 ['Test encryption key']
->>> pskc.encryption.algorithm
+>>> pskc.encryption.algorithm is None
+True
 >>> pskc.encryption.algorithm = 'aes128-cbc'
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> pskc.encryption.algorithm = 'none'
+>>> pskc.encryption.algorithm is None
+True
 
 
 Load an PSKC file with an odd namespace.

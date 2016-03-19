@@ -1,6 +1,6 @@
 test_write.doctest - tests for writing PSKC files
 
-Copyright (C) 2014-2015 Arthur de Jong
+Copyright (C) 2014-2016 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -85,7 +85,7 @@ argument).
 
 >>> f = tempfile.NamedTemporaryFile()
 >>> pskc.write(f.name)
->>> x = sys.stdout.write(open(f.name, 'r').read())
+>>> x = sys.stdout.write(open(f.name, 'r').read())  #doctest: +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
  <pskc:KeyPackage>
@@ -151,7 +151,7 @@ Read an encrypted PSKC file and write it out as an unencrypted file.
 >>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f')
 >>> f = tempfile.NamedTemporaryFile()
 >>> pskc.write(f.name)
->>> x = sys.stdout.write(open(f.name, 'r').read())
+>>> x = sys.stdout.write(open(f.name, 'r').read())  #doctest: +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
  <pskc:KeyPackage>

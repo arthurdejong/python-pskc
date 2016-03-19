@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Quick test with a non-boolean value for an attribute.
+-->
+
+<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <Key>
+      <AlgorithmParameters>
+        <ResponseFormat Encoding="DECIMAL" Length="8" CheckDigits="not really"/>
+      </AlgorithmParameters>
+    </Key>
+  </KeyPackage>
+</KeyContainer>

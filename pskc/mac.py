@@ -91,8 +91,6 @@ class MAC(object):
         return True if the MAC matches and raise an exception if it fails.
         """
         from pskc.exceptions import DecryptionError
-        if value is None or value_mac is None:
-            return  # no MAC present or nothing to check
         key = self.key
         if key is None:
             raise DecryptionError('No MAC key available')

@@ -79,17 +79,17 @@ class DataType(object):
     @staticmethod
     def _from_text(value):
         """Convert the plain value to native representation."""
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @staticmethod
     def _from_bin(value):
         """Convert the unencrypted binary to native representation."""
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @staticmethod
     def _to_text(value):
         """Convert the value to an unencrypted string representation."""
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def make_xml(self, key, tag):
         from pskc.xml import find, mk_elem
@@ -147,7 +147,7 @@ class BinaryDataType(DataType):
         """Convert the value to an unencrypted string representation."""
         # force conversion to bytestring on Python 3
         if not isinstance(value, type(b'')):
-            value = value.encode()
+            value = value.encode()  # pragma: no cover (Python 3 specific)
         return base64.b64encode(value).decode()
 
 
