@@ -130,11 +130,23 @@ class Policy(object):
             self.pin_min_length = getint(pin_policy, 'MinLength')
             self.pin_max_length = getint(pin_policy, 'MaxLength')
             self.pin_encoding = pin_policy.get('PINEncoding')
-            # TODO: check if there are any other attributes set for PINPolicy
-            # of if there are any children and set unknown_policy_elementss
+            # check for child elements
+            if list(pin_policy):
+                self.unknown_policy_elements = True
+            # check for unknown attributes
+            known_attributes = set([
+                'PINKeyId', 'PINUsageMode', 'MaxFailedAttempts', 'MinLength',
+                'MaxLength', 'PINEncoding'])
+            if set(pin_policy.keys()) - known_attributes:
+                self.unknown_policy_elements = True
 
-        # TODO: check if there are other children and make sure
-        # policy rejects any key usage (set unknown_policy_elements)
+        # check for other child elements
+        known_children = set([
+            'StartDate', 'ExpiryDate', 'NumberOfTransactions', 'KeyUsage',
+            'PINPolicy'])
+        for child in policy:
+            if child.tag not in known_children:
+                self.unknown_policy_elements = True
 
     def make_xml(self, key):
         from pskc.xml import mk_elem
@@ -145,8 +157,6 @@ class Policy(object):
                 self.pin_max_failed_attemtps, self.pin_min_length,
                 self.pin_max_length, self.pin_encoding)):
             return
-        # TODO: raise exception if unknown_policy_elements is set
-
         policy = mk_elem(key, 'pskc:Policy', empty=True)
         mk_elem(policy, 'pskc:StartDate', self.start_date)
         mk_elem(policy, 'pskc:ExpiryDate', self.expiry_date)

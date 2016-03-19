@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Based on Figure 5 from the RFC 6030 tests that has unknown policy
+  elements.
+-->
+
+<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+      <!-- complete and valid policy -->
+      <Policy>
+        <StartDate>2006-05-01T00:00:00Z</StartDate>
+        <ExpiryDate>2026-05-31T00:00:00Z</ExpiryDate>
+        <NumberOfTransactions>4321</NumberOfTransactions>
+        <KeyUsage>OTP</KeyUsage>
+        <PINPolicy MinLength="4" MaxLength="4"
+          PINKeyId="123456781" PINEncoding="DECIMAL"
+          PINUsageMode="Local"/>
+      </Policy>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+      <Policy>
+        <KeyUsage>OTP</KeyUsage>
+        <!-- unknwon PINPolicy attribute -->
+        <PINPolicy MinLength="4" MaxLength="4"
+          PINKeyId="123456781" PINEncoding="DECIMAL"
+          PINUsageMode="Local" OnWeekDaysOnly="TRUE"/>
+      </Policy>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+      <Policy>
+        <KeyUsage>OTP</KeyUsage>
+        <PINPolicy MinLength="4" MaxLength="4"
+          PINKeyId="123456781" PINEncoding="DECIMAL"
+          PINUsageMode="Local">
+          <!-- unknown child element of PINPolicy -->
+          <Foo>Bar</Foo>
+        </PINPolicy>
+      </Policy>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
+      <Data>
+        <Secret><PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue></Secret>
+      </Data>
+      <Policy>
+        <KeyUsage>OTP</KeyUsage>
+        <PINPolicy MinLength="4" MaxLength="4"
+          PINKeyId="123456781" PINEncoding="DECIMAL"
+          PINUsageMode="Local"/>
+        <!-- unknown child element of Policy -->
+        <Foo>bar</Foo>
+      </Policy>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <Key Id="123456781" Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:pin">
+      <AlgorithmParameters>
+        <ResponseFormat Length="4" Encoding="DECIMAL"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret><PlainValue>MTIzNA==</PlainValue></Secret>
+      </Data>
+    </Key>
+  </KeyPackage>
+</KeyContainer>

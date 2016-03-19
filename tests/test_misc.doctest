@@ -129,3 +129,44 @@ Integers can be represented in different ways in PSKC files.
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> [key.counter for key in pskc.keys]
 [831791, 709791, 405834, 298507, 961392]
+
+
+This tests key policy and unknown policy elements. The first key should have
+all known policy elements set while other keys should have extra unknown
+information added which should result in rejected usage.
+
+>>> pskc = PSKC('tests/misc/policy.pskcxml')
+>>> key = pskc.keys[0]
+>>> key.policy.start_date
+datetime.datetime(2006, 5, 1, 0, 0, tzinfo=tzutc())
+>>> key.policy.expiry_date
+datetime.datetime(2026, 5, 31, 0, 0, tzinfo=tzutc())
+>>> key.policy.number_of_transactions
+4321
+>>> key.policy.key_usage
+['OTP']
+>>> key.policy.unknown_policy_elements
+False
+>>> key.policy.may_use('OTP')
+True
+>>> key = pskc.keys[1]
+>>> key.policy.key_usage
+['OTP']
+>>> key.policy.unknown_policy_elements
+True
+>>> key.policy.may_use('OTP')
+False
+>>> key = pskc.keys[2]
+>>> key.policy.key_usage
+['OTP']
+>>> key.policy.unknown_policy_elements
+True
+>>> key.policy.may_use('OTP')
+False
+>>> key = pskc.keys[3]
+>>> key.policy.key_usage
+['OTP']
+>>> key.policy.unknown_policy_elements
+True
+>>> key.policy.may_use('OTP')
+False
