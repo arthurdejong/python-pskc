@@ -128,7 +128,12 @@ class PSKC(object):
         """Write the PSKC file to the provided file."""
         from pskc.xml import tostring
         if hasattr(filename, 'write'):
-            filename.write(tostring(self.make_xml()))
+            xml = tostring(self.make_xml())
+            try:
+                filename.write(xml)
+            except TypeError:  # pragma: no cover (Python 3 specific)
+                # fall back to writing as string for Python 3
+                filename.write(xml.decode('utf-8'))
         else:
             with open(filename, 'wb') as output:
                 self.write(output)
