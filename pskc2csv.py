@@ -3,7 +3,7 @@
 
 # pskc2csv.py - script to convert a PSKC file to CSV
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,10 +23,11 @@
 from __future__ import print_function
 import argparse
 import csv
-import operator
-import sys
 import getpass
-from binascii import b2a_hex
+import operator
+import os.path
+import sys
+from binascii import a2b_hex, b2a_hex
 
 import pskc
 from pskc.exceptions import DecryptionError
@@ -36,7 +37,7 @@ version_string = '''
 pskc2csv (python-pskc) %s
 Written by Arthur de Jong.
 
-Copyright (C) 2014 Arthur de Jong
+Copyright (C) 2014-2016 Arthur de Jong
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 '''.strip() % pskc.__version__
@@ -81,15 +82,18 @@ parser.add_argument(
     '-c', '--columns', metavar='COL,COL', type=lambda x: x.split(','),
     help='list of columns to export',
     default='serial,secret,algorithm,response_length,time_interval')
+parser.add_argument(
+    '-p', '--password', '--passwd', metavar='PASS/FILE',
+    help='password to use for decryption (or read from a file)')
+parser.add_argument(
+    '-s', '--secret', metavar='KEY/FILE',
+    help='hex encoded encryption key or file containing the binary key')
 
 
-def password_prompt(pskcfile):
-    """Prompt for a password and use the password to decrypt."""
-    prompt = 'Password: '
-    if pskcfile.encryption.key_name:
-        prompt = '%s: ' % pskcfile.encryption.key_name
-    passwd = getpass.getpass(prompt)
-    pskcfile.encryption.derive_key(passwd)
+# Python 3 compatible version of b2a_hex
+def decode(f):
+    return lambda x: str(f(x).decode())
+b2a_hex = decode(b2a_hex)
 
 
 def get_column(key, column):
@@ -116,9 +120,26 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # open and parse input PSKC file
     pskcfile = pskc.PSKC(args.input)
-    # see if we should prompt for a password
-    if sys.stdin.isatty() and is_encrypted(pskcfile):
-        password_prompt(pskcfile)
+    if args.secret:
+        if os.path.isfile(args.secret):
+            with open(args.secret, 'rb') as keyfile:
+                pskcfile.encryption.key = keyfile.read()
+        else:
+            pskcfile.encryption.key = a2b_hex(args.secret)
+    elif args.password:
+        if os.path.isfile(args.password):
+            with open(args.password, 'r') as passfile:
+                passwd = passfile.read().replace('\n', '')
+            pskcfile.encryption.derive_key(passwd)
+        else:
+            pskcfile.encryption.derive_key(args.password)
+    elif sys.stdin.isatty() and is_encrypted(pskcfile):
+        # prompt for a password
+        prompt = 'Password: '
+        if pskcfile.encryption.key_name:
+            prompt = '%s: ' % pskcfile.encryption.key_name
+        passwd = getpass.getpass(prompt)
+        pskcfile.encryption.derive_key(passwd)
     # open output CSV file, write header and keys
     with open(args.output, 'wb') if args.output else sys.stdout as output:
         csvfile = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
