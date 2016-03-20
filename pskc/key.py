@@ -120,6 +120,13 @@ class DataType(object):
             mk_elem(
                 cipher_data, 'xenc:CipherValue',
                 base64.b64encode(self.cipher_value).decode())
+            if self.value_mac:
+                mk_elem(element, 'pskc:ValueMAC', base64.b64encode(
+                    self.value_mac).decode())
+            elif self.pskc.mac.key:
+                mk_elem(element, 'pskc:ValueMAC', base64.b64encode(
+                    self.pskc.mac.generate_mac(self.cipher_value)
+                ).decode())
         else:
             mk_elem(element, 'pskc:PlainValue', self._to_text(self.value))
 

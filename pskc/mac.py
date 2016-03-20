@@ -36,16 +36,21 @@ import re
 _hmac_url_re = re.compile(r'^.*#hmac-(?P<hash>[a-z0-9]+)$')
 
 
+def get_hash(algorithm):
+    """Return the hash function for the specifies HMAC algorithm."""
+    import hashlib
+    match = _hmac_url_re.search(algorithm)
+    if match:
+        return getattr(hashlib, match.group('hash'), None)
+
+
 def get_hmac(algorithm):
     """Return an HMAC function that takes a secret and a value and returns a
     digest."""
-    import hashlib
     import hmac
-    match = _hmac_url_re.search(algorithm)
-    if match:
-        digestmod = getattr(hashlib, match.group('hash'), None)
-        if digestmod is not None:
-            return lambda key, value: hmac.new(key, value, digestmod).digest()
+    digestmod = get_hash(algorithm)
+    if digestmod is not None:
+        return lambda key, value: hmac.new(key, value, digestmod).digest()
 
 
 class MAC(object):
@@ -124,12 +129,8 @@ class MAC(object):
         from pskc.encryption import normalise_algorithm
         self._algorithm = normalise_algorithm(value)
 
-    def check_value(self, value, value_mac):
-        """Check if the provided value matches the MAC.
-
-        This will return None if there is no MAC to be checked. It will
-        return True if the MAC matches and raise an exception if it fails.
-        """
+    def generate_mac(self, value):
+        """Generate the MAC over the specified value."""
         from pskc.exceptions import DecryptionError
         key = self.key
         if key is None:
@@ -138,6 +139,15 @@ class MAC(object):
         if hmacfn is None:
             raise DecryptionError(
                 'Unsupported MAC algorithm: %r' % self.algorithm)
-        if hmacfn(key, value) != value_mac:
+        return hmacfn(key, value)
+
+    def check_value(self, value, value_mac):
+        """Check if the provided value matches the MAC.
+
+        This will return None if there is no MAC to be checked. It will
+        return True if the MAC matches and raise an exception if it fails.
+        """
+        from pskc.exceptions import DecryptionError
+        if self.generate_mac(value) != value_mac:
             raise DecryptionError('MAC value does not match')
         return True
