@@ -173,14 +173,13 @@ class Encryption(object):
     derive_key() method.
     """
 
-    def __init__(self, key_info=None):
+    def __init__(self, pskc):
+        self.pskc = pskc
         self.id = None
         self.key_names = []
         self.key = None
         self._algorithm = None
-        self._encrypted_values = []
         self.derivation = KeyDerivation()
-        self.parse(key_info)
 
     def parse(self, key_info):
         """Read encryption information from the <EncryptionKey> XML tree."""

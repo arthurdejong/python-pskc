@@ -66,7 +66,7 @@ class PSKC(object):
         from pskc.mac import MAC
         self.version = None
         self.id = None
-        self.encryption = Encryption()
+        self.encryption = Encryption(self)
         self.mac = MAC(self)
         self.keys = []
         if filename is not None:

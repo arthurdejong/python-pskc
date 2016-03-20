@@ -56,12 +56,11 @@ class MAC(object):
       key: the binary value of the MAC key if it can be decrypted
     """
 
-    def __init__(self, pskc, mac_method=None):
+    def __init__(self, pskc):
         self.pskc = pskc
         self.algorithm = None
         self.key_cipher_value = None
         self.key_algorithm = None
-        self.parse(mac_method)
 
     def parse(self, mac_method):
         """Read MAC information from the <MACMethod> XML tree."""
