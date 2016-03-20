@@ -106,6 +106,7 @@ class PSKC(object):
         container = mk_elem('pskc:KeyContainer', Version=self.version,
                             Id=self.id)
         self.encryption.make_xml(container)
+        self.mac.make_xml(container)
         for key in self.keys:
             key.make_xml(container)
         return container

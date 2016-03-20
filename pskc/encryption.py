@@ -28,7 +28,7 @@ The encryption key can be derived using the KeyDerivation class.
 
 import base64
 
-# cannonical URIs of known encryption algorithms
+# cannonical URIs of known algorithms
 _algorithms = {
     'tripledes-cbc': 'http://www.w3.org/2001/04/xmlenc#tripledes-cbc',
     'kw-tripledes': 'http://www.w3.org/2001/04/xmlenc#kw-tripledes',
@@ -44,6 +44,13 @@ _algorithms = {
     'kw-camellia128': 'http://www.w3.org/2001/04/xmldsig-more#kw-camellia128',
     'kw-camellia192': 'http://www.w3.org/2001/04/xmldsig-more#kw-camellia192',
     'kw-camellia256': 'http://www.w3.org/2001/04/xmldsig-more#kw-camellia256',
+    'hmac-md5': 'http://www.w3.org/2001/04/xmldsig-more#hmac-md5',
+    'hmac-sha1': 'http://www.w3.org/2000/09/xmldsig#hmac-sha1',
+    'hmac-sha224': 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha224',
+    'hmac-sha256': 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha256',
+    'hmac-sha384': 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha384',
+    'hmac-sha512': 'http://www.w3.org/2001/04/xmldsig-more#hmac-sha512',
+    'hmac-ripemd160': 'http://www.w3.org/2001/04/xmldsig-more#hmac-ripemd160',
 }
 
 # translation table to change old encryption names to new names

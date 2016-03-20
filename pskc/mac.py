@@ -29,6 +29,7 @@ with the PSKC encryption key.
 """
 
 
+import base64
 import re
 
 
@@ -58,7 +59,8 @@ class MAC(object):
 
     def __init__(self, pskc):
         self.pskc = pskc
-        self.algorithm = None
+        self._algorithm = None
+        self.key_plain_value = None
         self.key_cipher_value = None
         self.key_algorithm = None
 
@@ -76,12 +78,51 @@ class MAC(object):
                 self.key_algorithm = encryption_method.attrib.get('Algorithm')
         mac_key_reference = findtext(mac_method, 'MACKeyReference')
 
+    def make_xml(self, container):
+        from pskc.xml import mk_elem
+        if not self.algorithm and not self.key:
+            return
+        mac_method = mk_elem(
+            container, 'pskc:MACMethod', Algorithm=self.algorithm, empty=True)
+        mac_key = mk_elem(mac_method, 'pskc:MACKey', empty=True)
+        mk_elem(
+            mac_key, 'xenc:EncryptionMethod',
+            Algorithm=self.pskc.encryption.algorithm)
+        cipher_data = mk_elem(mac_key, 'xenc:CipherData', empty=True)
+        if self.key_cipher_value:
+            mk_elem(
+                cipher_data, 'xenc:CipherValue',
+                base64.b64encode(self.key_cipher_value).decode())
+        elif self.key_plain_value:
+            mk_elem(
+                cipher_data, 'xenc:CipherValue', base64.b64encode(
+                    self.pskc.encryption.encrypt_value(self.key_plain_value)
+                ).decode())
+
     @property
     def key(self):
         """Provides access to the MAC key binary value if available."""
-        if self.key_cipher_value:
+        if self.key_plain_value:
+            return self.key_plain_value
+        elif self.key_cipher_value:
             return self.pskc.encryption.decrypt_value(
                 self.key_cipher_value, self.key_algorithm)
+
+    @key.setter
+    def key(self, value):
+        self.key_plain_value = value
+        self.key_cipher_value = None
+
+    @property
+    def algorithm(self):
+        """Provide the MAC algorithm used."""
+        if self._algorithm:
+            return self._algorithm
+
+    @algorithm.setter
+    def algorithm(self, value):
+        from pskc.encryption import normalise_algorithm
+        self._algorithm = normalise_algorithm(value)
 
     def check_value(self, value, value_mac):
         """Check if the provided value matches the MAC.
