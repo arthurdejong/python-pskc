@@ -269,6 +269,43 @@ class Encryption(object):
         """Derive a key from the password."""
         self.key = self.derivation.derive(password)
 
+    def _setup_encryption(self, kwargs):
+        for k in ('id', 'algorithm', 'key_name', 'key_names', 'fields'):
+            v = kwargs.pop(k, None)
+            if v is not None:
+                setattr(self, k, v)
+        # default encryption to AES128-CBC
+        if not self.algorithm:
+            self.algorithm = 'aes128-cbc'
+        # default to encrypting the secret only
+        if not self.fields:
+            self.fields = ['secret', ]
+        # if we're using a CBC mode of encryption, add a MAC
+        if self.algorithm.endswith('-cbc'):
+            self.pskc.mac.setup()
+
+    def setup_preshared_key(self, **kwargs):
+        """Configure pre-shared key encryption.
+
+        The following arguments may be supplied:
+          key: the encryption key to use
+          id: encryption key identifier
+          algorithm: encryption algorithm
+          key_length: encryption key length in bytes
+          key_name: a name for the key
+          key_names: a number of names for the key
+          fields: a list of fields to encrypt
+
+        None of the arguments are required, reasonable defaults will be
+        chosen for missing arguments.
+        """
+        self._setup_encryption(kwargs)
+        key = kwargs.pop('key', self.key)
+        if not key:
+            from Crypto import Random
+            self.key = Random.get_random_bytes(kwargs.pop(
+                'key_length', self.algorithm_key_lengths[-1]))
+
     def setup_pbkdf2(self, password, **kwargs):
         """Configure password-based PSKC encryption.
 
@@ -288,19 +325,7 @@ class Encryption(object):
         Only password is required, for the other arguments reasonable
         defaults will be chosen.
         """
-        for k in ('id', 'algorithm', 'key_name', 'key_names', 'fields'):
-            v = kwargs.pop(k, None)
-            if v is not None:
-                setattr(self, k, v)
-        # default encryption to AES128-CBC
-        if not self.algorithm:
-            self.algorithm = 'aes128-cbc'
-        # default to encrypting the secret only
-        if not self.fields:
-            self.fields = ['secret', ]
-        # if we're using a CBC mode of encryption, add a MAC
-        if self.algorithm.endswith('-cbc'):
-            self.pskc.mac.setup()
+        self._setup_encryption(kwargs)
         # pass a key length to PBKDF2
         kwargs.setdefault('key_length', self.algorithm_key_lengths[-1])
         self.key = self.derivation.setup_pbkdf2(password, **kwargs)
