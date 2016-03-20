@@ -148,6 +148,10 @@ Read an encrypted PSKC file and write it out as an unencrypted file.
 
 >>> pskc = PSKC('tests/encryption/kw-aes128.pskcxml')
 >>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f')
+>>> for key in pskc.keys:
+...     key.secret = key.secret  # force decryption of values
+>>> pskc.encryption.key = None
+>>> pskc.encryption.key_name = None
 >>> pskc.write(sys.stdout)  #doctest: +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">

@@ -82,7 +82,7 @@ class KeyDerivation(object):
 
       pbkdf2_salt: salt value
       pbkdf2_iterations: number of iterations to use
-      pbkdf2_key_length: required key lengt
+      pbkdf2_key_length: required key length in bytes
       pbkdf2_prf: name of pseudorandom function used
     """
 
@@ -114,6 +114,24 @@ class KeyDerivation(object):
             prf = find(pbkdf2, 'PRF')
             if prf is not None:
                 self.pbkdf2_prf = prf.get('Algorithm')
+
+    def make_xml(self, encryption_key, key_names):
+        from pskc.xml import mk_elem
+        derived_key = mk_elem(encryption_key, 'xenc11:DerivedKey', empty=True)
+        key_derivation = mk_elem(derived_key, 'xenc11:KeyDerivationMethod',
+                                 Algorithm=self.algorithm)
+        if self.algorithm.endswith('#pbkdf2'):
+            pbkdf2 = mk_elem(key_derivation, 'xenc11:PBKDF2-params',
+                             empty=True)
+            if self.pbkdf2_salt:
+                salt = mk_elem(pbkdf2, 'Salt', empty=True)
+                mk_elem(salt, 'Specified', base64.b64encode(self.pbkdf2_salt))
+            mk_elem(pbkdf2, 'IterationCount', self.pbkdf2_iterations)
+            mk_elem(pbkdf2, 'KeyLength', self.pbkdf2_key_length)
+            mk_elem(pbkdf2, 'PRF', self.pbkdf2_prf)
+        # TODO: serialise ReferenceList/DataReference
+        for name in key_names:
+            mk_elem(derived_key, 'xenc11:MasterKeyName', name)
 
     def derive(self, password):
         """Derive a key from the password."""
@@ -151,8 +169,8 @@ class Encryption(object):
       key_name: (first) name of the key (usually there is only one)
       key: the key value itself (binary form)
 
-    The key can either be included in the PSKC file (in that case it
-    automatically picked up) or derived using the derive_key() method.
+    The key can either be assigned to the key property or derived using the
+    derive_key() method.
     """
 
     def __init__(self, key_info=None):
@@ -176,6 +194,20 @@ class Encryption(object):
             self.key_names.append(findtext(name, '.'))
         self.derivation.parse(find(
             key_info, 'DerivedKey/KeyDerivationMethod'))
+
+    def make_xml(self, container):
+        from pskc.xml import mk_elem
+        if all(x is None
+               for x in (self.id, self.key_name, self.key,
+                         self.derivation.algorithm)):
+            return
+        encryption_key = mk_elem(container, 'pskc:EncryptionKey',
+                                 Id=self.id, empty=True)
+        if self.derivation.algorithm:
+            self.derivation.make_xml(encryption_key, self.key_names)
+        else:
+            for name in self.key_names:
+                mk_elem(encryption_key, 'ds:KeyName', name)
 
     @property
     def key_name(self):
