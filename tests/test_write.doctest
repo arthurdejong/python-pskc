@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> import datetime
 >>> import sys
 >>> import tempfile
+>>> from Crypto import Random
 >>> from binascii import a2b_hex
 >>> from dateutil.tz import tzutc
 
@@ -340,3 +341,76 @@ Use PBKDF2 to derive a key instead of using a pre-shared key.
   </pskc:Key>
  </pskc:KeyPackage>
 </pskc:KeyContainer>
+
+
+Test encryption and decryption of the generated file to test encryption/
+decryption combinations.
+
+>>> def test_algorithm(algorithm):
+...     f = tempfile.NamedTemporaryFile()
+...     pskc1 = PSKC()
+...     pskc1.add_key(secret=Random.get_random_bytes(16))
+...     pskc1.encryption.setup_preshared_key(algorithm=algorithm)
+...     pskc1.write(f.name)
+...     pskc2 = PSKC(f.name)
+...     pskc2.encryption.key = pskc1.encryption.key
+...     assert pskc1.keys[0].secret == pskc2.keys[0].secret
+...     return (pskc1, pskc2)
+>>> pskc1, pskc2 = test_algorithm('aes192-cbc')
+>>> len(pskc1.encryption.key)
+24
+>>> pskc1, pskc2 = test_algorithm('aes256-cbc')
+>>> len(pskc1.encryption.key)
+32
+>>> pskc1, pskc2 = test_algorithm('tripledes-cbc')
+>>> len(pskc1.encryption.key)
+24
+>>> pskc1, pskc2 = test_algorithm('kw-aes128')
+>>> len(pskc1.encryption.key)
+16
+>>> pskc1, pskc2 = test_algorithm('kw-aes192')
+>>> len(pskc1.encryption.key)
+24
+>>> pskc1, pskc2 = test_algorithm('kw-aes256')
+>>> len(pskc1.encryption.key)
+32
+>>> pskc1, pskc2 = test_algorithm('kw-tripledes')
+>>> len(pskc1.encryption.key)
+24
+
+
+Not having a key and trying encryption will fail.
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.key = None
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+EncryptionError: No key available
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.algorithm = None
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+EncryptionError: No algorithm specified
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.algorithm = 'FOOBAR'
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+DecryptionError: Unsupported algorithm: 'FOOBAR'
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.algorithm = 'aes256-cbc'
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+EncryptionError: Invalid key length
