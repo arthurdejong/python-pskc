@@ -129,6 +129,17 @@ class MAC(object):
         from pskc.encryption import normalise_algorithm
         self._algorithm = normalise_algorithm(value)
 
+    @property
+    def algorithm_key_length(self):
+        """Recommended minimal key length in bytes for the set algorithm."""
+        # https://tools.ietf.org/html/rfc2104#section-3
+        # an HMAC key should be at least as long as the hash output length
+        hashfn = get_hash(self.algorithm)
+        if hashfn is not None:
+            return int(hashfn().digest_size)
+        else:
+            return 16
+
     def generate_mac(self, value):
         """Generate the MAC over the specified value."""
         from pskc.exceptions import DecryptionError
@@ -151,3 +162,25 @@ class MAC(object):
         if self.generate_mac(value) != value_mac:
             raise DecryptionError('MAC value does not match')
         return True
+
+    def setup(self, key=None, algorithm=None):
+        """Configure an encrypted MAC key.
+
+        The following arguments may be supplied:
+          key: the MAC key to use
+          algorithm: MAC algorithm
+
+        None of the arguments are required, reasonable defaults will be
+        chosen for missing arguments.
+        """
+        if key:
+            self.key = key
+        if algorithm:
+            self.algorithm = algorithm
+        # default to HMAC-SHA1
+        if not self.algorithm:
+            self.algorithm = 'hmac-sha1'
+        # generate an HMAC key
+        if not self.key:
+            from Crypto import Random
+            self.key = Random.get_random_bytes(self.algorithm_key_length)

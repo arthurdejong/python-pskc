@@ -121,3 +121,30 @@ DecryptionError: Invalid key length
 >>> pskc.encryption.key = a2b_hex('255e0d1c07b646dfb3134cc843ba8aa71f025b7c0838251f')
 >>> b2a_hex(pskc.keys[0].secret)
 '2923bf85e06dd6ae529149f1f1bae9eab3a7da3d860d3e98'
+
+
+MAC key and algorithm will use useful defaults but can also be manually
+specified.
+
+>>> pskc = PSKC()
+>>> pskc.mac.setup()
+>>> pskc.mac.algorithm
+'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
+>>> len(pskc.mac.key)
+20
+>>> pskc.mac.setup(key=a2b_hex('548512684595'), algorithm='unknown')
+>>> pskc.mac.algorithm
+'unknown'
+>>> len(pskc.mac.key)
+6
+>>> pskc.mac.algorithm_key_length  # this is the default
+16
+>>> pskc.mac.algorithm = None
+>>> pskc.mac.key = None
+>>> pskc.mac.setup(algorithm='hmac-sha224')
+>>> pskc.mac.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#hmac-sha224'
+>>> pskc.mac.algorithm_key_length
+28
+>>> len(pskc.mac.key)
+28
