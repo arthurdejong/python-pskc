@@ -23,6 +23,7 @@
 
 import array
 import base64
+import binascii
 
 from pskc.policy import Policy
 
@@ -91,18 +92,36 @@ class DataType(object):
         """Convert the value to an unencrypted string representation."""
         raise NotImplementedError  # pragma: no cover
 
-    def make_xml(self, key, tag):
+    def make_xml(self, key, tag, field):
         from pskc.xml import find, mk_elem
         # skip empty values
-        value = self.get_value()
-        if value is None:
+        if self.value in (None, '') and not self.cipher_value:
             return
         # find the data tag and create our tag under it
         data = find(key, 'pskc:Data')
         if data is None:
             data = mk_elem(key, 'pskc:Data', empty=True)
         element = mk_elem(data, tag, empty=True)
-        mk_elem(element, 'pskc:PlainValue', self._to_text(value))
+        # see if we should encrypt
+        if field in self.pskc.encryption.fields and not self.cipher_value:
+            self.cipher_value = self.pskc.encryption.encrypt_value(
+                self._to_bin(self.value))
+            self.algorithm = self.pskc.encryption.algorithm
+            self.value = None
+        # write out value
+        if self.cipher_value:
+            encrypted_value = mk_elem(
+                element, 'pskc:EncryptedValue', empty=True)
+            mk_elem(
+                encrypted_value, 'xenc:EncryptionMethod',
+                Algorithm=self.algorithm)
+            cipher_data = mk_elem(
+                encrypted_value, 'xenc:CipherData', empty=True)
+            mk_elem(
+                cipher_data, 'xenc:CipherValue',
+                base64.b64encode(self.cipher_value).decode())
+        else:
+            mk_elem(element, 'pskc:PlainValue', self._to_text(self.value))
 
     def get_value(self):
         """Provide the attribute value, decrypting as needed."""
@@ -150,6 +169,14 @@ class BinaryDataType(DataType):
             value = value.encode()  # pragma: no cover (Python 3 specific)
         return base64.b64encode(value).decode()
 
+    @staticmethod
+    def _to_bin(value):
+        """Convert the value to binary representation for encryption."""
+        # force conversion to bytestring on Python 3
+        if not isinstance(value, type(b'')):
+            value = value.encode()  # pragma: no cover (Python 3 specific)
+        return value
+
 
 class IntegerDataType(DataType):
     """Subclass of DataType for integer types (e.g. counters)."""
@@ -181,6 +208,13 @@ class IntegerDataType(DataType):
     def _to_text(value):
         """Convert the value to an unencrypted string representation."""
         return str(value)
+
+    @staticmethod
+    def _to_bin(value):
+        """Convert the value to binary representation for encryption."""
+        value = '%x' % value
+        n = len(value)
+        return binascii.unhexlify(value.zfill(n + (n & 1)))
 
 
 class Key(object):
@@ -314,7 +348,7 @@ class Key(object):
             self.challenge_max_length = getint(challenge_format, 'Max')
             self.challenge_check = getbool(
                 challenge_format, 'CheckDigits', getbool(
-                challenge_format, 'CheckDigit'))
+                    challenge_format, 'CheckDigit'))
 
         response_format = find(
             key_package,
@@ -324,7 +358,7 @@ class Key(object):
             self.response_length = getint(response_format, 'Length')
             self.response_check = getbool(
                 response_format, 'CheckDigits', getbool(
-                response_format, 'CheckDigit'))
+                    response_format, 'CheckDigit'))
 
         self.policy.parse(find(key_package, 'Key/Policy'))
 
@@ -373,11 +407,11 @@ class Key(object):
         mk_elem(key, 'pskc:KeyProfileId', self.key_profile)
         mk_elem(key, 'pskc:KeyReference', self.key_reference)
         mk_elem(key, 'pskc:FriendlyName', self.friendly_name)
-        self._secret.make_xml(key, 'pskc:Secret')
-        self._counter.make_xml(key, 'pskc:Counter')
-        self._time_offset.make_xml(key, 'pskc:Time')
-        self._time_interval.make_xml(key, 'pskc:TimeInterval')
-        self._time_drift.make_xml(key, 'pskc:TimeDrift')
+        self._secret.make_xml(key, 'pskc:Secret', 'secret')
+        self._counter.make_xml(key, 'pskc:Counter', 'counter')
+        self._time_offset.make_xml(key, 'pskc:Time', 'time_offset')
+        self._time_interval.make_xml(key, 'pskc:TimeInterval', 'time_interval')
+        self._time_drift.make_xml(key, 'pskc:TimeDrift', 'time_drif')
         mk_elem(key, 'pskc:UserId', self.key_userid)
 
         self.policy.make_xml(key)
