@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> def decode(f):
 ...     return lambda x: tostr(f(x))
 >>> b2a_hex = decode(b2a_hex)
+>>> import datetime
+>>> now = datetime.datetime(2016, 3, 23, 0, 0, 0)
 
 >>> from pskc import PSKC
 
@@ -125,9 +127,9 @@ This tests the key policy properties as illustrated in Figure 5 from RFC
 'Local'
 >>> key1.policy.key_usage
 ['OTP']
->>> key1.policy.may_use('OTP')
+>>> key1.policy.may_use('OTP', now)
 True
->>> key1.policy.may_use('Encrypt')
+>>> key1.policy.may_use('Encrypt', now)
 False
 >>> key1.policy.unknown_policy_elements
 False

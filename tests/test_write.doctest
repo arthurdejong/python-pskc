@@ -25,7 +25,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> import tempfile
 >>> from binascii import a2b_hex
 >>> from dateutil.tz import tzutc
->>> utc = tzutc()
 
 
 Build a PSKC structure.
@@ -40,8 +39,8 @@ Add a key with all attributes set.
 >>> key.serial = '987654321'
 >>> key.model = 'Model'
 >>> key.issue_no = 2
->>> key.start_date = datetime.datetime(2006, 5, 1, 0, 0, tzinfo=utc)
->>> key.expiry_date = datetime.datetime(2014, 5, 31, 0, 0, tzinfo=utc)
+>>> key.start_date = datetime.datetime(2006, 5, 1, 0, 0, tzinfo=tzutc())
+>>> key.expiry_date = datetime.datetime(2014, 5, 31, 0, 0, tzinfo=tzutc())
 >>> key.device_userid = 'uid=arthur, dc=arthurdejong, dc=org'
 >>> key.crypto_module = 'CyrptoId'
 >>> key.algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:totp'
@@ -66,8 +65,8 @@ Add policy information and a PIN.
 
 >>> key.policy.key_usage.append('OTP')
 >>> key.policy.key_usage.append(key.policy.KEY_USE_VERIFY)
->>> key.policy.start_date = datetime.datetime(2008, 5, 1, 0, 0, tzinfo=utc)
->>> key.policy.expiry_date = datetime.datetime(2012, 6, 13, 0, 0, tzinfo=utc)
+>>> key.policy.start_date = datetime.datetime(2008, 5, 1, 0, 0, tzinfo=tzutc())
+>>> key.policy.expiry_date = datetime.datetime(2012, 6, 13, 0, 0, tzinfo=tzutc())
 >>> key.policy.number_of_transactions = 42
 >>> key.policy.pin_key_id = 'pinID'
 >>> key.policy.pin_usage = 'Local'

@@ -24,6 +24,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> def decode(f):
 ...     return lambda x: tostr(f(x))
 >>> b2a_hex = decode(b2a_hex)
+>>> import datetime
+>>> now = datetime.datetime(2016, 3, 23, 0, 0, 0)
+>>> import dateutil.tz
 
 >>> from pskc import PSKC
 
@@ -151,6 +154,18 @@ datetime.datetime(2026, 5, 31, 0, 0, tzinfo=tzutc())
 ['OTP']
 >>> key.policy.unknown_policy_elements
 False
+>>> key.policy.may_use('OTP', datetime.datetime(2005, 4, 3, 0, 0, 0))
+False
+>>> key.policy.may_use('OTP', now)
+True
+>>> key.policy.may_use('OTP', datetime.datetime(2028, 12, 31, 0, 0, 0))
+False
+>>> key.policy.start_date = datetime.datetime.now() + \
+...     datetime.timedelta(seconds=10)
+>>> key.policy.may_use('OTP')
+False
+>>> key.policy.start_date = datetime.datetime.now(dateutil.tz.tzlocal()) - \
+...     datetime.timedelta(seconds=10)
 >>> key.policy.may_use('OTP')
 True
 >>> key = pskc.keys[1]
@@ -158,21 +173,21 @@ True
 ['OTP']
 >>> key.policy.unknown_policy_elements
 True
->>> key.policy.may_use('OTP')
+>>> key.policy.may_use('OTP', now)
 False
 >>> key = pskc.keys[2]
 >>> key.policy.key_usage
 ['OTP']
 >>> key.policy.unknown_policy_elements
 True
->>> key.policy.may_use('OTP')
+>>> key.policy.may_use('OTP', now)
 False
 >>> key = pskc.keys[3]
 >>> key.policy.key_usage
 ['OTP']
 >>> key.policy.unknown_policy_elements
 True
->>> key.policy.may_use('OTP')
+>>> key.policy.may_use('OTP', now)
 False
 
 

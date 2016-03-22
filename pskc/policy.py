@@ -21,6 +21,14 @@
 """Module that provides PSKC key policy information."""
 
 
+def _make_aware(d):
+    """Make tge specified datetime timezone aware."""
+    import dateutil.tz
+    if not d.tzinfo:
+        return d.replace(tzinfo=dateutil.tz.tzlocal())
+    return d
+
+
 class Policy(object):
     """Representation of a policy that describes key and pin usage.
 
@@ -172,11 +180,25 @@ class Policy(object):
         mk_elem(policy, 'pskc:NumberOfTransactions',
                 self.number_of_transactions)
 
-    def may_use(self, usage):
+    def may_use(self, usage=None, now=None):
         """Check whether the key may be used for the provided purpose."""
+        import datetime
+        import dateutil.tz
         if self.unknown_policy_elements:
             return False
-        return not self.key_usage or usage in self.key_usage
+        if usage is not None and self.key_usage:
+            if usage not in self.key_usage:
+                return False
+        # check start_date and expiry_date
+        if now is None:
+            now = datetime.datetime.now(dateutil.tz.tzlocal())
+        if self.start_date:
+            if _make_aware(self.start_date) > _make_aware(now):
+                return False  # not-yet usable key
+        if self.expiry_date:
+            if _make_aware(self.expiry_date) < _make_aware(now):
+                return False  # not-yet usable key
+        return True
 
     @property
     def pin_key(self):
