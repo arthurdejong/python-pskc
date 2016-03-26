@@ -25,8 +25,8 @@ defined in RFC 6030. PSKC files are used to transport and provision symmetric
 keys (seed files) to different types of crypto modules, commonly one-time
 password tokens or other authentication devices.
 
-The main goal of this module is to be able to extract keys from PSKC files
-for use in an OTP authentication system.
+This module can be used to extract keys from PSKC files for use in an OTP
+authentication system. The module can also be used for authoring PSKC files.
 
 The following prints all keys, decrypting using a password:
 
