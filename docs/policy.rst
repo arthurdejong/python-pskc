@@ -92,11 +92,11 @@ The Policy class
       value is ``True`` to ensure that the lack of understanding of certain
       extensions does not lead to unintended key usage.
 
-   .. function:: may_use(usage)
+   .. function:: may_use(usage=None, now=None)
 
-      Check whether the key may be used for the provided purpose. See
-      :ref:`key-use-constants` below.
-
+      Check whether the key may be used for the provided purpose. The key
+      :attr:`start_date` and :attr:`expiry_date` are also checked. The `now`
+      argument can be used to specify another point in time to check against.
 
 .. _key-use-constants:
 
