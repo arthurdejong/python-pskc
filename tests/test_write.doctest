@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> import datetime
 >>> import sys
 >>> import tempfile
+>>> from Crypto import Random
 >>> from binascii import a2b_hex
 >>> from dateutil.tz import tzutc
 
@@ -148,6 +149,10 @@ Read an encrypted PSKC file and write it out as an unencrypted file.
 
 >>> pskc = PSKC('tests/encryption/kw-aes128.pskcxml')
 >>> pskc.encryption.key = a2b_hex('000102030405060708090a0b0c0d0e0f')
+>>> for key in pskc.keys:
+...     key.secret = key.secret  # force decryption of values
+>>> pskc.encryption.key = None
+>>> pskc.encryption.key_name = None
 >>> pskc.write(sys.stdout)  #doctest: +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
@@ -161,3 +166,251 @@ Read an encrypted PSKC file and write it out as an unencrypted file.
   </pskc:Key>
  </pskc:KeyPackage>
 </pskc:KeyContainer>
+
+
+Read an encrypted PSKC file and write it out as-is. This does not require
+providing the encryption key.
+
+>>> pskc = PSKC('tests/rfc6030/figure6.pskcxml')
+>>> pskc.write(sys.stdout)  #doctest: +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <pskc:EncryptionKey>
+  <ds:KeyName>Pre-shared-key</ds:KeyName>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>ESIzRFVmd4iZABEiM0RVZgKn6WjLaTC1sbeBMSvIhRejN9vJa2BOlSaMrR7I5wSX</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>Manufacturer</pskc:Manufacturer>
+   <pskc:SerialNo>987654321</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:CryptoModuleInfo>
+   <pskc:Id>CM_ID_001</pskc:Id>
+  </pskc:CryptoModuleInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="12345678">
+   <pskc:Issuer>Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>AAECAwQFBgcICQoLDA0OD+cIHItlB3Wra1DUpxVvOx2lef1VmNPCMl8jwZqIUqGv</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>Su+NvtQfmvfJzF6bmQiJqoLRExc=</pskc:ValueMAC>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>0</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Set up an encrypted PSKC file and generate a pre-shared key for it.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(
+...     id='1', serial='123456', secret='1234', counter=42)
+>>> pskc.encryption.setup_preshared_key(
+...     key_name='Pre-shared KEY', fields = ['secret', 'counter'])
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc.write(f.name)
+>>> x = sys.stdout.write(open(f.name, 'r').read())  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <pskc:EncryptionKey>
+  <ds:KeyName>Pre-shared KEY</ds:KeyName>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>123456</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="1">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Read the generated file back in and verify that it matches the original data.
+
+>>> newpskc = PSKC(f.name)
+>>> newpskc.encryption.algorithm == pskc.encryption.algorithm
+True
+>>> newpskc.encryption.key = pskc.encryption.key
+>>> all(newkey.check() for newkey in newpskc.keys)
+True
+>>> key = pskc.keys[0]
+>>> newkey = newpskc.keys[0]
+>>> newkey.secret == key.secret
+True
+>>> newkey.counter == key.counter
+True
+
+
+Use PBKDF2 to derive a key instead of using a pre-shared key.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(
+...     id='1', serial='123456', secret='1234', counter=42)
+>>> pskc.encryption.setup_pbkdf2(
+...     'passphrase', key_name='Passphrase')
+>>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
+ <pskc:EncryptionKey>
+  <xenc11:DerivedKey>
+   <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
+    <xenc11:PBKDF2-params>
+     <Salt>
+      <Specified>...</Specified>
+     </Salt>
+     <IterationCount>12000</IterationCount>
+     <KeyLength>16</KeyLength>
+    </xenc11:PBKDF2-params>
+   </xenc11:KeyDerivationMethod>
+   <xenc11:MasterKeyName>Passphrase</xenc11:MasterKeyName>
+  </xenc11:DerivedKey>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>123456</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="1">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>42</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Test encryption and decryption of the generated file to test encryption/
+decryption combinations.
+
+>>> def test_algorithm(algorithm):
+...     f = tempfile.NamedTemporaryFile()
+...     pskc1 = PSKC()
+...     pskc1.add_key(secret=Random.get_random_bytes(16))
+...     pskc1.encryption.setup_preshared_key(algorithm=algorithm)
+...     pskc1.write(f.name)
+...     pskc2 = PSKC(f.name)
+...     pskc2.encryption.key = pskc1.encryption.key
+...     assert pskc1.keys[0].secret == pskc2.keys[0].secret
+...     return (pskc1, pskc2)
+>>> pskc1, pskc2 = test_algorithm('aes192-cbc')
+>>> len(pskc1.encryption.key)
+24
+>>> pskc1, pskc2 = test_algorithm('aes256-cbc')
+>>> len(pskc1.encryption.key)
+32
+>>> pskc1, pskc2 = test_algorithm('tripledes-cbc')
+>>> len(pskc1.encryption.key)
+24
+>>> pskc1, pskc2 = test_algorithm('kw-aes128')
+>>> len(pskc1.encryption.key)
+16
+>>> pskc1, pskc2 = test_algorithm('kw-aes192')
+>>> len(pskc1.encryption.key)
+24
+>>> pskc1, pskc2 = test_algorithm('kw-aes256')
+>>> len(pskc1.encryption.key)
+32
+>>> pskc1, pskc2 = test_algorithm('kw-tripledes')
+>>> len(pskc1.encryption.key)
+24
+
+
+Not having a key and trying encryption will fail.
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.key = None
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+EncryptionError: No key available
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.algorithm = None
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+EncryptionError: No algorithm specified
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.algorithm = 'FOOBAR'
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+DecryptionError: Unsupported algorithm: 'FOOBAR'
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_preshared_key()
+>>> pskc.encryption.algorithm = 'aes256-cbc'
+>>> pskc.write(f.name)
+Traceback (most recent call last):
+    ...
+EncryptionError: Invalid key length

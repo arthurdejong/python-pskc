@@ -25,8 +25,8 @@ defined in RFC 6030. PSKC files are used to transport and provision symmetric
 keys (seed files) to different types of crypto modules, commonly one-time
 password tokens or other authentication devices.
 
-The main goal of this module is to be able to extract keys from PSKC files
-for use in an OTP authentication system.
+This module can be used to extract keys from PSKC files for use in an OTP
+authentication system. The module can also be used for authoring PSKC files.
 
 The following prints all keys, decrypting using a password:
 
@@ -66,7 +66,7 @@ class PSKC(object):
         from pskc.mac import MAC
         self.version = None
         self.id = None
-        self.encryption = Encryption()
+        self.encryption = Encryption(self)
         self.mac = MAC(self)
         self.keys = []
         if filename is not None:
@@ -105,6 +105,8 @@ class PSKC(object):
         from pskc.xml import mk_elem
         container = mk_elem('pskc:KeyContainer', Version=self.version,
                             Id=self.id)
+        self.encryption.make_xml(container)
+        self.mac.make_xml(container)
         for key in self.keys:
             key.make_xml(container)
         return container

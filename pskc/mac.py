@@ -29,22 +29,28 @@ with the PSKC encryption key.
 """
 
 
+import base64
 import re
 
 
 _hmac_url_re = re.compile(r'^.*#hmac-(?P<hash>[a-z0-9]+)$')
 
 
+def get_hash(algorithm):
+    """Return the hash function for the specifies HMAC algorithm."""
+    import hashlib
+    match = _hmac_url_re.search(algorithm)
+    if match:
+        return getattr(hashlib, match.group('hash'), None)
+
+
 def get_hmac(algorithm):
     """Return an HMAC function that takes a secret and a value and returns a
     digest."""
-    import hashlib
     import hmac
-    match = _hmac_url_re.search(algorithm)
-    if match:
-        digestmod = getattr(hashlib, match.group('hash'), None)
-        if digestmod is not None:
-            return lambda key, value: hmac.new(key, value, digestmod).digest()
+    digestmod = get_hash(algorithm)
+    if digestmod is not None:
+        return lambda key, value: hmac.new(key, value, digestmod).digest()
 
 
 class MAC(object):
@@ -56,12 +62,12 @@ class MAC(object):
       key: the binary value of the MAC key if it can be decrypted
     """
 
-    def __init__(self, pskc, mac_method=None):
+    def __init__(self, pskc):
         self.pskc = pskc
-        self.algorithm = None
+        self._algorithm = None
+        self.key_plain_value = None
         self.key_cipher_value = None
         self.key_algorithm = None
-        self.parse(mac_method)
 
     def parse(self, mac_method):
         """Read MAC information from the <MACMethod> XML tree."""
@@ -77,19 +83,65 @@ class MAC(object):
                 self.key_algorithm = encryption_method.attrib.get('Algorithm')
         mac_key_reference = findtext(mac_method, 'MACKeyReference')
 
+    def make_xml(self, container):
+        from pskc.xml import mk_elem
+        if not self.algorithm and not self.key:
+            return
+        mac_method = mk_elem(
+            container, 'pskc:MACMethod', Algorithm=self.algorithm, empty=True)
+        mac_key = mk_elem(mac_method, 'pskc:MACKey', empty=True)
+        mk_elem(
+            mac_key, 'xenc:EncryptionMethod',
+            Algorithm=self.pskc.encryption.algorithm)
+        cipher_data = mk_elem(mac_key, 'xenc:CipherData', empty=True)
+        if self.key_cipher_value:
+            mk_elem(
+                cipher_data, 'xenc:CipherValue',
+                base64.b64encode(self.key_cipher_value).decode())
+        elif self.key_plain_value:
+            mk_elem(
+                cipher_data, 'xenc:CipherValue', base64.b64encode(
+                    self.pskc.encryption.encrypt_value(self.key_plain_value)
+                ).decode())
+
     @property
     def key(self):
         """Provides access to the MAC key binary value if available."""
-        if self.key_cipher_value:
+        if self.key_plain_value:
+            return self.key_plain_value
+        elif self.key_cipher_value:
             return self.pskc.encryption.decrypt_value(
                 self.key_cipher_value, self.key_algorithm)
 
-    def check_value(self, value, value_mac):
-        """Check if the provided value matches the MAC.
+    @key.setter
+    def key(self, value):
+        self.key_plain_value = value
+        self.key_cipher_value = None
 
-        This will return None if there is no MAC to be checked. It will
-        return True if the MAC matches and raise an exception if it fails.
-        """
+    @property
+    def algorithm(self):
+        """Provide the MAC algorithm used."""
+        if self._algorithm:
+            return self._algorithm
+
+    @algorithm.setter
+    def algorithm(self, value):
+        from pskc.encryption import normalise_algorithm
+        self._algorithm = normalise_algorithm(value)
+
+    @property
+    def algorithm_key_length(self):
+        """Recommended minimal key length in bytes for the set algorithm."""
+        # https://tools.ietf.org/html/rfc2104#section-3
+        # an HMAC key should be at least as long as the hash output length
+        hashfn = get_hash(self.algorithm)
+        if hashfn is not None:
+            return int(hashfn().digest_size)
+        else:
+            return 16
+
+    def generate_mac(self, value):
+        """Generate the MAC over the specified value."""
         from pskc.exceptions import DecryptionError
         key = self.key
         if key is None:
@@ -98,6 +150,37 @@ class MAC(object):
         if hmacfn is None:
             raise DecryptionError(
                 'Unsupported MAC algorithm: %r' % self.algorithm)
-        if hmacfn(key, value) != value_mac:
+        return hmacfn(key, value)
+
+    def check_value(self, value, value_mac):
+        """Check if the provided value matches the MAC.
+
+        This will return None if there is no MAC to be checked. It will
+        return True if the MAC matches and raise an exception if it fails.
+        """
+        from pskc.exceptions import DecryptionError
+        if self.generate_mac(value) != value_mac:
             raise DecryptionError('MAC value does not match')
         return True
+
+    def setup(self, key=None, algorithm=None):
+        """Configure an encrypted MAC key.
+
+        The following arguments may be supplied:
+          key: the MAC key to use
+          algorithm: MAC algorithm
+
+        None of the arguments are required, reasonable defaults will be
+        chosen for missing arguments.
+        """
+        if key:
+            self.key = key
+        if algorithm:
+            self.algorithm = algorithm
+        # default to HMAC-SHA1
+        if not self.algorithm:
+            self.algorithm = 'hmac-sha1'
+        # generate an HMAC key
+        if not self.key:
+            from Crypto import Random
+            self.key = Random.get_random_bytes(self.algorithm_key_length)

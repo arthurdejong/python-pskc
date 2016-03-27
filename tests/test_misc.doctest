@@ -86,9 +86,20 @@ True
 >>> pskc.encryption.algorithm = 'aes128-cbc'
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> pskc.encryption.algorithm_key_lengths
+[16]
+>>> pskc.encryption.algorithm = '3des-cbc'
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#tripledes-cbc'
+>>> pskc.encryption.algorithm_key_lengths
+[16, 24]
 >>> pskc.encryption.algorithm = 'none'
 >>> pskc.encryption.algorithm is None
 True
+>>> pskc.encryption.algorithm_key_lengths  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: No algorithm specified
 
 
 Load an PSKC file with an odd namespace.

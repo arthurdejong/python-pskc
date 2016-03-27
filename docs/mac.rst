@@ -38,3 +38,14 @@ The MAC class
       MAC key is generated specifically for each PSKC file and encrypted with
       the PSKC encryption key, so the PSKC file should be decrypted first
       (see :doc:`encryption`).
+
+   .. function:: setup(...)
+
+      Configure an encrypted MAC key.
+
+      :param str algorithm: encryption algorithm
+      :param binary key: the encryption key to use
+
+      None of the arguments are required. By default HMAC-SHA1 will be used
+      as a MAC algorithm. If no key is configured a random key will be
+      generated with the length of the output of the configured hash.

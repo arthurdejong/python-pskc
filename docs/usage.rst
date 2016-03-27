@@ -1,13 +1,13 @@
 Basic usage
 ===========
 
-The :mod:`pskc` module implements a simple and efficient API for parsing PSKC
-files. The :class:`~pskc.PSKC` class is used to access the file as a whole
-which provides access to a list of :class:`~pskc.key.Key` instances which
-contain most of the useful information from the PSKC file.
+The :mod:`pskc` module implements a simple and efficient API for parsing and
+creating PSKC files. The :class:`~pskc.PSKC` class is used to access the file
+as a whole which provides access to a list of :class:`~pskc.key.Key`
+instances which contain most of the useful information of the PSKC file.
 
 
-Opening a PSKC file
+Reading a PSKC file
 -------------------
 
 Importing data from a PSKC file can be done by instantiating the
@@ -50,16 +50,15 @@ adding keys with :func:`~pskc.PSKC.add_key()` and writing the result::
 
     >>> from pskc import PSKC
     >>> pskc = PSKC()
-    >>> key = pskc.add_key(id='456', manufacturer='Manufacturer')
-    >>> key.id
-    '456'
-    >>> key.secret = '987654321'
-    >>> key.algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
+    >>> key = pskc.add_key(
+    ...     id='456', secret='987654321', manufacturer='Manufacturer',
+    ...     algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:hotp')
     >>> pskc.write('output.pskcxml')
 
-Writing the data in encrypted form in the PSKC file is not yet supported so
-currently opening an encrypted PSKC file, providing the encryption key and
-writing the file should result in the same file but with encryption removed.
+By default an unencrypted PSKC file will be created but an encryption can be
+configured using the
+:func:`~pskc.encryption.Encryption.setup_preshared_key()` or
+:func:`~pskc.encryption.Encryption.setup_pbkdf2()` function.
 
 
 The PSKC class
