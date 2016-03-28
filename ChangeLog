@@ -1,3 +1,359 @@
+2016-03-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0c57335] docs/policy.rst: Document may_use() policy function
+
+2016-03-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b4a6c72] : Implement writing encrypted files
+
+	  This adds support for setting up encryption keys and password-based
+	  key derivation when writing PSKC files. Also MAC keys are set
+	  up when needed.
+
+2016-03-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [59aa65b] README, docs/conf.py, docs/encryption.rst, docs/mac.rst,
+	  docs/usage.rst, pskc/__init__.py: Document writing encrypted files
+
+2016-03-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5f32528] tests/test_write.doctest: Add encryption error tests
+
+2016-03-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7ede4a1] tests/test_write.doctest: Add tests for writing
+	  encrypted PSKC files
+
+2016-03-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1ff3237] pskc/encryption.py: Allow configuring a pre-shared key
+
+	  This method allows configuring a pre-shared encryption key and
+	  will chose reasonable defaults for needed encryption values
+	  (e.g. it will choose an algorithm, generate a new key of the
+	  appropriate length if needed, etc.).
+
+2016-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [50414a3] pskc/encryption.py, tests/test_encryption.doctest:
+	  Allow configuring PBKDF2 key derivation
+
+	  This factors out the PBKDF2 key derivation to a separate function
+	  and introduces a function to configure KeyDerivation instances
+	  with PBKDF2.
+
+2016-03-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5ac9d43] pskc/mac.py, tests/test_encryption.doctest: Allow
+	  configuring a MAC key
+
+	  This method will set up a MAC key and algorithm as specified or
+	  use reasonable defauts.
+
+2016-03-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [16da531] pskc/key.py, pskc/mac.py: Generate MAC values
+
+2016-03-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ca0fa36] pskc/__init__.py, pskc/encryption.py, pskc/mac.py:
+	  Write MACMethod
+
+	  This also makes the MAC.algorithm a property similarly as what
+	  is done for Encryption (normalise algorithm names) and adds a
+	  setter for the MAC.key property.
+
+2016-03-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8fd35ba] pskc/encryption.py, pskc/key.py: Write out encrypted
+	  values
+
+	  The Encryption class now has a fields property that lists the
+	  fields that should be encrypted when writing the PSKC file.
+
+	  This adds an encrypt_value() function that performs the encryption
+	  and various functions to convert the plain value to binary before
+	  writing the encrypted XML elements.
+
+2016-03-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [eba541e] pskc/__init__.py, pskc/encryption.py, pskc/mac.py:
+	  Make Encryption and MAC constructors consistent
+
+	  This removes calling parse() from the Encryption and MAC
+	  constructors and stores a reference to the PSKC object in both
+	  objects so it can be used later on.
+
+2016-03-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fe21231] pskc/__init__.py, pskc/encryption.py,
+	  tests/test_write.doctest: Write encryption key information
+
+	  This writes information about a pre-shared key or PBKDF2 key
+	  derivation in the PSKC file. This also means that writing
+	  a decrypted version of a previously encrypted file requires
+	  actively removing the encryption.
+
+2016-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0893640] pskc/encryption.py, tests/test_misc.doctest: Add
+	  algorithm_key_lengths property
+
+	  This property on the Encryption object provides a list of key
+	  sizes (in bytes) that the configured encryption algorithm supports.
+
+2016-03-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8b5f6c2] pskc/policy.py, tests/test_misc.doctest,
+	  tests/test_rfc6030.doctest, tests/test_write.doctest: Also check
+	  key expiry in may_use()
+
+2016-03-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [dfa57ae] pskc2csv.py: Support reading password or key in pskc2csv
+
+	  This supports reading the encryption password or key from the
+	  command line or from a file.
+
+2014-06-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0744222] pskc/xml.py: Copy namespaces to toplevel element
+
+	  Ensure that when writing an XML file all namespace definitions
+	  are on the toplevel KeyContainer element instead of scattered
+	  throughout the XML document.
+
+2016-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e8ef157] pskc/__init__.py, tests/test_write.doctest: Support
+	  writing to text streams in Python 3
+
+	  This supports writing the XML output to binary streams as well
+	  as text streams in Python 3.
+
+2016-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cadc6d9] pskc/key.py, pskc/mac.py,
+	  tests/invalid/encryption.pskcxml,
+	  tests/invalid/missing-encryption.pskcxml,
+	  tests/invalid/not-boolean.pskcxml,
+	  tests/invalid/not-integer.pskcxml,
+	  tests/invalid/not-integer2.pskcxml,
+	  tests/invalid/unknown-encryption.pskcxml, tests/test_aeskw.doctest,
+	  tests/test_encryption.doctest, tests/test_invalid.doctest,
+	  tests/test_misc.doctest, tests/test_rfc6030.doctest,
+	  tests/test_tripledeskw.doctest, tests/test_write.doctest:
+	  Improve tests and test coverage
+
+	  This adds tests to ensure that incorrect attribute and value
+	  types in the PSKC file raise a ValueError exception and extends
+	  the tests for invalid encryption options.
+
+	  This removes some code or adds no cover directives to a few
+	  places that have unreachable code or are Python version specific
+	  and places doctest directives inside the doctests where needed.
+
+2016-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b8905e0] pskc/key.py, pskc/xml.py, tests/misc/checkdigits.pskcxml,
+	  tests/test_misc.doctest: Support both CheckDigit and CheckDigits
+
+	  RFC 6030 is not clear about whether the attribute of
+	  ChallengeFormat and ResponseFormat should be the singular
+	  CheckDigit or the plural CheckDigits. This ensures that both
+	  forms are accepted.
+
+2016-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7915c55] pskc/policy.py, tests/misc/policy.pskcxml,
+	  tests/test_misc.doctest: Implement policy checking
+
+	  This checks for unknown policy elements in the PSKC file and
+	  will cause the key usage policy check to fail.
+
+2016-03-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1687fd6] tests/feitian/20120919-test001-4282.xml,
+	  tests/feitian/file1.pskcxml, tests/nagraid/file1.pskcxml,
+	  tests/test_vendors.doctest: Add a few tests for vendor files
+
+	  Some vendor-specific files were lifted from the LinOTP test suite
+	  and another Feitian file was found in the oath-toolkit repository.
+
+2016-01-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [aae8a18] pskc/key.py, tests/misc/integers.pskcxml,
+	  tests/test_misc.doctest: Support various integer representations
+
+	  This extends support for handling various encoding methods for
+	  integer values in PSKC files. For encrypted files the decrypted
+	  value is first tried to be evaluated as an ASCII representation
+	  of the number and after that big-endian decoded.
+
+	  For plaintext values first ASCII decoding is tried after which
+	  base64 decoding is tried which tries the same encodings as for
+	  decrypted values.
+
+	  There should be no possibility for any base64 encoded value
+	  (either of an ASCII value or a big-endian value) to be interpreted
+	  as an ASCII value for any 32-bit integer.
+
+	  There is a possibility that a big-endian encoded integer could
+	  be incorrectly interpreted as an ASCII value but this is only
+	  the case for 110 numbers when only considering 6-digit numbers.
+
+2016-01-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c86aaea] README, pskc/__init__.py,
+	  tests/SampleFullyQualifiedNS.xml, tests/aes128-cbc.pskcxml,
+	  tests/aes192-cbc.pskcxml, tests/aes256-cbc.pskcxml,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/actividentity-3des.pskcxml,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/ocra.pskcxml,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/securid-aes-counter.pskcxml,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/totp.pskcxml,
+	  tests/draft-keyprov-actividentity-3des.pskcxml,
+	  tests/draft-keyprov-ocra.pskcxml,
+	  tests/draft-keyprov-securid-aes-counter.pskcxml,
+	  tests/draft-keyprov-totp.pskcxml,
+	  tests/encryption/aes128-cbc.pskcxml,
+	  tests/encryption/aes192-cbc.pskcxml,
+	  tests/encryption/aes256-cbc.pskcxml,
+	  tests/encryption/kw-aes128.pskcxml,
+	  tests/encryption/kw-aes192.pskcxml,
+	  tests/encryption/kw-aes256.pskcxml,
+	  tests/encryption/kw-tripledes.pskcxml,
+	  tests/encryption/tripledes-cbc.pskcxml,
+	  tests/invalid-encryption.pskcxml,
+	  tests/invalid-mac-algorithm.pskcxml,
+	  tests/invalid-mac-value.pskcxml,
+	  tests/invalid-no-mac-method.pskcxml, tests/invalid-notxml.pskcxml,
+	  tests/invalid-wrongelement.pskcxml,
+	  tests/invalid-wrongversion.pskcxml,
+	  tests/invalid/encryption.pskcxml,
+	  tests/invalid/mac-algorithm.pskcxml,
+	  tests/invalid/mac-value.pskcxml,
+	  tests/invalid/no-mac-method.pskcxml,
+	  tests/invalid/notxml.pskcxml, tests/invalid/wrongelement.pskcxml,
+	  tests/invalid/wrongversion.pskcxml, tests/kw-aes128.pskcxml,
+	  tests/kw-aes192.pskcxml, tests/kw-aes256.pskcxml,
+	  tests/kw-tripledes.pskcxml, tests/misc/SampleFullyQualifiedNS.xml,
+	  tests/misc/odd-namespace.pskcxml, tests/odd-namespace.pskcxml,
+	  tests/rfc6030-figure10.pskcxml, tests/rfc6030-figure2.pskcxml,
+	  tests/rfc6030-figure3.pskcxml, tests/rfc6030-figure4.pskcxml,
+	  tests/rfc6030-figure5.pskcxml, tests/rfc6030-figure6.pskcxml,
+	  tests/rfc6030-figure7.pskcxml, tests/rfc6030/figure10.pskcxml,
+	  tests/rfc6030/figure2.pskcxml, tests/rfc6030/figure3.pskcxml,
+	  tests/rfc6030/figure4.pskcxml, tests/rfc6030/figure5.pskcxml,
+	  tests/rfc6030/figure6.pskcxml, tests/rfc6030/figure7.pskcxml,
+	  tests/test_draft_keyprov.doctest, tests/test_encryption.doctest,
+	  tests/test_invalid.doctest, tests/test_misc.doctest,
+	  tests/test_rfc6030.doctest, tests/test_write.doctest,
+	  tests/tripledes-cbc.pskcxml: Re-organise test files
+
+	  This puts the test PSKC files in subdirectories so they can be
+	  organised more cleanly.
+
+2016-01-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1904dc2] tests/test_misc.doctest: Add test for incorrect key
+	  derivation
+
+	  If no key derivation algorithm has been specified in the PSKC
+	  file an exception should be raised when attempting to perform
+	  key derivation.
+
+2016-01-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [91f66f4] pskc/encryption.py, pskc/key.py, pskc/mac.py: Refactor
+	  out EncryptedValue and ValueMAC
+
+	  This removes the EncryptedValue and ValueMAC classes and instead
+	  moves the XML parsing of these values to the DataType class. This
+	  will make it easier to support different parsing schemes.
+
+	  This also includes a small consistency improvement in the
+	  subclasses of DataType.
+
+2016-01-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9b13d3b] pskc/encryption.py, tests/test_misc.doctest: Normalise
+	  algorithm names
+
+	  This transforms the algorithm URIs that are set to known values
+	  when parsing or setting the algorithm.
+
+2016-01-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b6eab47] docs/encryption.rst, pskc/encryption.py,
+	  tests/test_encryption.doctest, tests/test_misc.doctest: Add
+	  encryption algorithm property
+
+	  Either determine the encryption algorithm from the PSKC file
+	  or from the explicitly set value. This also adds support for
+	  setting the encryption key name.
+
+2016-01-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b5f7de5] pskc/key.py, tests/test_write.doctest: Fix a problem
+	  when writing previously encrypted file
+
+	  This fixes a problem with writing a PSKC file that is based on
+	  a read file that was encrypted.
+
+2016-01-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [107a836] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
+	  pskc/mac.py, pskc/policy.py, pskc/xml.py: Strip XML namespaces
+	  before parsing
+
+	  This simplifies calls to the find() family of functions and
+	  allows parsing PSKC files that have slightly different namespace
+	  URLs. This is especially common when parsing old draft versions
+	  of the specification.
+
+	  This also removes passing multiple patterns to the find()
+	  functions that was introduced in 68b20e2.
+
+2015-12-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a86ff8a] README, docs/encryption.rst: Update some documentation
+
+	  This adds a development notes section to the README and changes
+	  the wording on the encryption page.
+
+2015-12-01  Mathias Laurin <Mathias.Laurin+github.com@gmail.com>
+
+	* [0ff4154] docs/encryption.rst: Fix typo in the documentation
+
+2015-12-01  Mathias Laurin <Mathias.Laurin+github.com@gmail.com>
+
+	* [3473903] pskc2csv.py: Support Python 3
+
+2015-11-30  Mathias Laurin <Mathias.Laurin+github.com@gmail.com>
+
+	* [a82a60b] pskc/key.py: Make value conversion methods static private
+
+	  - the conversions do not call self: they are static - the
+	  conversions are not to be used out of the class: make private
+
+2015-11-30  Mathias Laurin <Mathias.Laurin+github.com@gmail.com>
+
+	* [e711a30] pskc/key.py: Provide abstract methods to clarify API
+
+2015-11-30  Mathias Laurin <Mathias.Laurin+github.com@gmail.com>
+
+	* [1577687] pskc/encryption.py: Fix typo in variable name
+
+2015-11-30  Mathias Laurin <Mathias.Laurin+github.com@gmail.com>
+
+	* [3aa2a6f] tests/test_invalid.doctest: Fix doctest:
+	  IGNORE_EXCEPTION_DETAL
+
+2015-10-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c155d15] ChangeLog, MANIFEST.in, NEWS, pskc/__init__.py,
+	  setup.py: Get files ready for 0.3 release
+
 2015-10-07  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [cf0c9e6] README, docs/conf.py, docs/encryption.rst,

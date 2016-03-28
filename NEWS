@@ -1,3 +1,21 @@
+changes from 0.3 to 0.4
+-----------------------
+
+* add support for writing encrypted PSKC files (with either a pre-shared key
+  or PBKDF2 password-based encryption)
+* extend may_use() policy checking function to check for unknown policy
+  elements and key expiry
+* add a number of tests for existing vendor PSKC files and have full line
+  coverage with tests
+* be more lenient in handling a number of XML files (e.g. automatically
+  sanitise encryption algorithm URIs, ignore XML namespaces and support more
+  spellings of some properties)
+* support reading password or key files in pskc2csv
+* support Python 3 in the pskc2csv script (thanks Mathias Laurin)
+* refactoring and clean-ups to be more easily extendible (thanks Mathias
+  Laurin)
+
+
 changes from 0.2 to 0.3
 -----------------------
 

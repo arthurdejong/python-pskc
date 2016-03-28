@@ -2,7 +2,7 @@
 
 # setup.py - python-pskc installation script
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2016 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,9 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Topic :: Security :: Cryptography',
         'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Systems Administration :: Authentication/Directory',
         'Topic :: Text Processing :: Markup :: XML',
     ],
     packages=find_packages(),
