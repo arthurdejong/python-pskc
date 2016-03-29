@@ -79,17 +79,6 @@ def normalise_algorithm(algorithm):
     return _algorithms.get(algorithm.rsplit('#', 1)[-1].lower(), algorithm)
 
 
-def pad(value, block_size):
-    """Pad the value to block_size length."""
-    padding = block_size - (len(value) % block_size)
-    return value + padding * chr(padding).encode('ascii')
-
-
-def unpad(value):
-    """Remove padding from the plaintext."""
-    return value[0:-ord(value[-1:])]
-
-
 class KeyDerivation(object):
     """Handle key derivation.
 
@@ -367,12 +356,14 @@ class Encryption(object):
                 algorithm.endswith('#aes192-cbc') or \
                 algorithm.endswith('#aes256-cbc'):
             from Crypto.Cipher import AES
+            from pskc.crypto import unpad
             iv = cipher_value[:AES.block_size]
             ciphertext = cipher_value[AES.block_size:]
             cipher = AES.new(key, AES.MODE_CBC, iv)
             return unpad(cipher.decrypt(ciphertext))
         elif algorithm.endswith('#tripledes-cbc'):
             from Crypto.Cipher import DES3
+            from pskc.crypto import unpad
             iv = cipher_value[:DES3.block_size]
             ciphertext = cipher_value[DES3.block_size:]
             cipher = DES3.new(key, DES3.MODE_CBC, iv)
@@ -402,12 +393,14 @@ class Encryption(object):
                 algorithm.endswith('#aes256-cbc'):
             from Crypto import Random
             from Crypto.Cipher import AES
+            from pskc.crypto import pad
             iv = Random.get_random_bytes(AES.block_size)
             cipher = AES.new(key, AES.MODE_CBC, iv)
             return iv + cipher.encrypt(pad(plaintext, AES.block_size))
         elif algorithm.endswith('#tripledes-cbc'):
             from Crypto import Random
             from Crypto.Cipher import DES3
+            from pskc.crypto import pad
             iv = Random.get_random_bytes(DES3.block_size)
             cipher = DES3.new(key, DES3.MODE_CBC, iv)
             return iv + cipher.encrypt(pad(plaintext, DES3.block_size))
