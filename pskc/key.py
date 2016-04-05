@@ -40,13 +40,12 @@ class DataType(object):
       value_mac: MAC of the encrypted value
     """
 
-    def __init__(self, key, element=None):
+    def __init__(self, key):
         self.pskc = key.pskc
         self.value = None
         self.cipher_value = None
         self.algorithm = None
         self.value_mac = None
-        self.parse(element)
 
     def parse(self, element):
         """Read information from the provided element.
@@ -261,7 +260,7 @@ class Key(object):
       policy: reference to policy information (see Policy class)
     """
 
-    def __init__(self, pskc, key_package=None):
+    def __init__(self, pskc):
 
         self.pskc = pskc
 
@@ -304,13 +303,9 @@ class Key(object):
 
         self.policy = Policy(self)
 
-        self.parse(key_package)
-
     def parse(self, key_package):
         """Read key information from the provided <KeyPackage> tree."""
         from pskc.xml import find, findtext, findtime, getint, getbool
-        if key_package is None:
-            return
 
         key = find(key_package, 'Key')
         if key is not None:

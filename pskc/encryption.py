@@ -41,14 +41,13 @@ class KeyDerivation(object):
       pbkdf2_prf: name of pseudorandom function used
     """
 
-    def __init__(self, key_derivation=None):
+    def __init__(self):
         self.algorithm = None
         # PBKDF2 properties
         self.pbkdf2_salt = None
         self.pbkdf2_iterations = None
         self.pbkdf2_key_length = None
         self.pbkdf2_prf = None
-        self.parse(key_derivation)
 
     def parse(self, key_derivation):
         """Read derivation parameters from a <KeyDerivationMethod> element."""

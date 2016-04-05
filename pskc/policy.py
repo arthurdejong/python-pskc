@@ -99,7 +99,7 @@ class Policy(object):
     # The PIN is used in the algorithm computation.
     PIN_USE_ALGORITHMIC = 'Algorithmic'
 
-    def __init__(self, key=None, policy=None):
+    def __init__(self, key=None):
         """Create a new policy, optionally linked to the key and parsed."""
         self.key = key
         self.start_date = None
@@ -113,7 +113,6 @@ class Policy(object):
         self.pin_max_length = None
         self.pin_encoding = None
         self.unknown_policy_elements = False
-        self.parse(policy)
 
     def parse(self, policy):
         """Read key policy information from the provided <Policy> tree."""

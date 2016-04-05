@@ -99,7 +99,9 @@ class PSKC(object):
         self.mac.parse(find(container, 'MACMethod'))
         # handle KeyPackage entries
         for key_package in findall(container, 'KeyPackage'):
-            self.keys.append(Key(self, key_package))
+            key = Key(self)
+            key.parse(key_package)
+            self.keys.append(key)
 
     def make_xml(self):
         from pskc.xml import mk_elem
