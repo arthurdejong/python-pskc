@@ -126,7 +126,7 @@ class MAC(object):
 
     @algorithm.setter
     def algorithm(self, value):
-        from pskc.encryption import normalise_algorithm
+        from pskc.algorithms import normalise_algorithm
         self._algorithm = normalise_algorithm(value)
 
     @property
