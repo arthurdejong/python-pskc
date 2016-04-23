@@ -64,15 +64,17 @@ def decrypt(algorithm, key, ciphertext, iv=None):
             algorithm.endswith('#aes256-cbc'):
         from Crypto.Cipher import AES
         from pskc.crypto import unpad
-        iv = ciphertext[:AES.block_size]
-        ciphertext = ciphertext[AES.block_size:]
+        if not iv:
+            iv = ciphertext[:AES.block_size]
+            ciphertext = ciphertext[AES.block_size:]
         cipher = AES.new(key, AES.MODE_CBC, iv)
         return unpad(cipher.decrypt(ciphertext))
     elif algorithm.endswith('#tripledes-cbc'):
         from Crypto.Cipher import DES3
         from pskc.crypto import unpad
-        iv = ciphertext[:DES3.block_size]
-        ciphertext = ciphertext[DES3.block_size:]
+        if not iv:
+            iv = ciphertext[:DES3.block_size]
+            ciphertext = ciphertext[DES3.block_size:]
         cipher = DES3.new(key, DES3.MODE_CBC, iv)
         return unpad(cipher.decrypt(ciphertext))
     elif algorithm.endswith('#kw-aes128') or \
@@ -100,14 +102,14 @@ def encrypt(algorithm, key, plaintext, iv=None):
         from Crypto import Random
         from Crypto.Cipher import AES
         from pskc.crypto import pad
-        iv = Random.get_random_bytes(AES.block_size)
+        iv = iv or Random.get_random_bytes(AES.block_size)
         cipher = AES.new(key, AES.MODE_CBC, iv)
         return iv + cipher.encrypt(pad(plaintext, AES.block_size))
     elif algorithm.endswith('#tripledes-cbc'):
         from Crypto import Random
         from Crypto.Cipher import DES3
         from pskc.crypto import pad
-        iv = Random.get_random_bytes(DES3.block_size)
+        iv = iv or Random.get_random_bytes(DES3.block_size)
         cipher = DES3.new(key, DES3.MODE_CBC, iv)
         return iv + cipher.encrypt(pad(plaintext, DES3.block_size))
     elif algorithm.endswith('#kw-aes128') or \
@@ -233,6 +235,7 @@ class Encryption(object):
       key_names: list of names for the key
       key_name: (first) name of the key (usually there is only one)
       key: the key value itself (binary form)
+      iv: optional initialization vector for CBC based encryption
       fields: a list of Key fields that will be encrypted on writing
 
     The key can either be assigned to the key property or derived using the
@@ -242,9 +245,10 @@ class Encryption(object):
     def __init__(self, pskc):
         self.pskc = pskc
         self.id = None
+        self._algorithm = None
         self.key_names = []
         self.key = None
-        self._algorithm = None
+        self.iv = None
         self.derivation = KeyDerivation()
         self.fields = []
 
@@ -369,8 +373,8 @@ class Encryption(object):
     def decrypt_value(self, cipher_value, algorithm=None):
         """Decrypt the cipher_value and return the plaintext value."""
         return decrypt(
-            algorithm or self.algorithm, self.key, cipher_value)
+            algorithm or self.algorithm, self.key, cipher_value, self.iv)
 
     def encrypt_value(self, plaintext):
         """Encrypt the provided value and return the cipher_value."""
-        return encrypt(self.algorithm, self.key, plaintext)
+        return encrypt(self.algorithm, self.key, plaintext, self.iv)
