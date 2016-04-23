@@ -135,6 +135,17 @@ The IV can also be specified globally.
 'MacMacMacMacMacMacMa'
 
 
+If the PSKC file does not have a MAC key configured, older versions of the
+PSKC format allowed using the encryption key for the HMAC function.
+
+>>> pskc = PSKC('tests/encryption/no-mac-key.pskcxml')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(pskc.mac.key)
+'12345678901234567890123456789012'
+>>> tostr(pskc.keys[0].secret)
+'12345678901234567890'
+
+
 MAC key and algorithm will use useful defaults but can also be manually
 specified.
 

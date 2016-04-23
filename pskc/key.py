@@ -122,7 +122,7 @@ class DataType(object):
             if self.value_mac:
                 mk_elem(element, 'pskc:ValueMAC', base64.b64encode(
                     self.value_mac).decode())
-            elif self.pskc.mac.key:
+            elif self.pskc.mac.algorithm:
                 mk_elem(element, 'pskc:ValueMAC', base64.b64encode(
                     self.pskc.mac.generate_mac(self.cipher_value)
                 ).decode())

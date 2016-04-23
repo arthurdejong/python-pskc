@@ -58,6 +58,8 @@ def get_mac(algorithm, key, value):
     from pskc.exceptions import DecryptionError
     if key is None:
         raise DecryptionError('No MAC key available')
+    if algorithm is None:
+        raise DecryptionError('No MAC algorithm set')
     hmacfn = get_hmac(algorithm)
     if hmacfn is None:
         raise DecryptionError(
@@ -124,6 +126,8 @@ class MAC(object):
         elif self.key_cipher_value:
             return self.pskc.encryption.decrypt_value(
                 self.key_cipher_value, self.key_algorithm)
+        # fall back to encryption key
+        return self.pskc.encryption.key
 
     @key.setter
     def key(self, value):

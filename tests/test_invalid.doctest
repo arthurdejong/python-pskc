@@ -158,6 +158,18 @@ Traceback (most recent call last):
 DecryptionError: MAC value does not match
 
 
+A MAC is specified but keys are missing.
+
+>>> pskc = PSKC('tests/invalid/mac-missing.pskcxml')
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: No MAC key available
+
+
 Checks to see that invalid values are detected.
 
 >>> pskc = PSKC('tests/invalid/not-integer.pskcxml')  # doctest: +IGNORE_EXCEPTION_DETAIL
