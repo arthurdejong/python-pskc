@@ -53,6 +53,18 @@ def get_hmac(algorithm):
         return lambda key, value: hmac.new(key, value, digestmod).digest()
 
 
+def get_mac(algorithm, key, value):
+    """Generate the MAC value over the specified value."""
+    from pskc.exceptions import DecryptionError
+    if key is None:
+        raise DecryptionError('No MAC key available')
+    hmacfn = get_hmac(algorithm)
+    if hmacfn is None:
+        raise DecryptionError(
+            'Unsupported MAC algorithm: %r' % algorithm)
+    return hmacfn(key, value)
+
+
 class MAC(object):
     """Class describing the MAC algorithm to use and how to get the key.
 
@@ -142,15 +154,7 @@ class MAC(object):
 
     def generate_mac(self, value):
         """Generate the MAC over the specified value."""
-        from pskc.exceptions import DecryptionError
-        key = self.key
-        if key is None:
-            raise DecryptionError('No MAC key available')
-        hmacfn = get_hmac(self.algorithm)
-        if hmacfn is None:
-            raise DecryptionError(
-                'Unsupported MAC algorithm: %r' % self.algorithm)
-        return hmacfn(key, value)
+        return get_mac(self.algorithm, self.key, value)
 
     def check_value(self, value, value_mac):
         """Check if the provided value matches the MAC.
