@@ -335,8 +335,8 @@ class Encryption(object):
         chosen for missing arguments.
         """
         self._setup_encryption(kwargs)
-        key = kwargs.pop('key', self.key)
-        if not key:
+        self.key = kwargs.pop('key', self.key)
+        if not self.key:
             from Crypto import Random
             self.key = Random.get_random_bytes(kwargs.pop(
                 'key_length', self.algorithm_key_lengths[-1]))
