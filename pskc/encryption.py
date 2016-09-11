@@ -320,7 +320,7 @@ class Encryption(object):
             self.pskc.mac.setup()
 
     def setup_preshared_key(self, **kwargs):
-        """Configure pre-shared key encryption.
+        """Configure pre-shared key encryption when writing the file.
 
         The following arguments may be supplied:
           key: the encryption key to use
@@ -342,7 +342,7 @@ class Encryption(object):
                 'key_length', self.algorithm_key_lengths[-1]))
 
     def setup_pbkdf2(self, password, **kwargs):
-        """Configure password-based PSKC encryption.
+        """Configure password-based PSKC encryption when writing the file.
 
         The following arguments may be supplied:
           password: the password to use (required)

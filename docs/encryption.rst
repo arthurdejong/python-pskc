@@ -93,7 +93,7 @@ The Encryption class
 
    .. function:: setup_preshared_key(...)
 
-      Configure pre-shared key encryption.
+      Configure pre-shared key encryption when writing the file.
 
       :param binary key: the encryption key to use
       :param str id: encryption key identifier
@@ -119,7 +119,7 @@ The Encryption class
 
    .. function:: setup_pbkdf2(...)
 
-      Configure password-based PSKC encryption.
+      Configure password-based PSKC encryption when writing the file.
 
       :param str password: the password to use (required)
       :param str id: encryption key identifier
