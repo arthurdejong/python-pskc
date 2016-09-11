@@ -210,10 +210,12 @@ reasonable defaults.
 
 All properties can also be manually specified.
 
+>>> pskc = PSKC()
 >>> pskc.encryption.setup_pbkdf2(
 ...    'qwerty', iterations=1000, algorithm='aes256-cbc', key_length=24,
 ...    salt=base64.b64decode('Ej7/PEpyEpw='),
-...    key_name='PBKDF2 passphrase')
+...    key_name='PBKDF2 passphrase',
+...    prf='hmac-md5')
 >>> pskc.encryption.derivation.algorithm
 'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
 >>> pskc.encryption.derivation.pbkdf2_iterations
@@ -222,9 +224,11 @@ All properties can also be manually specified.
 '123eff3c4a72129c'
 >>> pskc.encryption.derivation.pbkdf2_key_length
 24
+>>> pskc.encryption.derivation.pbkdf2_prf
+'http://www.w3.org/2001/04/xmldsig-more#hmac-md5'
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes256-cbc'
 >>> pskc.encryption.key_name
 'PBKDF2 passphrase'
 >>> b2a_hex(pskc.encryption.key)
-'651e63cd57008476af1ff6422cd02e41a13be8f92db69ec9'
+'e8c5fecfb2a5cbb80ff791782ff5e125cc375bb6ba113071'

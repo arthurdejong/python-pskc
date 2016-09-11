@@ -160,7 +160,8 @@ class KeyDerivation(object):
             # pseudorandom function used
             prf = find(pbkdf2, 'PRF')
             if prf is not None:
-                self.pbkdf2_prf = prf.get('Algorithm')
+                from pskc.algorithms import normalise_algorithm
+                self.pbkdf2_prf = normalise_algorithm(prf.get('Algorithm'))
 
     def make_xml(self, encryption_key, key_names):
         from pskc.xml import mk_elem
@@ -220,6 +221,8 @@ class KeyDerivation(object):
             self.pbkdf2_iterations = 12 * 1000
         if key_length:
             self.pbkdf2_key_length = key_length
+        if prf:
+            self.pbkdf2_prf = normalise_algorithm(prf)
         return self.derive_pbkdf2(password)
 
 
