@@ -82,9 +82,10 @@ def decrypt(algorithm, key, ciphertext, iv=None):
             algorithm.endswith('#kw-aes256'):
         from pskc.crypto.aeskw import unwrap
         return unwrap(ciphertext, key)
-    elif algorithm.endswith('#kw-tripledes'):
+    elif algorithm.endswith('#kw-tripledes'):  # pragma: no branch
         from pskc.crypto.tripledeskw import unwrap
         return unwrap(ciphertext, key)
+    # no fallthrough because algorithm_key_lengths() fails with unknown algo
 
 
 def encrypt(algorithm, key, plaintext, iv=None):
@@ -117,9 +118,10 @@ def encrypt(algorithm, key, plaintext, iv=None):
             algorithm.endswith('#kw-aes256'):
         from pskc.crypto.aeskw import wrap
         return wrap(plaintext, key)
-    elif algorithm.endswith('#kw-tripledes'):
+    elif algorithm.endswith('#kw-tripledes'):  # pragma: no branch
         from pskc.crypto.tripledeskw import wrap
         return wrap(plaintext, key)
+    # no fallthrough because algorithm_key_lengths() fails with unknown algo
 
 
 class KeyDerivation(object):
@@ -192,6 +194,9 @@ class KeyDerivation(object):
                 raise KeyDerivationError(
                     'Pseudorandom function unsupported: %r' %
                     self.pbkdf2_prf)
+        if not all((password, self.pbkdf2_salt, self.pbkdf2_key_length,
+                   self.pbkdf2_iterations)):
+            raise KeyDerivationError('Incomplete PBKDF2 configuration')
         return PBKDF2(
             password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
             count=self.pbkdf2_iterations, prf=prf)
@@ -219,7 +224,7 @@ class KeyDerivation(object):
             self.pbkdf2_iterations = iterations
         elif self.pbkdf2_iterations is None:
             self.pbkdf2_iterations = 12 * 1000
-        if key_length:
+        if key_length:  # pragma: no branch (always specified)
             self.pbkdf2_key_length = key_length
         if prf:
             self.pbkdf2_prf = normalise_algorithm(prf)

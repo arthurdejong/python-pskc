@@ -44,8 +44,9 @@
       </Data>
       <Policy>
         <KeyUsage>OTP</KeyUsage>
+        <!-- unknown PINKeyId referenced -->
         <PINPolicy MinLength="4" MaxLength="4"
-          PINKeyId="123456781" PINEncoding="DECIMAL"
+          PINKeyId="999" PINEncoding="DECIMAL"
           PINUsageMode="Local">
           <!-- unknown child element of PINPolicy -->
           <Foo>Bar</Foo>
@@ -60,8 +61,9 @@
       </Data>
       <Policy>
         <KeyUsage>OTP</KeyUsage>
+        <!-- no PINKeyId referenced -->
         <PINPolicy MinLength="4" MaxLength="4"
-          PINKeyId="123456781" PINEncoding="DECIMAL"
+          PINEncoding="DECIMAL"
           PINUsageMode="Local"/>
         <!-- unknown child element of Policy -->
         <Foo>bar</Foo>

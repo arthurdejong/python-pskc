@@ -44,7 +44,7 @@ Add a key with all attributes set.
 >>> key.expiry_date = datetime.datetime(2014, 5, 31, 0, 0, tzinfo=tzutc())
 >>> key.device_userid = 'uid=arthur, dc=arthurdejong, dc=org'
 >>> key.crypto_module = 'CyrptoId'
->>> key.algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:totp'
+>>> key.algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:hotp'
 >>> key.issuer = 'Issuer'
 >>> key.key_profile = 'key profile id'
 >>> key.key_reference = 'reference to some key'
@@ -80,6 +80,21 @@ Add policy information and a PIN.
 ...     response_encoding='DECIMAL', response_length=4)
 
 
+Add a second (TOTP) key:
+
+>>> key = pskc.add_key()
+>>> key.serial = key.id = '267469811'
+>>> key.start_date = datetime.datetime(2006, 5, 1, 0, 0)
+>>> key.expiry_date = datetime.datetime(2014, 5, 31, 0, 0)
+>>> key.algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:totp'
+>>> key.response_encoding = 'DECIMAL'
+>>> key.response_length = 6
+>>> key.time_offset = 0
+>>> key.time_interval = 30
+>>> key.time_drift = 6
+>>> key.secret = a2b_hex('4e1790ba272406ba309c5a31')
+
+
 Write the PSKC file (use temporary file to test passing file name as
 argument).
 
@@ -101,7 +116,7 @@ argument).
   <pskc:CryptoModuleInfo>
    <pskc:Id>CyrptoId</pskc:Id>
   </pskc:CryptoModuleInfo>
-  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:totp" Id="123">
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="123">
    <pskc:Issuer>Issuer</pskc:Issuer>
    <pskc:AlgorithmParameters>
     <pskc:Suite>Clubs</pskc:Suite>
@@ -139,6 +154,32 @@ argument).
     <pskc:Secret>
      <pskc:PlainValue>MTIzNA==</pskc:PlainValue>
     </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>267469811</pskc:SerialNo>
+   <pskc:StartDate>2006-05-01T00:00:00</pskc:StartDate>
+   <pskc:ExpiryDate>2014-05-31T00:00:00</pskc:ExpiryDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:totp" Id="267469811">
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="6"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>TheQuickBrownFox</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Time>
+     <pskc:PlainValue>0</pskc:PlainValue>
+    </pskc:Time>
+    <pskc:TimeInterval>
+     <pskc:PlainValue>30</pskc:PlainValue>
+    </pskc:TimeInterval>
+    <pskc:TimeDrift>
+     <pskc:PlainValue>6</pskc:PlainValue>
+    </pskc:TimeDrift>
    </pskc:Data>
   </pskc:Key>
  </pskc:KeyPackage>
@@ -224,6 +265,8 @@ Set up an encrypted PSKC file and generate a pre-shared key for it.
 >>> key = pskc.add_key(
 ...     id='1', serial='123456', secret='1234', counter=42)
 >>> pskc.encryption.setup_preshared_key(
+...     algorithm='aes128-cbc',
+...     key=a2b_hex('12345678901234567890123456789012'),
 ...     key_name='Pre-shared KEY', fields = ['secret', 'counter'])
 >>> f = tempfile.NamedTemporaryFile()
 >>> pskc.write(f.name)
@@ -414,3 +457,55 @@ DecryptionError: Unsupported algorithm: 'FOOBAR'
 Traceback (most recent call last):
     ...
 EncryptionError: Invalid key length
+
+
+Setting up something else than PBKDF2 as derivation algorithm will just
+result in an empty KeyDerivation element.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_pbkdf2('qwerty')
+>>> pskc.encryption.derivation.algorithm = 'unknown'
+>>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
+ <pskc:EncryptionKey>
+  <xenc11:DerivedKey>
+   <xenc11:KeyDerivationMethod Algorithm="unknown"/>
+  </xenc11:DerivedKey>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  ...
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+  ...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can make the PKKDF2 salt have to be transmitted out-of-bounds:
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_pbkdf2('qwerty', salt=a2b_hex('1234567890'))
+>>> pskc.encryption.derivation.pbkdf2_salt = None
+>>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
+ <pskc:EncryptionKey>
+  <xenc11:DerivedKey>
+   <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
+    <xenc11:PBKDF2-params>
+     <IterationCount>12000</IterationCount>
+     <KeyLength>16</KeyLength>
+    </xenc11:PBKDF2-params>
+   </xenc11:KeyDerivationMethod>
+  </xenc11:DerivedKey>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  ...
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+  ...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>

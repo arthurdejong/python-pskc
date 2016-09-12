@@ -445,7 +445,8 @@ class Key(object):
 
     def check(self):
         """Check if all MACs in the message are valid."""
-        if any((self._secret.check(), self._counter.check(),
+        if all(x is not False for x in (
+                self._secret.check(), self._counter.check(),
                 self._time_offset.check(), self._time_interval.check(),
                 self._time_drift.check())):
             return True

@@ -9,7 +9,6 @@
           </xenc11:Salt>
           <xenc11:IterationCount>249</xenc11:IterationCount>
           <xenc11:KeyLength>16</xenc11:KeyLength>
-          <xenc11:PRF />
         </xenc11:PBKDF2-params>
       </xenc11:KeyDerivationMethod>
       <xenc:ReferenceList>

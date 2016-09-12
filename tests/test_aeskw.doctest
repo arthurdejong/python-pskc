@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
+>>> from Crypto.Util.number import long_to_bytes
 >>> from binascii import a2b_hex
 >>> from pskc.crypto.aeskw import wrap, unwrap
 
@@ -90,13 +91,16 @@ True
 
 Mangling the ciphertext and unwrapping results in an exception:
 
->>> ciphertext = b'XX' + ciphertext[2:]
->>> unwrap(ciphertext, key)  # doctest: +IGNORE_EXCEPTION_DETAIL
+>>> unwrap(b'XX' + ciphertext[2:], key)  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: IV does not match
->>> ciphertext = ciphertext[2:]
->>> unwrap(ciphertext, key)  # doctest: +IGNORE_EXCEPTION_DETAIL
+>>> unwrap(ciphertext[:-2] + b'XX', key)  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: IV does not match
+
+>>> unwrap(ciphertext[2:], key)  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 DecryptionError: Ciphertext length wrong
@@ -195,3 +199,33 @@ EncryptionError: Plaintext length wrong
 True
 >>> unwrap(ciphertext, key, iv) == plaintext
 True
+>>> unwrap(ciphertext, key, a2b_hex('2020202020202020'))  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: IV does not match
+
+
+We can fake padding by specifying an RFC 5649 IV ourselves. The length of 14
+works because we have padded the plaintext with two 0 bytes.
+
+>>> key = a2b_hex('5840df6e29b02af1ab493b705bf16ea1ae8338f4dcc176a8')
+>>> plaintext = a2b_hex('c37b7e6492584340bed1220765460000')
+>>> iv = a2b_hex('a65959a6') + long_to_bytes(14, 4)
+>>> ciphertext = wrap(plaintext, key, iv=iv)
+>>> unwrap(ciphertext, key, iv=iv) == plaintext
+True
+>>> unwrap(ciphertext, key) == plaintext[:14]
+True
+
+
+If we mangle the IV to look like an RFC 5649 value but with an invalid
+padding length we should get an exception.
+
+>>> iv = a2b_hex('a65959a6') + long_to_bytes(12, 4)
+>>> ciphertext = wrap(plaintext, key, iv=iv)
+>>> unwrap(ciphertext, key, iv=iv) == plaintext
+True
+>>> unwrap(ciphertext, key) == plaintext[:12]
+Traceback (most recent call last):
+    ...
+DecryptionError: IV does not match

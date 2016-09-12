@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> import base64
 
 >>> from pskc import PSKC
+>>> from pskc.encryption import encrypt, decrypt
 
 
 >>> pskc = PSKC('tests/encryption/aes128-cbc.pskcxml')
@@ -146,6 +147,18 @@ PSKC format allowed using the encryption key for the HMAC function.
 '12345678901234567890'
 
 
+Test decryption with tripledes-cbc and a specified IV.
+
+>>> iv = a2b_hex('1010101010101010')
+>>> key = a2b_hex('12345678901234567890123456789012')
+>>> cyphertext = encrypt('#tripledes-cbc', key, b'FOOBAR', iv)
+>>> cyphertext = cyphertext[8:]  # strip IV
+>>> tostr(decrypt('#tripledes-cbc', key, cyphertext, iv))
+'FOOBAR'
+>>> tostr(decrypt('#tripledes-cbc', key, iv + cyphertext))
+'FOOBAR'
+
+
 MAC key and algorithm will use useful defaults but can also be manually
 specified.
 
@@ -191,13 +204,19 @@ reasonable defaults.
 >>> len(pskc.encryption.key)
 16
 
+
+The function will pick up an pre-specified values. If an encryption algorithm
+is defined (can also be passed) the key with the correct size will be
+generated.
+
 >>> pskc = PSKC()
 >>> pskc.encryption.algorithm = 'aes256-cbc'
+>>> pskc.encryption.derivation.pbkdf2_iterations = 15000
 >>> pskc.encryption.setup_pbkdf2('test')
 >>> pskc.encryption.derivation.algorithm
 'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
 >>> pskc.encryption.derivation.pbkdf2_iterations
-12000
+15000
 >>> len(pskc.encryption.derivation.pbkdf2_salt)
 16
 >>> pskc.encryption.derivation.pbkdf2_key_length
