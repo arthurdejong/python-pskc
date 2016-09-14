@@ -131,13 +131,17 @@ There is a ValueMAC element but no MACMethod element.
 
 >>> pskc = PSKC('tests/invalid/no-mac-method.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> pskc.mac.algorithm is None
+True
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
 >>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
-DecryptionError: No MAC key available
+DecryptionError: No MAC algorithm set
 
 
 There is an empty MACKey in the PSKC file.
@@ -171,6 +175,10 @@ transit.
 
 >>> pskc = PSKC('tests/invalid/mac-value.pskcxml')
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
 >>> key = pskc.keys[0]
 >>> key.id
 '12345678'
