@@ -62,7 +62,6 @@ class PSKC(object):
 
     def __init__(self, filename=None):
         from pskc.encryption import Encryption
-        from pskc.exceptions import ParseError
         from pskc.mac import MAC
         self.version = None
         self.id = None
@@ -70,38 +69,17 @@ class PSKC(object):
         self.mac = MAC(self)
         self.keys = []
         if filename is not None:
+            from pskc.exceptions import ParseError
+            from pskc.parser import PSKCParser
             from pskc.xml import parse, remove_namespaces
             try:
                 tree = parse(filename)
             except Exception:
                 raise ParseError('Error parsing XML')
             remove_namespaces(tree)
-            self.parse(tree.getroot())
+            PSKCParser.parse_document(self, tree.getroot())
         else:
             self.version = '1.0'
-
-    def parse(self, container):
-        """Read information from the provided <KeyContainer> tree."""
-        from pskc.exceptions import ParseError
-        from pskc.key import Key
-        from pskc.xml import find, findall
-        if container.tag != 'KeyContainer':
-            raise ParseError('Missing KeyContainer')
-        # the version of the PSKC schema
-        self.version = container.get('Version')
-        if self.version != '1.0':
-            raise ParseError('Unsupported version %r' % self.version)
-        # unique identifier for the container
-        self.id = container.get('Id')
-        # handle EncryptionKey entries
-        self.encryption.parse(find(container, 'EncryptionKey'))
-        # handle MACMethod entries
-        self.mac.parse(find(container, 'MACMethod'))
-        # handle KeyPackage entries
-        for key_package in findall(container, 'KeyPackage'):
-            key = Key(self)
-            key.parse(key_package)
-            self.keys.append(key)
 
     def make_xml(self):
         from pskc.xml import mk_elem

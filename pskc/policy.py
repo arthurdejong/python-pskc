@@ -114,47 +114,6 @@ class Policy(object):
         self.pin_encoding = None
         self.unknown_policy_elements = False
 
-    def parse(self, policy):
-        """Read key policy information from the provided <Policy> tree."""
-        from pskc.xml import (
-            find, findall, findtext, findint, findtime, getint)
-        if policy is None:
-            return
-
-        self.start_date = findtime(policy, 'StartDate')
-        self.expiry_date = findtime(policy, 'ExpiryDate')
-        self.number_of_transactions = findint(
-            policy, 'NumberOfTransactions')
-        for key_usage in findall(policy, 'KeyUsage'):
-            self.key_usage.append(findtext(key_usage, '.'))
-
-        pin_policy = find(policy, 'PINPolicy')
-        if pin_policy is not None:
-            self.pin_key_id = pin_policy.get('PINKeyId')
-            self.pin_usage = pin_policy.get('PINUsageMode')
-            self.pin_max_failed_attemtps = getint(
-                pin_policy, 'MaxFailedAttempts')
-            self.pin_min_length = getint(pin_policy, 'MinLength')
-            self.pin_max_length = getint(pin_policy, 'MaxLength')
-            self.pin_encoding = pin_policy.get('PINEncoding')
-            # check for child elements
-            if list(pin_policy):
-                self.unknown_policy_elements = True
-            # check for unknown attributes
-            known_attributes = set([
-                'PINKeyId', 'PINUsageMode', 'MaxFailedAttempts', 'MinLength',
-                'MaxLength', 'PINEncoding'])
-            if set(pin_policy.keys()) - known_attributes:
-                self.unknown_policy_elements = True
-
-        # check for other child elements
-        known_children = set([
-            'StartDate', 'ExpiryDate', 'NumberOfTransactions', 'KeyUsage',
-            'PINPolicy'])
-        for child in policy:
-            if child.tag not in known_children:
-                self.unknown_policy_elements = True
-
     def make_xml(self, key):
         from pskc.xml import mk_elem
         # check if any policy attribute is set

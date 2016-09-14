@@ -144,27 +144,6 @@ class KeyDerivation(object):
         self.pbkdf2_key_length = None
         self.pbkdf2_prf = None
 
-    def parse(self, key_derivation):
-        """Read derivation parameters from a <KeyDerivationMethod> element."""
-        from pskc.xml import find, findint, findbin
-        if key_derivation is None:
-            return
-        self.algorithm = key_derivation.get('Algorithm')
-        # PBKDF2 properties
-        pbkdf2 = find(key_derivation, 'PBKDF2-params')
-        if pbkdf2 is not None:
-            # get used salt
-            self.pbkdf2_salt = findbin(pbkdf2, 'Salt/Specified')
-            # required number of iterations
-            self.pbkdf2_iterations = findint(pbkdf2, 'IterationCount')
-            # key length
-            self.pbkdf2_key_length = findint(pbkdf2, 'KeyLength')
-            # pseudorandom function used
-            prf = find(pbkdf2, 'PRF')
-            if prf is not None:
-                from pskc.algorithms import normalise_algorithm
-                self.pbkdf2_prf = normalise_algorithm(prf.get('Algorithm'))
-
     def make_xml(self, encryption_key, key_names):
         from pskc.xml import mk_elem
         derived_key = mk_elem(encryption_key, 'xenc11:DerivedKey', empty=True)
@@ -259,19 +238,6 @@ class Encryption(object):
         self.iv = None
         self.derivation = KeyDerivation()
         self.fields = []
-
-    def parse(self, key_info):
-        """Read encryption information from the <EncryptionKey> XML tree."""
-        from pskc.xml import find, findall, findtext
-        if key_info is None:
-            return
-        self.id = key_info.get('Id')
-        for name in findall(key_info, 'KeyName'):
-            self.key_names.append(findtext(name, '.'))
-        for name in findall(key_info, 'DerivedKey/MasterKeyName'):
-            self.key_names.append(findtext(name, '.'))
-        self.derivation.parse(find(
-            key_info, 'DerivedKey/KeyDerivationMethod'))
 
     def make_xml(self, container):
         from pskc.xml import mk_elem

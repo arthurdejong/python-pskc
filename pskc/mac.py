@@ -83,20 +83,6 @@ class MAC(object):
         self.key_cipher_value = None
         self.key_algorithm = None
 
-    def parse(self, mac_method):
-        """Read MAC information from the <MACMethod> XML tree."""
-        from pskc.xml import find, findtext, findbin
-        if mac_method is None:
-            return
-        self.algorithm = mac_method.get('Algorithm')
-        mac_key = find(mac_method, 'MACKey')
-        if mac_key is not None:
-            self.key_cipher_value = findbin(mac_key, 'CipherData/CipherValue')
-            encryption_method = find(mac_key, 'EncryptionMethod')
-            if encryption_method is not None:
-                self.key_algorithm = encryption_method.attrib.get('Algorithm')
-        mac_key_reference = findtext(mac_method, 'MACKeyReference')
-
     def make_xml(self, container):
         from pskc.xml import mk_elem
         if not self.algorithm and not self.key:

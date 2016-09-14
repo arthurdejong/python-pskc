@@ -47,35 +47,6 @@ class DataType(object):
         self.algorithm = None
         self.value_mac = None
 
-    def parse(self, element):
-        """Read information from the provided element.
-
-        The element is expected to contain <PlainValue>, <EncryptedValue>
-        and/or <ValueMAC> elements that contain information on the actual
-        value."""
-        from pskc.xml import find, findtext, findbin
-        if element is None:
-            return
-        # read plaintext value from <PlainValue>
-        plain_value = findtext(element, 'PlainValue')
-        if plain_value is not None:
-            self.value = self._from_text(plain_value)
-        # read encrypted data from <EncryptedValue>
-        encrypted_value = find(element, 'EncryptedValue')
-        if encrypted_value is not None:
-            self.cipher_value = findbin(
-                encrypted_value, 'CipherData/CipherValue')
-            encryption_method = find(encrypted_value, 'EncryptionMethod')
-            if encryption_method is not None:
-                self.algorithm = encryption_method.attrib.get('Algorithm')
-                # store the found algorithm in the pskc.encryption property
-                if not self.pskc.encryption.algorithm and self.algorithm:
-                    self.pskc.encryption.algorithm = self.algorithm
-        # read MAC information from <ValueMAC>
-        value_mac = findbin(element, 'ValueMAC')
-        if value_mac is not None:
-            self.value_mac = value_mac
-
     @staticmethod
     def _from_text(value):
         """Convert the plain value to native representation."""
@@ -302,67 +273,6 @@ class Key(object):
         self.response_check = None
 
         self.policy = Policy(self)
-
-    def parse(self, key_package):
-        """Read key information from the provided <KeyPackage> tree."""
-        from pskc.xml import find, findtext, findtime, getint, getbool
-
-        key = find(key_package, 'Key')
-        if key is not None:
-            self.id = key.get('Id')
-            self.algorithm = key.get('Algorithm')
-
-        data = find(key_package, 'Key/Data')
-        if data is not None:
-            self._secret.parse(find(data, 'Secret'))
-            self._counter.parse(find(data, 'Counter'))
-            self._time_offset.parse(find(data, 'Time'))
-            self._time_interval.parse(find(data, 'TimeInterval'))
-            self._time_drift.parse(find(data, 'TimeDrift'))
-
-        self.issuer = findtext(key_package, 'Key/Issuer')
-        self.key_profile = findtext(key_package, 'Key/KeyProfileId')
-        self.key_reference = findtext(key_package, 'Key/KeyReference')
-        self.friendly_name = findtext(key_package, 'Key/FriendlyName')
-        # TODO: support multi-language values of <FriendlyName>
-        self.key_userid = findtext(key_package, 'Key/UserId')
-
-        self.manufacturer = findtext(key_package, 'DeviceInfo/Manufacturer')
-        self.serial = findtext(key_package, 'DeviceInfo/SerialNo')
-        self.model = findtext(key_package, 'DeviceInfo/Model')
-        self.issue_no = findtext(key_package, 'DeviceInfo/IssueNo')
-        self.device_binding = findtext(
-            key_package, 'DeviceInfo/DeviceBinding')
-        self.start_date = findtime(key_package, 'DeviceInfo/StartDate')
-        self.expiry_date = findtime(key_package, 'DeviceInfo/ExpiryDate')
-        self.device_userid = findtext(key_package, 'DeviceInfo/UserId')
-
-        self.crypto_module = findtext(key_package, 'CryptoModuleInfo/Id')
-
-        self.algorithm_suite = findtext(
-            key_package, 'Key/AlgorithmParameters/Suite')
-
-        challenge_format = find(
-            key_package, 'Key/AlgorithmParameters/ChallengeFormat')
-        if challenge_format is not None:
-            self.challenge_encoding = challenge_format.get('Encoding')
-            self.challenge_min_length = getint(challenge_format, 'Min')
-            self.challenge_max_length = getint(challenge_format, 'Max')
-            self.challenge_check = getbool(
-                challenge_format, 'CheckDigits', getbool(
-                    challenge_format, 'CheckDigit'))
-
-        response_format = find(
-            key_package,
-            'Key/AlgorithmParameters/ResponseFormat')
-        if response_format is not None:
-            self.response_encoding = response_format.get('Encoding')
-            self.response_length = getint(response_format, 'Length')
-            self.response_check = getbool(
-                response_format, 'CheckDigits', getbool(
-                    response_format, 'CheckDigit'))
-
-        self.policy.parse(find(key_package, 'Key/Policy'))
 
     def make_xml(self, container):
         from pskc.xml import mk_elem
