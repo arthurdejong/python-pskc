@@ -26,8 +26,6 @@ algorithms and decryption.
 The encryption key can be derived using the KeyDerivation class.
 """
 
-import base64
-
 
 def algorithm_key_lengths(algorithm):
     """Return the possible key lengths for the configured algorithm."""
@@ -144,24 +142,6 @@ class KeyDerivation(object):
         self.pbkdf2_key_length = None
         self.pbkdf2_prf = None
 
-    def make_xml(self, encryption_key, key_names):
-        from pskc.xml import mk_elem
-        derived_key = mk_elem(encryption_key, 'xenc11:DerivedKey', empty=True)
-        key_derivation = mk_elem(derived_key, 'xenc11:KeyDerivationMethod',
-                                 Algorithm=self.algorithm)
-        if self.algorithm.endswith('#pbkdf2'):
-            pbkdf2 = mk_elem(key_derivation, 'xenc11:PBKDF2-params',
-                             empty=True)
-            if self.pbkdf2_salt:
-                salt = mk_elem(pbkdf2, 'Salt', empty=True)
-                mk_elem(salt, 'Specified', base64.b64encode(self.pbkdf2_salt))
-            mk_elem(pbkdf2, 'IterationCount', self.pbkdf2_iterations)
-            mk_elem(pbkdf2, 'KeyLength', self.pbkdf2_key_length)
-            mk_elem(pbkdf2, 'PRF', self.pbkdf2_prf)
-        # TODO: serialise ReferenceList/DataReference
-        for name in key_names:
-            mk_elem(derived_key, 'xenc11:MasterKeyName', name)
-
     def derive_pbkdf2(self, password):
         from Crypto.Protocol.KDF import PBKDF2
         from pskc.mac import get_hmac
@@ -238,20 +218,6 @@ class Encryption(object):
         self.iv = None
         self.derivation = KeyDerivation()
         self.fields = []
-
-    def make_xml(self, container):
-        from pskc.xml import mk_elem
-        if all(x is None
-               for x in (self.id, self.key_name, self.key,
-                         self.derivation.algorithm)):
-            return
-        encryption_key = mk_elem(container, 'pskc:EncryptionKey',
-                                 Id=self.id, empty=True)
-        if self.derivation.algorithm:
-            self.derivation.make_xml(encryption_key, self.key_names)
-        else:
-            for name in self.key_names:
-                mk_elem(encryption_key, 'ds:KeyName', name)
 
     @property
     def key_name(self):

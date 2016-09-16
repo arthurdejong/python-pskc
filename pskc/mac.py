@@ -29,7 +29,6 @@ with the PSKC encryption key.
 """
 
 
-import base64
 import re
 
 
@@ -82,27 +81,6 @@ class MAC(object):
         self.key_plain_value = None
         self.key_cipher_value = None
         self.key_algorithm = None
-
-    def make_xml(self, container):
-        from pskc.xml import mk_elem
-        if not self.algorithm and not self.key:
-            return
-        mac_method = mk_elem(
-            container, 'pskc:MACMethod', Algorithm=self.algorithm, empty=True)
-        mac_key = mk_elem(mac_method, 'pskc:MACKey', empty=True)
-        mk_elem(
-            mac_key, 'xenc:EncryptionMethod',
-            Algorithm=self.pskc.encryption.algorithm)
-        cipher_data = mk_elem(mac_key, 'xenc:CipherData', empty=True)
-        if self.key_cipher_value:
-            mk_elem(
-                cipher_data, 'xenc:CipherValue',
-                base64.b64encode(self.key_cipher_value).decode())
-        elif self.key_plain_value:
-            mk_elem(
-                cipher_data, 'xenc:CipherValue', base64.b64encode(
-                    self.pskc.encryption.encrypt_value(self.key_plain_value)
-                ).decode())
 
     @property
     def key(self):

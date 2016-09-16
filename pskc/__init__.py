@@ -81,16 +81,6 @@ class PSKC(object):
         else:
             self.version = '1.0'
 
-    def make_xml(self):
-        from pskc.xml import mk_elem
-        container = mk_elem('pskc:KeyContainer', Version=self.version,
-                            Id=self.id)
-        self.encryption.make_xml(container)
-        self.mac.make_xml(container)
-        for key in self.keys:
-            key.make_xml(container)
-        return container
-
     def add_key(self, **kwargs):
         """Create a new key instance for the PSKC file.
 
@@ -109,8 +99,9 @@ class PSKC(object):
     def write(self, filename):
         """Write the PSKC file to the provided file."""
         from pskc.xml import tostring
+        from pskc.serialiser import PSKCSerialiser
         if hasattr(filename, 'write'):
-            xml = tostring(self.make_xml())
+            xml = tostring(PSKCSerialiser.serialise_document(self))
             try:
                 filename.write(xml)
             except TypeError:  # pragma: no cover (Python 3 specific)

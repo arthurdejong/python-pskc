@@ -114,30 +114,6 @@ class Policy(object):
         self.pin_encoding = None
         self.unknown_policy_elements = False
 
-    def make_xml(self, key):
-        from pskc.xml import mk_elem
-        # check if any policy attribute is set
-        if not self.key_usage and all(x is None for x in (
-                self.start_date, self.expiry_date,
-                self.number_of_transactions, self.pin_key_id, self.pin_usage,
-                self.pin_max_failed_attemtps, self.pin_min_length,
-                self.pin_max_length, self.pin_encoding)):
-            return
-        policy = mk_elem(key, 'pskc:Policy', empty=True)
-        mk_elem(policy, 'pskc:StartDate', self.start_date)
-        mk_elem(policy, 'pskc:ExpiryDate', self.expiry_date)
-        mk_elem(policy, 'pskc:PINPolicy',
-                PINKeyId=self.pin_key_id,
-                PINUsageMode=self.pin_usage,
-                MaxFailedAttempts=self.pin_max_failed_attemtps,
-                MinLength=self.pin_min_length,
-                MaxLength=self.pin_max_length,
-                PINEncoding=self.pin_encoding)
-        for usage in self.key_usage:
-            mk_elem(policy, 'pskc:KeyUsage', usage)
-        mk_elem(policy, 'pskc:NumberOfTransactions',
-                self.number_of_transactions)
-
     def may_use(self, usage=None, now=None):
         """Check whether the key may be used for the provided purpose."""
         import datetime
