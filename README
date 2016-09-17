@@ -19,7 +19,7 @@ API
 The module provides a straightforward API that is mostly geared towards
 parsing existing PSKC files.
 
-Extracting key material from encrypted PSKC files is as simple as.
+Extracting key material from encrypted PSKC files is as simple as:
 
 >>> from pskc import PSKC
 >>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
@@ -27,6 +27,15 @@ Extracting key material from encrypted PSKC files is as simple as.
 >>> for key in pskc.keys:
 ...     print key.serial, key.secret
 987654321 12345678901234567890
+
+Writing am encrypted PSKC file is as simple as:
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(
+...     id='456', secret='987654321', manufacturer='Manufacturer',
+...     algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:hotp')
+>>> pskc.encryption.setup_pbkdf2('passphrase')
+>>> pskc.write('output.pskcxml')
 
 The key object has a number of properties. See the pskc.key.Key documentation
 for details.

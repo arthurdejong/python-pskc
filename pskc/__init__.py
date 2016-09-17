@@ -37,6 +37,15 @@ The following prints all keys, decrypting using a password:
 ...     print('%s %s' % (key.serial, str(key.secret.decode())))
 987654321 12345678901234567890
 
+The following generates an encrypted PSKC file:
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(
+...     id='456', secret='987654321', manufacturer='Manufacturer',
+...     algorithm = 'urn:ietf:params:xml:ns:keyprov:pskc:hotp')
+>>> pskc.encryption.setup_pbkdf2('passphrase')
+>>> pskc.write('output.pskcxml')
+
 The module should be able to handle most common PSKC files.
 """
 
