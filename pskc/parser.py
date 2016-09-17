@@ -46,7 +46,7 @@ class PSKCParser(object):
         cls.parse_mac_method(pskc.mac, find(container, 'MACMethod'))
         # handle KeyPackage entries
         for key_package in findall(container, 'KeyPackage'):
-            cls.parse_key(pskc.add_key(), key_package)
+            cls.parse_key_package(pskc.add_device(), key_package)
 
     @classmethod
     def parse_encryption(cls, encryption, key_info):
@@ -97,15 +97,32 @@ class PSKCParser(object):
         mac_key_reference = findtext(mac_method, 'MACKeyReference')
 
     @classmethod
-    def parse_key(cls, key, key_package):
+    def parse_key_package(cls, device, key_package):
         """Read key information from the provided <KeyPackage> tree."""
 
-        key_elm = find(key_package, 'Key')
-        if key_elm is not None:
-            key.id = key_elm.get('Id')
-            key.algorithm = key_elm.get('Algorithm')
+        device.manufacturer = findtext(key_package, 'DeviceInfo/Manufacturer')
+        device.serial = findtext(key_package, 'DeviceInfo/SerialNo')
+        device.model = findtext(key_package, 'DeviceInfo/Model')
+        device.issue_no = findtext(key_package, 'DeviceInfo/IssueNo')
+        device.device_binding = findtext(
+            key_package, 'DeviceInfo/DeviceBinding')
+        device.start_date = findtime(key_package, 'DeviceInfo/StartDate')
+        device.expiry_date = findtime(key_package, 'DeviceInfo/ExpiryDate')
+        device.device_userid = findtext(key_package, 'DeviceInfo/UserId')
 
-        data = find(key_package, 'Key/Data')
+        device.crypto_module = findtext(key_package, 'CryptoModuleInfo/Id')
+
+        for key_elm in findall(key_package, 'Key'):
+            cls.parse_key(device.add_key(), key_elm)
+
+    @classmethod
+    def parse_key(cls, key, key_elm):
+        """Read key information from the provided <KeyPackage> tree."""
+
+        key.id = key_elm.get('Id')
+        key.algorithm = key_elm.get('Algorithm')
+
+        data = find(key_elm, 'Data')
         if data is not None:
             cls.parse_datatype(key._secret, find(data, 'Secret'))
             cls.parse_datatype(key._counter, find(data, 'Counter'))
@@ -113,30 +130,18 @@ class PSKCParser(object):
             cls.parse_datatype(key._time_interval, find(data, 'TimeInterval'))
             cls.parse_datatype(key._time_drift, find(data, 'TimeDrift'))
 
-        key.issuer = findtext(key_package, 'Key/Issuer')
-        key.key_profile = findtext(key_package, 'Key/KeyProfileId')
-        key.key_reference = findtext(key_package, 'Key/KeyReference')
-        key.friendly_name = findtext(key_package, 'Key/FriendlyName')
+        key.issuer = findtext(key_elm, 'Issuer')
+        key.key_profile = findtext(key_elm, 'KeyProfileId')
+        key.key_reference = findtext(key_elm, 'KeyReference')
+        key.friendly_name = findtext(key_elm, 'FriendlyName')
         # TODO: support multi-language values of <FriendlyName>
-        key.key_userid = findtext(key_package, 'Key/UserId')
-
-        key.manufacturer = findtext(key_package, 'DeviceInfo/Manufacturer')
-        key.serial = findtext(key_package, 'DeviceInfo/SerialNo')
-        key.model = findtext(key_package, 'DeviceInfo/Model')
-        key.issue_no = findtext(key_package, 'DeviceInfo/IssueNo')
-        key.device_binding = findtext(
-            key_package, 'DeviceInfo/DeviceBinding')
-        key.start_date = findtime(key_package, 'DeviceInfo/StartDate')
-        key.expiry_date = findtime(key_package, 'DeviceInfo/ExpiryDate')
-        key.device_userid = findtext(key_package, 'DeviceInfo/UserId')
-
-        key.crypto_module = findtext(key_package, 'CryptoModuleInfo/Id')
+        key.key_userid = findtext(key_elm, 'UserId')
 
         key.algorithm_suite = findtext(
-            key_package, 'Key/AlgorithmParameters/Suite')
+            key_elm, 'AlgorithmParameters/Suite')
 
         challenge_format = find(
-            key_package, 'Key/AlgorithmParameters/ChallengeFormat')
+            key_elm, 'AlgorithmParameters/ChallengeFormat')
         if challenge_format is not None:
             key.challenge_encoding = challenge_format.get('Encoding')
             key.challenge_min_length = getint(challenge_format, 'Min')
@@ -146,7 +151,7 @@ class PSKCParser(object):
                     challenge_format, 'CheckDigit'))
 
         response_format = find(
-            key_package, 'Key/AlgorithmParameters/ResponseFormat')
+            key_elm, 'AlgorithmParameters/ResponseFormat')
         if response_format is not None:
             key.response_encoding = response_format.get('Encoding')
             key.response_length = getint(response_format, 'Length')
@@ -154,7 +159,7 @@ class PSKCParser(object):
                 response_format, 'CheckDigits', getbool(
                     response_format, 'CheckDigit'))
 
-        cls.parse_policy(key.policy, find(key_package, 'Key/Policy'))
+        cls.parse_policy(key.policy, find(key_elm, 'Policy'))
 
     @classmethod
     def parse_datatype(cls, dt, element):

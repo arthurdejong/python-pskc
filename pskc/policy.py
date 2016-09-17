@@ -137,8 +137,8 @@ class Policy(object):
     @property
     def pin_key(self):
         """Reference to the PSKC Key that holds the PIN (if any)."""
-        if self.pin_key_id and self.key and self.key.pskc:
-            for key in self.key.pskc.keys:
+        if self.pin_key_id and self.key and self.key.device.pskc:
+            for key in self.key.device.pskc.keys:
                 if key.id == self.pin_key_id:
                     return key
 

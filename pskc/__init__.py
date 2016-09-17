@@ -57,6 +57,7 @@ class PSKC(object):
       id: identifier
       encryption: information on used encryption (Encryption instance)
       mac: information on used MAC method (MAC instance)
+      devices: list of devices (Device instances)
       keys: list of keys (Key instances)
     """
 
@@ -67,7 +68,7 @@ class PSKC(object):
         self.id = None
         self.encryption = Encryption(self)
         self.mac = MAC(self)
-        self.keys = []
+        self.devices = []
         if filename is not None:
             from pskc.exceptions import ParseError
             from pskc.parser import PSKCParser
@@ -81,14 +82,32 @@ class PSKC(object):
         else:
             self.version = '1.0'
 
+    @property
+    def keys(self):
+        return tuple(key for device in self.devices for key in device.keys)
+
+    def add_device(self, **kwargs):
+        """Create a new device instance for the PSKC file.
+
+        The device is initialised with properties from the provided keyword
+        arguments if any."""
+        from pskc.device import Device
+        device = Device(self)
+        self.devices.append(device)
+        # assign the kwargs as key properties
+        for k, v in kwargs.items():
+            if not hasattr(device, k):
+                raise AttributeError()
+            setattr(device, k, v)
+        return device
+
     def add_key(self, **kwargs):
         """Create a new key instance for the PSKC file.
 
         The new key is initialised with properties from the provided keyword
         arguments if any."""
-        from pskc.key import Key
-        key = Key(self)
-        self.keys.append(key)
+        device = self.add_device()
+        key = device.add_key()
         # assign the kwargs as key properties
         for k, v in kwargs.items():
             if not hasattr(key, k):

@@ -40,8 +40,8 @@ class DataType(object):
       value_mac: MAC of the encrypted value
     """
 
-    def __init__(self, key):
-        self.pskc = key.pskc
+    def __init__(self, pskc):
+        self.pskc = pskc
         self.value = None
         self.cipher_value = None
         self.algorithm = None
@@ -156,6 +156,19 @@ class IntegerDataType(DataType):
         return binascii.unhexlify(value.zfill(n + (n & 1)))
 
 
+class DeviceProperty(object):
+    """A data descriptor that delegates actions to the Device instance."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, obj, objtype):
+        return getattr(obj.device, self.name)
+
+    def __set__(self, obj, val):
+        setattr(obj.device, self.name, val)
+
+
 class Key(object):
     """Representation of a single key from a PSKC file.
 
@@ -173,15 +186,6 @@ class Key(object):
       key_reference: reference to an external key
       friendly_name: human-readable name for the secret key
       key_userid: user distinguished name associated with the key
-      manufacturer: name of the organisation that made the device
-      serial: serial number of the device
-      model: device model description
-      issue_no: issue number per serial number
-      device_binding: device (class) identifier for the key to be loaded upon
-      start_date: key should not be used before this date
-      expiry_date: key or device may expire after this date
-      device_userid: user distinguished name associated with the device
-      crypto_module: id of module to which keys are provisioned within device
       algorithm_suite: additional algorithm characteristics (e.g. used hash)
       challenge_encoding: format of the challenge for CR devices
       challenge_min_length: minimum accepted challenge length by device
@@ -191,37 +195,30 @@ class Key(object):
       response_length: the length of the response of the device
       response_check: whether the device appends a Luhn check digit
       policy: reference to policy information (see Policy class)
+
+    This class also provides access to the manufacturer, serial, model,
+    issue_no, device_binding, start_date, expiry_date, device_userid and
+    crypto_module properties of the Device class.
     """
 
-    def __init__(self, pskc):
+    def __init__(self, device):
 
-        self.pskc = pskc
+        self.device = device
 
         self.id = None
         self.algorithm = None
 
-        self._secret = BinaryDataType(self)
-        self._counter = IntegerDataType(self)
-        self._time_offset = IntegerDataType(self)
-        self._time_interval = IntegerDataType(self)
-        self._time_drift = IntegerDataType(self)
+        self._secret = BinaryDataType(self.device.pskc)
+        self._counter = IntegerDataType(self.device.pskc)
+        self._time_offset = IntegerDataType(self.device.pskc)
+        self._time_interval = IntegerDataType(self.device.pskc)
+        self._time_drift = IntegerDataType(self.device.pskc)
 
         self.issuer = None
         self.key_profile = None
         self.key_reference = None
         self.friendly_name = None
         self.key_userid = None
-
-        self.manufacturer = None
-        self.serial = None
-        self.model = None
-        self.issue_no = None
-        self.device_binding = None
-        self.start_date = None
-        self.expiry_date = None
-        self.device_userid = None
-
-        self.crypto_module = None
 
         self.algorithm_suite = None
 
@@ -260,6 +257,16 @@ class Key(object):
         fget=lambda self: self._time_drift.get_value(),
         fset=lambda self, x: self._time_drift.set_value(x),
         doc="Device clock drift value (number of time intervals).")
+
+    manufacturer = DeviceProperty('manufacturer')
+    serial = DeviceProperty('serial')
+    model = DeviceProperty('model')
+    issue_no = DeviceProperty('issue_no')
+    device_binding = DeviceProperty('device_binding')
+    start_date = DeviceProperty('start_date')
+    expiry_date = DeviceProperty('expiry_date')
+    device_userid = DeviceProperty('device_userid')
+    crypto_module = DeviceProperty('crypto_module')
 
     def check(self):
         """Check if all MACs in the message are valid."""

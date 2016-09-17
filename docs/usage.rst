@@ -3,8 +3,9 @@ Basic usage
 
 The :mod:`pskc` module implements a simple and efficient API for parsing and
 creating PSKC files. The :class:`~pskc.PSKC` class is used to access the file
-as a whole which provides access to a list of :class:`~pskc.key.Key`
-instances which contain most of the useful information of the PSKC file.
+as a whole which provides access to a list of :class:`~pskc.device.Device`
+and :class:`~pskc.key.Key` instances which contain most of the useful
+information of the PSKC file.
 
 
 Reading a PSKC file
@@ -89,6 +90,11 @@ The PSKC class
 
       A unique identifier for the container.
 
+   .. attribute:: devices
+
+      A list of :class:`~pskc.device.Device` instances that represent the key
+      containers within the PSKC file.
+
    .. attribute:: keys
 
       A list of :class:`~pskc.key.Key` instances that represent the keys
@@ -105,11 +111,18 @@ The PSKC class
       See :doc:`mac` for more information.
 
 
+   .. function:: add_device([**kwargs])
+
+      Add a new key package to the PSKC instance. The keyword arguments may
+      refer to any attributes of the :class:`~pskc.device.Device` class with
+      which the new device is initialised.
+
    .. function:: add_key([**kwargs])
 
       Add a new key to the PSKC instance. The keyword arguments may refer to
-      any attributes of the :class:`~pskc.key.Key` class with which the new
-      key is initialised.
+      any attributes of the :class:`~pskc.key.Key` or
+      :class:`~pskc.device.Device` class with which the new key is
+      initialised.
 
    .. function:: write(filename)
 
@@ -186,7 +199,7 @@ The Key class
    .. attribute:: issuer
 
       The name of the party that issued the key. This may be different from
-      the :attr:`manufacturer` of the device.
+      the :attr:`~pskc.device.Device.manufacturer` of the device.
 
    .. attribute:: key_profile
 
@@ -208,62 +221,7 @@ The Key class
    .. attribute:: key_userid
 
       The distinguished name of the user associated with the key.
-      Also see :attr:`device_userid`.
-
-   .. attribute:: manufacturer
-
-      The name of the manufacturer of the device to which the key is
-      provisioned.
-      `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-4.3.1>`__
-      prescribes that the value is of the form ``oath.prefix`` for `OATH
-      Manufacturer Prefixes <http://www.openauthentication.org/oath-id/prefixes/>`_
-      or ``iana.organisation`` for `IANA Private Enterprise Numbers
-      <https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers>`_
-      however, it is generally just a string. The value may be different from
-      the :attr:`issuer` of the key on the device.
-
-   .. attribute:: serial
-
-      The serial number of the device to which the key is provisioned.
-      Together with :attr:`manufacturer` (and possibly :attr:`issue_no`) this
-      should uniquely identify the device.
-
-   .. attribute:: model
-
-      A manufacturer-specific description of the model of the device.
-
-   .. attribute:: issue_no
-
-      The issue number in case there are devices with the same :attr:`serial`
-      number so that they can be distinguished by different issue numbers.
-
-   .. attribute:: device_binding
-
-      Reference to a device identifier (e.g. IMEI) that allows a provisioning
-      server to ensure that the key is going to be loaded into a specific
-      device.
-
-   .. attribute:: start_date
-
-      :class:`datetime.datetime` value that indicates that the device should
-      only be used after this date.
-
-   .. attribute:: expiry_date
-
-      :class:`datetime.datetime` value that indicates that the device should
-      only be used before this date. Systems should not rely upon the device
-      to enforce key usage date restrictions, as some devices do not have an
-      internal clock.
-
-   .. attribute:: device_userid
-
-      The distinguished name of the user associated with the device.
-      Also see :attr:`key_userid`.
-
-   .. attribute:: crypto_module
-
-      Implementation specific unique identifier of the cryptographic module
-      on the device to which the keys have been (or will be) provisioned.
+      Also see :attr:`~pskc.device.Device.device_userid`.
 
    .. attribute:: algorithm_suite
 
@@ -322,3 +280,94 @@ The Key class
       This will return None if there is no MAC to be checked. It will return
       True if all the MACs match. If any MAC fails a
       :exc:`~pskc.exceptions.DecryptionError` exception is raised.
+
+   Apart from the above, all properties of the :class:`~pskc.device.Device`
+   class are also transparently available in :class:`~pskc.key.Key`
+   instances.
+
+
+The Device class
+----------------
+
+.. module:: pskc.device
+
+.. class:: Device()
+
+   Instances of this class provide the following attributes and functions:
+
+   .. attribute:: keys
+
+      A list of :class:`~pskc.key.Key` instances that represent the keys that
+      are linked to this device. Most PSKC files only allow one key per
+      device which is why all :class:`~pskc.device.Device` attributes are
+      available in :class:`~pskc.key.Key`.
+
+   .. function:: add_key([**kwargs])
+
+      Add a new key to the device. The keyword arguments may refer to
+      any attributes of the :class:`~pskc.key.Key` or
+      :class:`~pskc.device.Device` class with which the new key is
+      initialised.
+
+
+        """Create a new key instance for the device.
+
+        The new key is initialised with properties from the provided keyword
+        arguments if any."""
+
+
+   .. attribute:: manufacturer
+
+      The name of the manufacturer of the device to which the key is
+      provisioned.
+      `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-4.3.1>`__
+      prescribes that the value is of the form ``oath.prefix`` for `OATH
+      Manufacturer Prefixes <http://www.openauthentication.org/oath-id/prefixes/>`_
+      or ``iana.organisation`` for `IANA Private Enterprise Numbers
+      <https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers>`_
+      however, it is generally just a string.
+      The value may be different from the :attr:`~pskc.key.Key.issuer` of
+      the key on the device.
+
+   .. attribute:: serial
+
+      The serial number of the device to which the key is provisioned.
+      Together with :attr:`manufacturer` (and possibly :attr:`issue_no`) this
+      should uniquely identify the device.
+
+   .. attribute:: model
+
+      A manufacturer-specific description of the model of the device.
+
+   .. attribute:: issue_no
+
+      The issue number in case there are devices with the same :attr:`serial`
+      number so that they can be distinguished by different issue numbers.
+
+   .. attribute:: device_binding
+
+      Reference to a device identifier (e.g. IMEI) that allows a provisioning
+      server to ensure that the key is going to be loaded into a specific
+      device.
+
+   .. attribute:: start_date
+
+      :class:`datetime.datetime` value that indicates that the device should
+      only be used after this date.
+
+   .. attribute:: expiry_date
+
+      :class:`datetime.datetime` value that indicates that the device should
+      only be used before this date. Systems should not rely upon the device
+      to enforce key usage date restrictions, as some devices do not have an
+      internal clock.
+
+   .. attribute:: device_userid
+
+      The distinguished name of the user associated with the device.
+      Also see :attr:`~pskc.key.Key.key_userid`.
+
+   .. attribute:: crypto_module
+
+      Implementation specific unique identifier of the cryptographic module
+      on the device to which the keys have been (or will be) provisioned.

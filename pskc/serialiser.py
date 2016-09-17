@@ -34,8 +34,8 @@ class PSKCSerialiser(object):
                             Id=pskc.id)
         cls.serialise_encryption(pskc.encryption, container)
         cls.serialise_mac(pskc.mac, container)
-        for key in pskc.keys:
-            cls.serialise_key(key, container)
+        for device in pskc.devices:
+            cls.serialise_key_package(device, container)
         return container
 
     @classmethod
@@ -92,33 +92,34 @@ class PSKCSerialiser(object):
                         mac.key_plain_value)).decode())
 
     @classmethod
-    def serialise_key(cls, key, container):
-
+    def serialise_key_package(cls, device, container):
         key_package = mk_elem(container, 'pskc:KeyPackage', empty=True)
-
         if any(x is not None
-               for x in (key.manufacturer, key.serial, key.model,
-                         key.issue_no, key.device_binding, key.start_date,
-                         key.expiry_date, key.device_userid)):
+               for x in (device.manufacturer, device.serial, device.model,
+                         device.issue_no, device.device_binding,
+                         device.start_date, device.expiry_date,
+                         device.device_userid)):
             device_info = mk_elem(key_package, 'pskc:DeviceInfo', empty=True)
-            mk_elem(device_info, 'pskc:Manufacturer', key.manufacturer)
-            mk_elem(device_info, 'pskc:SerialNo', key.serial)
-            mk_elem(device_info, 'pskc:Model', key.model)
-            mk_elem(device_info, 'pskc:IssueNo', key.issue_no)
-            mk_elem(device_info, 'pskc:DeviceBinding', key.device_binding)
-            mk_elem(device_info, 'pskc:StartDate', key.start_date)
-            mk_elem(device_info, 'pskc:ExpiryDate', key.expiry_date)
-            mk_elem(device_info, 'pskc:UserId', key.device_userid)
-
-        if key.crypto_module is not None:
+            mk_elem(device_info, 'pskc:Manufacturer', device.manufacturer)
+            mk_elem(device_info, 'pskc:SerialNo', device.serial)
+            mk_elem(device_info, 'pskc:Model', device.model)
+            mk_elem(device_info, 'pskc:IssueNo', device.issue_no)
+            mk_elem(device_info, 'pskc:DeviceBinding', device.device_binding)
+            mk_elem(device_info, 'pskc:StartDate', device.start_date)
+            mk_elem(device_info, 'pskc:ExpiryDate', device.expiry_date)
+            mk_elem(device_info, 'pskc:UserId', device.device_userid)
+        if device.crypto_module is not None:
             crypto_module = mk_elem(key_package, 'pskc:CryptoModuleInfo',
                                     empty=True)
-            mk_elem(crypto_module, 'pskc:Id', key.crypto_module)
+            mk_elem(crypto_module, 'pskc:Id', device.crypto_module)
+        for key in device.keys:
+            cls.serialise_key(key, key_package)
 
+    @classmethod
+    def serialise_key(cls, key, key_package):
         key_elm = mk_elem(key_package, 'pskc:Key', empty=True, Id=key.id,
                           Algorithm=key.algorithm, )
         mk_elem(key_elm, 'pskc:Issuer', key.issuer)
-
         if any((key.algorithm_suite, key.challenge_encoding,
                 key.response_encoding, key.response_length)):
             parameters = mk_elem(key_elm, 'pskc:AlgorithmParameters',
@@ -133,7 +134,6 @@ class PSKCSerialiser(object):
                     Encoding=key.response_encoding,
                     Length=key.response_length,
                     CheckDigits=key.response_check)
-
         mk_elem(key_elm, 'pskc:KeyProfileId', key.key_profile)
         mk_elem(key_elm, 'pskc:KeyReference', key.key_reference)
         mk_elem(key_elm, 'pskc:FriendlyName', key.friendly_name)
@@ -148,7 +148,6 @@ class PSKCSerialiser(object):
         cls.serialise_datatype(
             key._time_drift, key_elm, 'pskc:TimeDrift', 'time_drif')
         mk_elem(key_elm, 'pskc:UserId', key.key_userid)
-
         cls.serialise_policy(key.policy, key_elm)
 
     @classmethod

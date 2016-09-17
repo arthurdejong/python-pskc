@@ -509,3 +509,40 @@ We can make the PKKDF2 salt have to be transmitted out-of-bounds:
   ...
  </pskc:KeyPackage>
 </pskc:KeyContainer>
+
+
+Write a PSKC file with two keys in onde KeyPackage section. Note that this
+is not allowed in the RFC 6030 schema. Note that device properties that are
+set on one key end up being applied to both keys.
+
+>>> pskc = PSKC()
+>>> device = pskc.add_device(manufacturer='TokenVendorAcme')
+>>> key = device.add_key(id='1', serial='123456', secret='1234', counter=42)
+>>> key = device.add_key(id='pin0', secret='5678')
+>>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>TokenVendorAcme</pskc:Manufacturer>
+   <pskc:SerialNo>123456</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="1">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNA==</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>42</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+  <pskc:Key Id="pin0">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>NTY3OA==</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>

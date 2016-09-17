@@ -44,8 +44,10 @@ This tests the most minimal valid PSKC file with one empty key.
 ... </KeyContainer>
 ... '''.strip())
 >>> pskc = PSKC(minimal_pskc)
->>> [key.id for key in pskc.keys]
-[None]
+>>> len(pskc.keys)
+0
+>>> len(pskc.devices)
+1
 
 
 Check creation of empty PSKC structure and adding an empty key to the list.
@@ -58,9 +60,34 @@ Check creation of empty PSKC structure and adding an empty key to the list.
 True
 
 
-Adding a key with unknown attributes raises an error.
+We can also put device-specific properties in a device:
+
+>>> pskc = PSKC()
+>>> device = pskc.add_device(manufacturer='Tokens INC.')
+>>> len(pskc.keys)
+0
+>>> key = device.add_key(id='123', serial='456')
+>>> len(pskc.keys)
+1
+>>> key.id
+'123'
+>>> key.manufacturer
+'Tokens INC.'
+>>> device.serial
+'456'
+
+
+Adding a key or device with unknown attributes raises an error.
 
 >>> key = pskc.add_key(foo='bar')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+AttributeError
+>>> device.add_key(foo='bar')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+AttributeError
+>>> device = pskc.add_device(foo='bar')  # doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 AttributeError
