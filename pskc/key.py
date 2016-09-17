@@ -156,6 +156,20 @@ class IntegerDataType(DataType):
         return binascii.unhexlify(value.zfill(n + (n & 1)))
 
 
+class DataTypeProperty(object):
+    """A data descriptor that delegates actions to DataType instances."""
+
+    def __init__(self, name, doc):
+        self.name = name
+        self.__doc__ = doc
+
+    def __get__(self, obj, objtype):
+        return getattr(obj, '_' + self.name).get_value()
+
+    def __set__(self, obj, val):
+        getattr(obj, '_' + self.name).set_value(val)
+
+
 class DeviceProperty(object):
     """A data descriptor that delegates actions to the Device instance."""
 
@@ -233,30 +247,17 @@ class Key(object):
 
         self.policy = Policy(self)
 
-    secret = property(
-        fget=lambda self: self._secret.get_value(),
-        fset=lambda self, x: self._secret.set_value(x),
-        doc="The secret key itself.")
-
-    counter = property(
-        fget=lambda self: self._counter.get_value(),
-        fset=lambda self, x: self._counter.set_value(x),
-        doc="An event counter for event-based OTP.")
-
-    time_offset = property(
-        fget=lambda self: self._time_offset.get_value(),
-        fset=lambda self, x: self._time_offset.set_value(x),
-        doc="A time offset for time-based OTP (number of intervals).")
-
-    time_interval = property(
-        fget=lambda self: self._time_interval.get_value(),
-        fset=lambda self, x: self._time_interval.set_value(x),
-        doc="A time interval in seconds.")
-
-    time_drift = property(
-        fget=lambda self: self._time_drift.get_value(),
-        fset=lambda self, x: self._time_drift.set_value(x),
-        doc="Device clock drift value (number of time intervals).")
+    secret = DataTypeProperty(
+        'secret', 'The secret key itself.')
+    counter = DataTypeProperty(
+        'counter', 'An event counter for event-based OTP.')
+    time_offset = DataTypeProperty(
+        'time_offset',
+        'A time offset for time-based OTP (number of intervals).')
+    time_interval = DataTypeProperty(
+        'time_interval', 'A time interval in seconds.')
+    time_drift = DataTypeProperty(
+        'time_drift', 'Device clock drift value (number of time intervals).')
 
     manufacturer = DeviceProperty('manufacturer')
     serial = DeviceProperty('serial')
