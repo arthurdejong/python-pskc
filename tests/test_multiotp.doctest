@@ -1,0 +1,75 @@
+test_multiotp.doctest - test for files from multiOTP
+
+Copyright (C) 2017 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc import PSKC
+
+
+This tests some files that are shipped with the multiOTP PHP authentication
+solution, https://www.multiotp.net/
+
+>>> pskc = PSKC('tests/multiotp/pskc-hotp-aes.txt')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(pskc.keys[0].secret)
+'3132333435363738393031323334353637383930'
+>>> pskc = PSKC('tests/multiotp/pskc-hotp-pbe.txt')
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.keys[0].secret)
+'3031323334353637383930313233343536373839'
+>>> pskc = PSKC('tests/multiotp/pskc-totp-aes.txt')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(pskc.keys[0].secret)
+'3132333435363738393031323334353637383930'
+>>> pskc = PSKC('tests/multiotp/pskc-totp-pbe.txt')
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.keys[0].secret)
+'3031323334353637383930313233343536373839'
+>>> pskc = PSKC('tests/multiotp/tokens_hotp_aes.pskc')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(pskc.keys[0].secret)
+'91f0dc4e239977e6bcc273e4f5414a8a6cf6d62c6990f58b4914a2d588b3475f'
+>>> pskc = PSKC('tests/multiotp/tokens_hotp_pbe.pskc')
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.keys[0].secret)
+'5d3a38bf5476d6f0b897f1e62887cb3ce833a5b9'
+>>> pskc = PSKC('tests/multiotp/tokens_ocra_aes.pskc')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(pskc.keys[0].secret)
+'e65f2c66247355fda360acdf3390972c16a1a164'
+>>> pskc = PSKC('tests/multiotp/tokens_ocra_pbe.pskc')
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.keys[0].secret)
+'4f40e1c6a7436e84620b170ceddfe110083cbd6d'
+>>> pskc = PSKC('tests/multiotp/tokens_totp_aes.pskc')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(pskc.keys[0].secret)
+'38c2506a8e0708a5e929c2686b827e0ba7ae28c9de3c83e6d27308345981a3de'
+>>> pskc.keys[0].algorithm_suite
+'HMAC-SHA256'
+>>> pskc = PSKC('tests/multiotp/tokens_totp_pbe.pskc')
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.keys[0].secret)
+'2c8792d34a3a8711b7cfc4304bcc84e3e67815a6'
