@@ -79,15 +79,8 @@ class PSKC(object):
         self.mac = MAC(self)
         self.devices = []
         if filename is not None:
-            from pskc.exceptions import ParseError
             from pskc.parser import PSKCParser
-            from pskc.xml import parse, remove_namespaces
-            try:
-                tree = parse(filename)
-            except Exception:
-                raise ParseError('Error parsing XML')
-            remove_namespaces(tree)
-            PSKCParser.parse_document(self, tree.getroot())
+            PSKCParser.parse_file(self, filename)
         else:
             self.version = '1.0'
 
@@ -126,15 +119,9 @@ class PSKC(object):
 
     def write(self, filename):
         """Write the PSKC file to the provided file."""
-        from pskc.xml import tostring
         from pskc.serialiser import PSKCSerialiser
         if hasattr(filename, 'write'):
-            xml = tostring(PSKCSerialiser.serialise_document(self))
-            try:
-                filename.write(xml)
-            except TypeError:  # pragma: no cover (Python 3 specific)
-                # fall back to writing as string for Python 3
-                filename.write(xml.decode('utf-8'))
+            PSKCSerialiser.serialise_file(self, filename)
         else:
             with open(filename, 'wb') as output:
                 self.write(output)

@@ -23,10 +23,19 @@
 
 import base64
 
-from pskc.xml import find, mk_elem
+from pskc.xml import find, mk_elem, tostring
 
 
 class PSKCSerialiser(object):
+
+    @classmethod
+    def serialise_file(cls, pskc, output):
+        xml = tostring(cls.serialise_document(pskc))
+        try:
+            output.write(xml)
+        except TypeError:  # pragma: no cover (Python 3 specific)
+            # fall back to writing as string for Python 3
+            output.write(xml.decode('utf-8'))
 
     @classmethod
     def serialise_document(cls, pskc):

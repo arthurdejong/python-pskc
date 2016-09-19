@@ -24,10 +24,20 @@
 from pskc.algorithms import normalise_algorithm
 from pskc.exceptions import ParseError
 from pskc.xml import (
-    find, findall, findtext, findint, findbin, findtime, getint, getbool)
+    find, findall, findbin, findint, findtext, findtime, getbool, getint,
+    parse, remove_namespaces)
 
 
 class PSKCParser(object):
+
+    @classmethod
+    def parse_file(cls, pskc, filename):
+        try:
+            tree = parse(filename)
+        except Exception:
+            raise ParseError('Error parsing XML')
+        remove_namespaces(tree)
+        cls.parse_document(pskc, tree.getroot())
 
     @classmethod
     def parse_document(cls, pskc, container):
