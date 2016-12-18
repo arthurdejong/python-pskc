@@ -45,8 +45,8 @@ class PSKCParser(object):
         if container.tag != 'KeyContainer':
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
-        pskc.version = container.get('Version')
-        if pskc.version != '1.0':
+        pskc.version = container.get('Version') or container.get('version')
+        if pskc.version and pskc.version != '1.0':
             raise ParseError('Unsupported version %r' % pskc.version)
         # unique identifier for the container
         pskc.id = container.get('Id')
