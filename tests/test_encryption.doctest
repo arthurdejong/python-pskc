@@ -160,11 +160,11 @@ Test decryption with tripledes-cbc and a specified IV.
 
 >>> iv = a2b_hex('1010101010101010')
 >>> key = a2b_hex('12345678901234567890123456789012')
->>> cyphertext = encrypt('#tripledes-cbc', key, b'FOOBAR', iv)
->>> cyphertext = cyphertext[8:]  # strip IV
->>> tostr(decrypt('#tripledes-cbc', key, cyphertext, iv))
+>>> ciphertext = encrypt('#tripledes-cbc', key, b'FOOBAR', iv)
+>>> ciphertext = ciphertext[8:]  # strip IV
+>>> tostr(decrypt('#tripledes-cbc', key, ciphertext, iv))
 'FOOBAR'
->>> tostr(decrypt('#tripledes-cbc', key, iv + cyphertext))
+>>> tostr(decrypt('#tripledes-cbc', key, iv + ciphertext))
 'FOOBAR'
 
 
