@@ -61,7 +61,7 @@ def remove_namespaces(tree):
     """Remove namespaces from all elements in the tree."""
     import re
     for elem in tree.getiterator():
-        if isinstance(elem.tag, ''.__class__):
+        if isinstance(elem.tag, ''.__class__):  # pragma: no branch
             elem.tag = re.sub(r'^\{[^}]*\}', '', elem.tag)
 
 
@@ -176,7 +176,7 @@ def tostring(element):
     """Return a serialised XML document for the element tree."""
     from xml.dom import minidom
     # if we are using lxml.etree move namespaces to toplevel element
-    if hasattr(element, 'nsmap'):  # pragma: no branch (only on lxml)
+    if hasattr(element, 'nsmap'):  # pragma: no cover (only on lxml)
         # get all used namespaces
         nsmap = {}
         for e in element.iter():
