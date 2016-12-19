@@ -30,7 +30,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_file(cls, pskc, output):
-        xml = tostring(cls.serialise_document(pskc))
+        xml = tostring(cls.serialise_document(pskc)) + '\n'.encode('UTF-8')
         try:
             output.write(xml)
         except TypeError:  # pragma: no cover (Python 3 specific)
