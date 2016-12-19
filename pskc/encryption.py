@@ -66,7 +66,7 @@ def decrypt(algorithm, key, ciphertext, iv=None):
             iv = ciphertext[:AES.block_size]
             ciphertext = ciphertext[AES.block_size:]
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        return unpad(cipher.decrypt(ciphertext))
+        return unpad(cipher.decrypt(ciphertext), AES.block_size)
     elif algorithm.endswith('#tripledes-cbc'):
         from Crypto.Cipher import DES3
         from pskc.crypto import unpad
@@ -74,7 +74,7 @@ def decrypt(algorithm, key, ciphertext, iv=None):
             iv = ciphertext[:DES3.block_size]
             ciphertext = ciphertext[DES3.block_size:]
         cipher = DES3.new(key, DES3.MODE_CBC, iv)
-        return unpad(cipher.decrypt(ciphertext))
+        return unpad(cipher.decrypt(ciphertext), DES3.block_size)
     elif algorithm.endswith('#kw-aes128') or \
             algorithm.endswith('#kw-aes192') or \
             algorithm.endswith('#kw-aes256'):

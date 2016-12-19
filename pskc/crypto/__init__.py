@@ -27,6 +27,12 @@ def pad(value, block_size):
     return value + padding * chr(padding).encode('ascii')
 
 
-def unpad(value):
+def unpad(value, block_size):
     """Remove padding from the plaintext."""
-    return value[0:-ord(value[-1:])]
+    from pskc.exceptions import DecryptionError
+    padding = ord(value[-1:])
+    # only unpad if all padding bytes are the same
+    if (padding > 0 and padding <= block_size and
+            value[-padding:] == padding * chr(padding).encode('ascii')):
+        return value[:-padding]
+    raise DecryptionError('Invalid padding')

@@ -1,0 +1,76 @@
+test_crypto.doctest - test various internal crypto helper functions
+
+Copyright (C) 2016 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+>>> import random
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc.crypto import pad, unpad
+
+
+Tests for padding and unpadding. This should follow PKCS#7 as defined in RFC
+5652 section 6.3.
+
+>>> b2a_hex(pad(a2b_hex('1234'), 16))
+'12340e0e0e0e0e0e0e0e0e0e0e0e0e0e'
+>>> b2a_hex(pad(a2b_hex('abcdefabcdefabcdefabcdefabcdef'), 16))
+'abcdefabcdefabcdefabcdefabcdef01'
+>>> b2a_hex(pad(bytearray(16 * [65]), 16))
+'4141414141414141414141414141414110101010101010101010101010101010'
+
+>>> b2a_hex(unpad(a2b_hex('12340e0e0e0e0e0e0e0e0e0e0e0e0e0e'), 16))
+'1234'
+>>> b2a_hex(unpad(a2b_hex('abcdefabcdefabcdefabcdefabcdef01'), 16))
+'abcdefabcdefabcdefabcdefabcdef'
+
+
+Padding should always work but there are some conditions where unpadding does
+not work. Specifically, the to be removed padding should all have the same
+bytes:
+
+>>> b2a_hex(unpad(a2b_hex('ffff0606060f0606'), 8))  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: Invalid padding
+
+The unpadding should also refuse to remove more than a block size worth of
+data:
+
+>>> b2a_hex(unpad(a2b_hex('ffff0e0e0e0e0e0e0e0e0e0e0e0e0e0e'), 8))  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: Invalid padding
+
+
+We generate a number of (non-cryptographically strong) random strings and
+ensure that padding and unpadding works for them.
+
+>>> for i in range(100):
+...     l = random.randrange(1, 255)
+...     r = bytearray(random.getrandbits(8) for x in range(l))
+...     b = random.randrange(10, 100)
+...     p = pad(r, b)
+...     u = unpad(p, b)
+...     if u != r:
+...         raise ValueError('%s -> %s -> %s (%d)' % (
+...             b2a_hex(r), b2a_hex(p), b2a_hex(u), b))
