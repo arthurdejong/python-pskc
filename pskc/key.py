@@ -64,13 +64,20 @@ class DataType(object):
 
     def get_value(self):
         """Provide the attribute value, decrypting as needed."""
+        from pskc.exceptions import DecryptionError
         if self.value is not None:
             return self.value
         if self.cipher_value:
-            # check MAC and decrypt
-            self.check()
-            return self._from_bin(self.pskc.encryption.decrypt_value(
-                self.cipher_value, self.algorithm))
+            plaintext = self.pskc.encryption.decrypt_value(
+                self.cipher_value, self.algorithm)
+            # allow MAC over plaintext or cipertext
+            # (RFC6030 implies MAC over ciphertext but older draft used
+            # MAC over plaintext)
+            if self.value_mac and self.value_mac not in (
+                    self.pskc.mac.generate_mac(self.cipher_value),
+                    self.pskc.mac.generate_mac(plaintext)):
+                raise DecryptionError('MAC value does not match')
+            return self._from_bin(plaintext)
 
     def set_value(self, value):
         """Set the unencrypted value."""
@@ -78,13 +85,6 @@ class DataType(object):
         self.cipher_value = None
         self.algorithm = None
         self.value_mac = None
-
-    def check(self):
-        """Check whether the embedded MAC is correct."""
-        # this checks the encrypted value
-        if self.cipher_value and self.value_mac:
-            return self.pskc.mac.check_value(
-                self.cipher_value, self.value_mac)
 
 
 class BinaryDataType(DataType):
@@ -272,7 +272,6 @@ class Key(object):
     def check(self):
         """Check if all MACs in the message are valid."""
         if all(x is not False for x in (
-                self._secret.check(), self._counter.check(),
-                self._time_offset.check(), self._time_interval.check(),
-                self._time_drift.check())):
+                self.secret, self.counter, self.time_offset,
+                self.time_interval, self.time_drift)):
             return True

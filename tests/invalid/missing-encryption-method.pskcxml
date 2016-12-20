@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  An encrypted secret with a MAC but missing a global MAC key definition.
+  Based on the Figure 6 example, this file is missing the EncryptionMethod
+  element in both the encrypted value and the MAC key definition.
 -->
 
 <KeyContainer Version="1.0"
@@ -11,21 +12,19 @@
   <EncryptionKey>
     <ds:KeyName>Pre-shared-key</ds:KeyName>
   </EncryptionKey>
-  <MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-zha9">
+  <MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
     <MACKey>
     </MACKey>
   </MACMethod>
   <KeyPackage>
-    <Key Id="12345678" Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
+    <Key Id="45678901" Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
       <Data>
         <Secret>
           <EncryptedValue>
-            xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
             <xenc:CipherData>
               <xenc:CipherValue>AAECAwQFBgcICQoLDA0OD+cIHItlB3Wra1DUpxVvOx2lef1VmNPCMl8jwZqIUqGv</xenc:CipherValue>
             </xenc:CipherData>
           </EncryptedValue>
-          <ValueMAC>LP6xMvjtypbfT9PdkJhBZ+D6O4w=</ValueMAC>
         </Secret>
       </Data>
     </Key>

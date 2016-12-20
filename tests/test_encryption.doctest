@@ -147,6 +147,15 @@ PSKC format allowed using the encryption key for the HMAC function.
 '12345678901234567890'
 
 
+Older versions of the PSKC format allowed having the MAC go over the
+plaintext instead of the ciphertext.
+
+>>> pskc = PSKC('tests/encryption/mac-over-plaintext.pskcxml')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> tostr(pskc.keys[0].secret)
+'12345678901234567890'
+
+
 Test decryption with tripledes-cbc and a specified IV.
 
 >>> iv = a2b_hex('1010101010101010')

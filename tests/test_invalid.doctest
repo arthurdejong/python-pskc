@@ -88,6 +88,22 @@ DecryptionError: No algorithm specified
 '3132333435363738393031323334353637383930'
 
 
+This PSKC file has a key without an encryption method specified.
+
+>>> pskc = PSKC('tests/invalid/missing-encryption-method.pskcxml')
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> key = pskc.keys[0]
+>>> key.id
+'45678901'
+>>> b2a_hex(key.secret)  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: No algorithm specified
+>>> pskc.encryption.algorithm = 'aes128-cbc'
+>>> b2a_hex(key.secret)
+'3132333435363738393031323334353637383930'
+
+
 This PSKC file has an incomplete key derivation configuration.
 
 >>> pskc = PSKC('tests/invalid/incomplete-derivation.pskcxml')
@@ -144,19 +160,6 @@ Traceback (most recent call last):
 DecryptionError: No MAC algorithm set
 
 
-There is an empty MACKey in the PSKC file.
-
->>> pskc = PSKC('tests/invalid/empty-mac-key.pskcxml')
->>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
->>> key = pskc.keys[0]
->>> key.id
-'12345678'
->>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
-Traceback (most recent call last):
-    ...
-DecryptionError: No MAC key available
-
-
 There is an unknown algorithm specified in MACMethod.
 
 >>> pskc = PSKC('tests/invalid/mac-algorithm.pskcxml')
@@ -190,18 +193,6 @@ DecryptionError: MAC value does not match
 Traceback (most recent call last):
     ...
 DecryptionError: MAC value does not match
-
-
-A MAC is specified but keys are missing.
-
->>> pskc = PSKC('tests/invalid/mac-missing.pskcxml')
->>> key = pskc.keys[0]
->>> key.id
-'12345678'
->>> key.secret  # doctest: +IGNORE_EXCEPTION_DETAIL
-Traceback (most recent call last):
-    ...
-DecryptionError: No MAC key available
 
 
 Checks to see that invalid values are detected.

@@ -55,8 +55,6 @@ def get_hmac(algorithm):
 def get_mac(algorithm, key, value):
     """Generate the MAC value over the specified value."""
     from pskc.exceptions import DecryptionError
-    if key is None:
-        raise DecryptionError('No MAC key available')
     if algorithm is None:
         raise DecryptionError('No MAC algorithm set')
     hmacfn = get_hmac(algorithm)
@@ -123,17 +121,6 @@ class MAC(object):
     def generate_mac(self, value):
         """Generate the MAC over the specified value."""
         return get_mac(self.algorithm, self.key, value)
-
-    def check_value(self, value, value_mac):
-        """Check if the provided value matches the MAC.
-
-        This will return None if there is no MAC to be checked. It will
-        return True if the MAC matches and raise an exception if it fails.
-        """
-        from pskc.exceptions import DecryptionError
-        if self.generate_mac(value) != value_mac:
-            raise DecryptionError('MAC value does not match')
-        return True
 
     def setup(self, key=None, algorithm=None):
         """Configure an encrypted MAC key.
