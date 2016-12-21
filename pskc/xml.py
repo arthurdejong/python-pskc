@@ -65,44 +65,46 @@ def remove_namespaces(tree):
             elem.tag = re.sub(r'^\{[^}]*\}', '', elem.tag)
 
 
-def findall(tree, match):
+def findall(tree, *matches):
     """Find the child elements."""
-    return tree.findall(match, namespaces=namespaces)
+    for match in matches:
+        for element in tree.findall(match, namespaces=namespaces):
+            yield element
 
 
-def find(tree, match):
+def find(tree, *matches):
     """Find a child element that matches any of the patterns (or None)."""
     try:
-        return next(iter(findall(tree, match)))
+        return next(findall(tree, *matches))
     except StopIteration:
         pass
 
 
-def findtext(tree, match):
+def findtext(tree, *matches):
     """Get the text value of an element (or None)."""
-    element = find(tree, match)
+    element = find(tree, *matches)
     if element is not None:
         return element.text.strip()
 
 
-def findint(tree, match):
+def findint(tree, *matches):
     """Return an element value as an int (or None)."""
-    value = findtext(tree, match)
+    value = findtext(tree, *matches)
     if value:
         return int(value)
 
 
-def findtime(tree, match):
+def findtime(tree, *matches):
     """Return an element value as a datetime (or None)."""
-    value = findtext(tree, match)
+    value = findtext(tree, *matches)
     if value:
         import dateutil.parser
         return dateutil.parser.parse(value)
 
 
-def findbin(tree, match):
+def findbin(tree, *matches):
     """Return the binary element value base64 decoded."""
-    value = findtext(tree, match)
+    value = findtext(tree, *matches)
     if value:
         import base64
         return base64.b64decode(value)

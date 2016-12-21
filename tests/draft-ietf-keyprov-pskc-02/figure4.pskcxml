@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  AES-128-CBC encrypted pre-shared secret key example from
+  draft-ietf-keyprov-pskc-02 (Figure 4). The value of the pre-shared key
+  is 12345678901234567890123456789012 which should result in a secret
+  of 3132333435363738393031323334353637383930. The value in CipherValue
+  was modified to correctly decrypt.
+-->
+
+<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+    <EncryptionKey>
+        <ds:KeyName>Pre-shared-key</ds:KeyName>
+    </EncryptionKey>
+    <MACAlgorithm>http://www.w3.org/2000/09/xmldsig#hmac-sha1
+    </MACAlgorithm>
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>Manufacturer</Manufacturer>
+            <SerialNo>987654321</SerialNo>
+        </DeviceInfo>
+        <Key KeyId="12345678"
+        KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <EncryptedValue>
+                        <xenc:EncryptionMethod
+                        Algorithm=
+                        "http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+                        <xenc:CipherData>
+                        <xenc:CipherValue>
+                        pgznhXdDh4LJ2G3mOY2RL/e5cN9M3qjkBZJEE4w+NvVr64LbzkwRh9WHLAIkjXcW
+                        </xenc:CipherValue>
+                        </xenc:CipherData>
+                    </EncryptedValue>
+                    <ValueMAC>zdrZbGBj9BDZJzunbfAG3kyZyYc=
+                    </ValueMAC>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+        </Key>
+    </Device>
+</KeyContainer>

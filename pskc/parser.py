@@ -46,16 +46,21 @@ class PSKCParser(object):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
         pskc.version = container.get('Version') or container.get('version')
-        if pskc.version and pskc.version != '1.0':
+        if pskc.version and pskc.version not in ('1', '1.0'):
             raise ParseError('Unsupported version %r' % pskc.version)
         # unique identifier for the container
-        pskc.id = container.get('Id')
+        pskc.id = (
+            container.get('Id') or container.get('ID') or container.get('id'))
         # handle EncryptionKey entries
         cls.parse_encryption(pskc.encryption, find(container, 'EncryptionKey'))
         # handle MACMethod entries
         cls.parse_mac_method(pskc.mac, find(container, 'MACMethod'))
+        # fall back to MACAlgorithm
+        mac_algorithm = findtext(container, 'MACAlgorithm')
+        if mac_algorithm:
+            pskc.mac.algorithm = mac_algorithm
         # handle KeyPackage entries
-        for key_package in findall(container, 'KeyPackage'):
+        for key_package in findall(container, 'KeyPackage', 'Device'):
             cls.parse_key_package(pskc.add_device(), key_package)
 
     @classmethod
@@ -64,9 +69,9 @@ class PSKCParser(object):
         if key_info is None:
             return
         encryption.id = key_info.get('Id')
-        for name in findall(key_info, 'KeyName'):
-            encryption.key_names.append(findtext(name, '.'))
-        for name in findall(key_info, 'DerivedKey/MasterKeyName'):
+        for name in findall(key_info,
+                            'KeyName', 'DerivedKey/MasterKeyName',
+                            'DerivedKey/CarriedKeyName'):
             encryption.key_names.append(findtext(name, '.'))
         cls.parse_key_derivation(encryption.derivation, find(
             key_info, 'DerivedKey/KeyDerivationMethod'))
@@ -100,11 +105,8 @@ class PSKCParser(object):
         mac.algorithm = mac_method.get('Algorithm')
         mac_key = find(mac_method, 'MACKey')
         if mac_key is not None:
-            mac.key_cipher_value = findbin(mac_key, 'CipherData/CipherValue')
-            encryption_method = find(mac_key, 'EncryptionMethod')
-            if encryption_method is not None:
-                mac.key_algorithm = encryption_method.attrib.get('Algorithm')
-        mac_key_reference = findtext(mac_method, 'MACKeyReference')
+            mac.key_algorithm, mac.key_cipher_value = (
+                cls.parse_encrypted_value(mac_key))
 
     @classmethod
     def parse_key_package(cls, device, key_package):
@@ -129,8 +131,8 @@ class PSKCParser(object):
     def parse_key(cls, key, key_elm):
         """Read key information from the provided <KeyPackage> tree."""
 
-        key.id = key_elm.get('Id')
-        key.algorithm = key_elm.get('Algorithm')
+        key.id = key_elm.get('Id') or key_elm.get('KeyId')
+        key.algorithm = key_elm.get('Algorithm') or key_elm.get('KeyAlgorithm')
 
         data = find(key_elm, 'Data')
         if data is not None:
@@ -151,7 +153,8 @@ class PSKCParser(object):
             key_elm, 'AlgorithmParameters/Suite')
 
         challenge_format = find(
-            key_elm, 'AlgorithmParameters/ChallengeFormat')
+            key_elm,
+            'AlgorithmParameters/ChallengeFormat', 'Usage/ResponseFormat')
         if challenge_format is not None:
             key.challenge_encoding = challenge_format.get('Encoding')
             key.challenge_min_length = getint(challenge_format, 'Min')
@@ -161,7 +164,8 @@ class PSKCParser(object):
                     challenge_format, 'CheckDigit'))
 
         response_format = find(
-            key_elm, 'AlgorithmParameters/ResponseFormat')
+            key_elm,
+            'AlgorithmParameters/ResponseFormat', 'Usage/ResponseFormat')
         if response_format is not None:
             key.response_encoding = response_format.get('Encoding')
             key.response_length = getint(response_format, 'Length')
@@ -170,6 +174,20 @@ class PSKCParser(object):
                     response_format, 'CheckDigit'))
 
         cls.parse_policy(key.policy, find(key_elm, 'Policy'))
+
+    @classmethod
+    def parse_encrypted_value(cls, encrypted_value):
+        """Read encryption value from <EncryptedValue> element."""
+        algorithm = None
+        cipher_value = findbin(encrypted_value, 'CipherData/CipherValue')
+        encryption_method = find(encrypted_value, 'EncryptionMethod')
+        if encryption_method is not None:
+            algorithm = encryption_method.attrib.get('Algorithm')
+        encryption_scheme = find(
+            encrypted_value, 'EncryptionMethod/EncryptionScheme')
+        if encryption_scheme is not None:
+            algorithm = encryption_scheme.attrib.get('Algorithm') or algorithm
+        return (algorithm, cipher_value)
 
     @classmethod
     def parse_datatype(cls, dt, element):
@@ -187,14 +205,11 @@ class PSKCParser(object):
         # read encrypted data from <EncryptedValue>
         encrypted_value = find(element, 'EncryptedValue')
         if encrypted_value is not None:
-            dt.cipher_value = findbin(
-                encrypted_value, 'CipherData/CipherValue')
-            encryption_method = find(encrypted_value, 'EncryptionMethod')
-            if encryption_method is not None:
-                dt.algorithm = encryption_method.attrib.get('Algorithm')
-                # store the found algorithm in the pskc.encryption property
-                if not dt.pskc.encryption.algorithm and dt.algorithm:
-                    dt.pskc.encryption.algorithm = dt.algorithm
+            dt.algorithm, dt.cipher_value = cls.parse_encrypted_value(
+                encrypted_value)
+            # store the found algorithm in the pskc.encryption property
+            if not dt.pskc.encryption.algorithm and dt.algorithm:
+                dt.pskc.encryption.algorithm = dt.algorithm
         # read MAC information from <ValueMAC>
         value_mac = findbin(element, 'ValueMAC')
         if value_mac is not None:

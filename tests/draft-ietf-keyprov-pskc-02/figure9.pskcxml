@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  PSKC file showing bulkt provisioning with multiple devices and multiple
+  keys from draft-ietf-keyprov-pskc-02 (Figure 9).
+-->
+
+<KeyContainer Version="1"
+    xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>TokenVendorAcme</Manufacturer>
+            <SerialNo>654321</SerialNo>
+        </DeviceInfo>
+        <Key KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp"
+        KeyId="1">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>
+                        MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+            <Policy>
+                <StartDate>2006-05-01T00:00:00Z</StartDate>
+                <ExpiryDate>2006-05-31T00:00:00Z</ExpiryDate>
+            </Policy>
+        </Key>
+    </Device>
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>TokenVendorAcme</Manufacturer>
+            <SerialNo>123456</SerialNo>
+        </DeviceInfo>
+        <Key KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp"
+        KeyId="2">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>
+                        MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+            <Policy>
+                <StartDate>2006-05-01T00:00:00Z</StartDate>
+                <ExpiryDate>2006-05-31T00:00:00Z</ExpiryDate>
+            </Policy>
+        </Key>
+    </Device>
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>TokenVendorAcme</Manufacturer>
+            <SerialNo>9999999</SerialNo>
+        </DeviceInfo>
+        <Key KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp"
+        KeyId="3">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>
+                        MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+            <Policy>
+                <StartDate>2006-03-01T00:00:00Z</StartDate>
+                <ExpiryDate>2006-03-31T00:00:00Z</ExpiryDate>
+            </Policy>
+        </Key>
+        <Key KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp"
+        KeyId="4">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>
+                        MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+            <Policy>
+                <StartDate>2006-04-01T00:00:00Z</StartDate>
+                <ExpiryDate>2006-04-30T00:00:00Z</ExpiryDate>
+            </Policy>
+        </Key>
+    </Device>
+</KeyContainer>

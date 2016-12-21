@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Basic PSKC Key Container example from draft-ietf-keyprov-pskc-02 (Figure 2).
+-->
+
+<KeyContainer Version="1.0" id="exampleID1"
+xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>Manufacturer</Manufacturer>
+            <SerialNo>987654321</SerialNo>
+        </DeviceInfo>
+        <Key KeyId="12345678"
+        KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+        </Key>
+    </Device>
+</KeyContainer>

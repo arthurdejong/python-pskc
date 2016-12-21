@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+  PSKC file using a digital signature example from draft-ietf-keyprov-pskc-02
+  (Figure 8).
+-->
+
+<KeyContainer
+    xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+    xmlns:pkcs5=
+    "http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#"
+    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+    Version="1">
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>TokenVendorAcme</Manufacturer>
+            <SerialNo>0755225266</SerialNo>
+        </DeviceInfo>
+        <Key KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp"
+        KeyId="123">
+            <Issuer>Example-Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="6" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>
+                        MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+        </Key>
+    </Device>
+    <Signature>
+        <ds:SignedInfo>
+            <ds:CanonicalizationMethod
+             Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+            <ds:SignatureMethod
+             Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+            <ds:Reference URI="#Device">
+                <ds:DigestMethod
+             Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                <ds:DigestValue>
+                    j6lwx3rvEPO0vKtMup4NbeVu8nk=
+                </ds:DigestValue>
+            </ds:Reference>
+        </ds:SignedInfo>
+        <ds:SignatureValue>
+            j6lwx3rvEPO0vKtMup4NbeVu8nk=
+        </ds:SignatureValue>
+        <ds:KeyInfo>
+            <ds:X509Data>
+                <ds:X509IssuerSerial>
+                    <ds:X509IssuerName>
+                        CN=Example.com,C=US
+                    </ds:X509IssuerName>
+                    <ds:X509SerialNumber>
+                        12345678
+                    </ds:X509SerialNumber>
+                </ds:X509IssuerSerial>
+            </ds:X509Data>
+        </ds:KeyInfo>
+    </Signature>
+</KeyContainer>

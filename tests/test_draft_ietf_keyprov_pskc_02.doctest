@@ -1,0 +1,305 @@
+test_draft_ietf_keyprov_pskc_02.doctest - test for examples from
+                             draft-ietf-keyprov-pskc-02
+
+Copyright (C) 2016 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc import PSKC
+
+
+This tests figure 2 from draft-ietf-keyprov-pskc-02. It is a basic key
+container example with a simple plain text secret key.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure2.pskcxml')
+>>> pskc.id
+'exampleID1'
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.manufacturer
+'Manufacturer'
+>>> key.serial
+'987654321'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#hotp'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> tostr(key.secret)
+'12345678901234567890'
+>>> key.counter
+0
+
+This tests figure 3 from draft-ietf-keyprov-pskc-02. It is a basic key
+container example with a non-encrypted HOTP secret key protected by a PIN
+with some extra policy elements.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure3.pskcxml')
+>>> pskc.id
+'exampleID1'
+>>> device = pskc.devices[0]
+>>> device.manufacturer
+'Manufacturer'
+>>> device.serial
+'987654321'
+>>> key = pskc.keys[0]
+>>> key.id
+'12345678'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#hotp'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> tostr(key.secret)
+'12345678901234567890'
+>>> key.counter
+0
+>>> key.policy.pin_min_length
+4
+>>> key.policy.pin_max_length
+4
+>>> key.policy.pin_encoding
+'DECIMAL'
+>>> key.policy.pin_usage
+'Local'
+>>> key.policy.key_usage
+['OTP']
+>>> pinkey = key.policy.pin_key
+>>> pinkey == pskc.keys[1]
+True
+>>> pinkey.id
+'123456781'
+>>> pinkey.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#pin'
+>>> pinkey.issuer
+'Issuer'
+>>> pinkey.response_encoding
+'DECIMAL'
+>>> pinkey.response_length
+4
+>>> tostr(pinkey.secret)
+'1234'
+
+
+This tests figure 4 from draft-ietf-keyprov-pskc-02. It is a basic key
+container example using a AES-128-CBC encrypted pre-shared secret key.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure4.pskcxml')
+>>> pskc.encryption.key_name
+'Pre-shared-key'
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'Manufacturer'
+>>> key.serial
+'987654321'
+>>> key.id
+'12345678'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#hotp'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> key.counter
+0
+>>> b2a_hex(key.secret)  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: No key available
+>>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> b2a_hex(key.secret)
+'3132333435363738393031323334353637383930'
+
+
+This tests figure 5 from draft-ietf-keyprov-pskc-02 which uses an encryption
+key that is derived from a passphrase. While the PSKC file contains a
+<ValueMAC> element, there is no MAC algorithm specified anywhere.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure5.pskcxml')
+>>> pskc.encryption.key_name
+'Passphrase1'
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'TokenVendorAcme'
+>>> key.serial
+'987654321'
+>>> key.id
+'123456'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#hotp'
+>>> key.issuer
+'Example-Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> tostr(key.secret)  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: No key available
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.encryption.key)
+'651e63cd57008476af1ff6422cd02e41'
+>>> tostr(key.secret)
+'12345678901234567890'
+
+
+This tests figure 6 from draft-ietf-keyprov-pskc-02 which uses an encryption
+based on asymmetric keys. Note that python-pskc does not yet support
+asymmetric encryption so this test is really limited.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure6.pskcxml')
+>>> pskc.id
+'KC0001'
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#rsa_1_5'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'TokenVendorAcme'
+>>> key.serial
+'987654321'
+>>> key.id
+'MBK000000001'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#hotp'
+>>> key.issuer
+'Example-Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> tostr(key.secret)  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: No key available
+>>> key.counter
+0
+
+
+This tests figure 7 from draft-ietf-keyprov-pskc-02 which uses a reference to
+an external mechanism to construct a HOTP key.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure7.pskcxml')
+>>> pskc.id
+'exampleID1'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'Manufacturer'
+>>> key.serial
+'987654321'
+>>> key.id
+'12345678'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#hotp'
+>>> key.issuer
+'Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> key.key_profile
+'keyProfile1'
+>>> key.key_reference
+'MasterKeyLabel'
+>>> key.counter
+0
+>>> key.policy.key_usage
+['OTP']
+
+
+This tests figure 8 from draft-ietf-keyprov-pskc-02 which uses a a digital
+signature to sign the PSKC file. Note that python-pskc currently does not yet
+support checking this signature so this test is very limited.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure8.pskcxml')
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'TokenVendorAcme'
+>>> key.serial
+'0755225266'
+>>> key.id
+'123'
+>>> key.algorithm
+'urn:ietf:params:xml:ns:keyprov:pskc#hotp'
+>>> key.issuer
+'Example-Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> tostr(key.secret)
+'12345678901234567890'
+>>> key.counter
+0
+
+
+This tests figure 9 from draft-ietf-keyprov-pskc-02 which contains multiple
+devices and keys.
+
+>>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure9.pskcxml')
+>>> [device.manufacturer for device in pskc.devices]
+['TokenVendorAcme', 'TokenVendorAcme', 'TokenVendorAcme']
+>>> [device.serial for device in pskc.devices]
+['654321', '123456', '9999999']
+>>> [len(device.keys) for device in pskc.devices]
+[1, 1, 2]
+>>> [key.id for key in pskc.keys]
+['1', '2', '3', '4']
+>>> all(key.algorithm.endswith('#hotp') for key in pskc.keys)
+True
+>>> [key.issuer for key in pskc.keys]
+['Issuer', 'Issuer', 'Issuer', 'Issuer']
+>>> [bool(key.secret) for key in pskc.keys]
+[True, True, True, True]
+>>> [key.counter for key in pskc.keys]
+[0, 0, 0, 0]
+>>> pskc.keys[0].policy.start_date
+datetime.datetime(2006, 5, 1, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[0].policy.expiry_date
+datetime.datetime(2006, 5, 31, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[2].policy.start_date
+datetime.datetime(2006, 3, 1, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[2].policy.expiry_date
+datetime.datetime(2006, 3, 31, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[3].policy.start_date
+datetime.datetime(2006, 4, 1, 0, 0, tzinfo=tzutc())
+>>> pskc.keys[3].policy.expiry_date
+datetime.datetime(2006, 4, 30, 0, 0, tzinfo=tzutc())

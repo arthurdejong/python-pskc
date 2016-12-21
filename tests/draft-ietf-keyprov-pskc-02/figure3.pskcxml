@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Non-encrypted HOTP secret key protected by a PIN example from
+  draft-ietf-keyprov-pskc-02 (Figure 3).
+-->
+
+<KeyContainer Version="1.0" id="exampleID1"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>Manufacturer</Manufacturer>
+            <SerialNo>987654321</SerialNo>
+        </DeviceInfo>
+        <Key KeyId="12345678"
+        KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+            <Policy>
+                <PINPolicy MinLength="4" MaxLength="4"
+                PINKeyId="123456781" PINEncoding="DECIMAL"
+                PINUsageMode="Local"/>
+                <KeyUsage>OTP</KeyUsage>
+            </Policy>
+        </Key>
+        <Key KeyId="123456781"
+          KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#pin">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="4" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>MTIzNA==</PlainValue>
+                </Secret>
+            </Data>
+        </Key>
+    </Device>
+</KeyContainer>
+
+

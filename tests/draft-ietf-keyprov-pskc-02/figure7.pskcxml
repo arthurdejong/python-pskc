@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+  PSKC file transmitting a HOTP key via key derivation values example from
+  draft-ietf-keyprov-pskc-02 (Figure 7). The key value will be derived using
+  the serialnumber and an external key.
+-->
+
+<KeyContainer Version="1" id="exampleID1"
+xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>Manufacturer</Manufacturer>
+            <SerialNo>987654321</SerialNo>
+        </DeviceInfo>
+        <Key KeyId="12345678"
+        KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp">
+            <Issuer>Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <KeyProfileId>keyProfile1</KeyProfileId>
+            <KeyReference>MasterKeyLabel</KeyReference>
+            <Data>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+            </Data>
+            <Policy>
+                <KeyUsage>OTP</KeyUsage>
+            </Policy>
+        </Key>
+    </Device>
+</KeyContainer>

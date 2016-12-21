@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  PSKC file using Encryption based on Passphrase-based Keys example from
+  draft-ietf-keyprov-pskc-02 (Figure 5). The passphrase to generate the
+  encryption key is "qwerty" which should result in a derived encryption key
+  of 651e63cd57008476af1ff6422cd02e41 and 12345678901234567890 as OTP secret.
+  The file was modified to remove the ns2 namespace declaration from ValueMAC
+  to make it valid XML. Note that the ValueMAC element is in the wrong place
+  in the tree so it is ignored, also a MACAlgorithm element is missing.
+-->
+
+<KeyContainer
+    xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+    xmlns:pkcs5=
+     "http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#"
+    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+    Version="1.0">
+    <EncryptionKey>
+        <DerivedKey>
+            <CarriedKeyName>Passphrase1</CarriedKeyName>
+            <KeyDerivationMethod
+                Algorithm=
+"http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
+                <pkcs5:PBKDF2-params>
+                    <pkcs5:Salt>
+                        <pkcs5:Specified>Ej7/PEpyEpw=</pkcs5:Specified>
+                    </pkcs5:Salt>
+                    <pkcs5:IterationCount>1000</pkcs5:IterationCount>
+                    <pkcs5:KeyLength>16</pkcs5:KeyLength>
+                    <pkcs5:PRF/>
+                </pkcs5:PBKDF2-params>
+            </KeyDerivationMethod>
+            <xenc:ReferenceList>
+                <xenc:DataReference URI="#ED"/>
+            </xenc:ReferenceList>
+        </DerivedKey>
+    </EncryptionKey>
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>TokenVendorAcme</Manufacturer>
+            <SerialNo>987654321</SerialNo>
+        </DeviceInfo>
+        <Key KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#hotp"
+        KeyId="123456">
+            <Issuer>Example-Issuer</Issuer>
+            <Usage>
+                <ResponseFormat Length="8" Encoding="DECIMAL"/>
+            </Usage>
+            <Data>
+            <Secret>
+                <EncryptedValue Id="ED">
+                    <xenc:EncryptionMethod Algorithm=
+"http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5#pbes2">
+                        <EncryptionScheme Algorithm=
+"http://www.w3.org/2001/04/xmlenc#aes128-cbc">
+                        </EncryptionScheme>
+                    </xenc:EncryptionMethod>
+                    <xenc:CipherData>
+                        <xenc:CipherValue>
+      oTvo+S22nsmS2Z/RtcoF8Hfh+jzMe0RkiafpoDpnoZTjPYZu6V+A4aEn032yCr4f
+                        </xenc:CipherValue>
+                    </xenc:CipherData>
+                    <ValueMAC>cOpiQ/H7Zlj6ywiYWtwgz9cRaOA=
+                    </ValueMAC>
+                </EncryptedValue>
+            </Secret>
+            </Data>
+        </Key>
+    </Device>
+</KeyContainer>
