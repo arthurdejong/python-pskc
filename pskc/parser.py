@@ -1,7 +1,7 @@
 # parser.py - PSKC file parsing functions
 # coding: utf-8
 #
-# Copyright (C) 2016 Arthur de Jong
+# Copyright (C) 2016-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -154,9 +154,11 @@ class PSKCParser(object):
 
         challenge_format = find(
             key_elm,
-            'AlgorithmParameters/ChallengeFormat', 'Usage/ResponseFormat')
+            'AlgorithmParameters/ChallengeFormat', 'Usage/ChallengeFormat')
         if challenge_format is not None:
-            key.challenge_encoding = challenge_format.get('Encoding')
+            key.challenge_encoding = (
+                challenge_format.get('Encoding') or
+                challenge_format.get('Format'))
             key.challenge_min_length = getint(challenge_format, 'Min')
             key.challenge_max_length = getint(challenge_format, 'Max')
             key.challenge_check = getbool(
@@ -167,13 +169,25 @@ class PSKCParser(object):
             key_elm,
             'AlgorithmParameters/ResponseFormat', 'Usage/ResponseFormat')
         if response_format is not None:
-            key.response_encoding = response_format.get('Encoding')
+            key.response_encoding = (
+                response_format.get('Encoding') or
+                response_format.get('Format'))
             key.response_length = getint(response_format, 'Length')
             key.response_check = getbool(
                 response_format, 'CheckDigits', getbool(
                     response_format, 'CheckDigit'))
 
         cls.parse_policy(key.policy, find(key_elm, 'Policy'))
+
+        usage = find(key_elm, 'Usage')
+        if usage is not None:
+            for att in ('OTP', 'CR', 'Integrity', 'Encrypt', 'Unlock'):
+                if getbool(usage, att):
+                    key.policy.key_usage.append(att)
+        key.policy.start_date = (
+            findtime(key_elm, 'StartDate') or key.policy.start_date)
+        key.policy.expiry_date = (
+            findtime(key_elm, 'ExpiryDate') or key.policy.expiry_date)
 
     @classmethod
     def parse_encrypted_value(cls, encrypted_value):

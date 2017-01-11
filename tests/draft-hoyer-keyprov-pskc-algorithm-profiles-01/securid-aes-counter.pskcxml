@@ -2,35 +2,34 @@
 
 <!--
   SecurID-AES-Counter example from section 6 of
-  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to fit the schema
-  as described in RFC 6030 and to be valid XML.
+  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to be valid XML.
 -->
 
-<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
-  <KeyPackage>
-    <DeviceInfo>
-      <Manufacturer>RSA, The Security Division of EMC</Manufacturer>
-      <SerialNo>123456798</SerialNo>
-    </DeviceInfo>
-    <Key Algorithm="http://www.rsa.com/names/2008/04/algorithms/SecurID/SecurID-AES128-Counter" Id="23456789">
-      <Issuer>Issuer</Issuer>
-      <AlgorithmParameters>
-        <ResponseFormat  Length="6" Encoding="DECIMAL"/>
-      </AlgorithmParameters>
-      <Data>
-        <Secret>
-          <PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
-          </PlainValue>
-        </Secret>
-        <Counter>
-          <PlainValue>0</PlainValue>
-        </Counter>
-      </Data>
-      <Policy>
-        <KeyUsage>OTP</KeyUsage>
-        <StartDate>2006-04-14T00:00:00Z</StartDate>
-        <ExpiryDate>2010-09-30T00:00:00Z</ExpiryDate>
-      </Policy>
-    </Key>
-  </KeyPackage>
+<KeyContainer Version="1.0"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc:1.0">
+    <Device>
+       <DeviceInfo>
+          <Manufacturer>RSA, The Security Division of EMC</Manufacturer>
+          <SerialNo>123456798</SerialNo>
+       </DeviceInfo>
+       <Key
+          KeyAlgorithm="http://www.rsa.com/names/2008/04/algorithms/SecurID/SecurID-AES128-Counter"
+          KeyId="23456789">
+          <Issuer>Issuer</Issuer>
+          <Usage OTP="true">
+            <ResponseFormat Length="6" Format="DECIMAL"/>
+          </Usage>
+          <StartDate>2006-04-14T00:00:00Z</StartDate>
+          <ExpiryDate>2010-09-30T00:00:00Z</ExpiryDate>
+          <Data>
+            <Secret>
+              <PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+              </PlainValue>
+            </Secret>
+            <Counter>
+              <PlainValue>0</PlainValue>
+            </Counter>
+          </Data>
+        </Key>
+    </Device>
 </KeyContainer>

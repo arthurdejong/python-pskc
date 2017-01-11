@@ -2,38 +2,38 @@
 
 <!--
   TOTP (OATH Time based OTP) example from section 4 of
-  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to fit the schema
-  as described in RFC 6030.
+  draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 -->
 
-<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
-  <KeyPackage>
-    <DeviceInfo>
-      <Manufacturer>TokenVendorAcme</Manufacturer>
-      <SerialNo>987654323</SerialNo>
-    </DeviceInfo>
-    <Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc#totp" Id="987654323">
-      <Issuer>Issuer</Issuer>
-      <AlgorithmParameters>
-        <ResponseFormat Length="6" Encoding="DECIMAL"/>
-      </AlgorithmParameters>
-      <Data>
-        <Secret>
-          <PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</PlainValue>
-        </Secret>
-        <Time>
-          <PlainValue>0</PlainValue>
-        </Time>
-        <TimeInterval>
-          <PlainValue>30</PlainValue>
-        </TimeInterval>
-        <TimeDrift>
-          <PlainValue>4</PlainValue>
-        </TimeDrift>
-      </Data>
-      <Policy>
-        <KeyUsage>OTP</KeyUsage>
-      </Policy>
-    </Key>
-  </KeyPackage>
+<KeyContainer Version="1.0"
+xmlns="urn:ietf:params:xml:ns:keyprov:pskc:1.0">
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>TokenVendorAcme</Manufacturer>
+            <SerialNo>987654323</SerialNo>
+        </DeviceInfo>
+        <Key KeyAlgorithm="urn:ietf:params:xml:ns:keyprov:pskc#totp"
+        KeyId="987654323">
+            <Issuer>Issuer</Issuer>
+            <Usage OTP="true">
+                <ResponseFormat Length="6" Format="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>
+                    MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Time>
+                    <PlainValue>0</PlainValue>
+                </Time>
+                <TimeInterval>
+                    <PlainValue>30</PlainValue>
+                </TimeInterval>
+                <TimeDrift>
+                    <PlainValue>4</PlainValue>
+                </TimeDrift>
+            </Data>
+        </Key>
+    </Device>
 </KeyContainer>

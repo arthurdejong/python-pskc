@@ -2,43 +2,41 @@
 
 <!--
   ActivIdentity-3DES example from section 8 of
-  draft-hoyer-keyprov-pskc-algorithm-profiles-01 modified to fit the schema
-  as described in RFC 6030.
+  draft-hoyer-keyprov-pskc-algorithm-profiles-01.
 -->
 
-<KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
-  <KeyPackage>
-    <DeviceInfo>
-      <Manufacturer>ActivIdentity</Manufacturer>
-      <SerialNo>34567890</SerialNo>
-    </DeviceInfo>
-    <Key Algorithm="http://www.actividentity.com/2008/04/algorithms/algorithms#ActivIdentity-3DES" Id="12345677">
-      <Issuer>Issuer</Issuer>
-      <AlgorithmParameters>
-        <ResponseFormat Length="8" Encoding="DECIMAL"/>
-      </AlgorithmParameters>
-      <Data>
-        <Secret>
-          <PlainValue>
-            MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
-          </PlainValue>
-        </Secret>
-        <Counter>
-          <PlainValue>0</PlainValue>
-        </Counter>
-        <Time>
-          <PlainValue>0</PlainValue>
-        </Time>
-        <TimeInterval>
-          <PlainValue>32</PlainValue>
-        </TimeInterval>
-        <TimeDrift>
-          <PlainValue>0</PlainValue>
-        </TimeDrift>
-      </Data>
-      <Policy>
-        <KeyUsage>OTP</KeyUsage>
-      </Policy>
-    </Key>
-  </KeyPackage>
+<KeyContainer Version="1.0"
+xmlns="urn:ietf:params:xml:ns:keyprov:pskc:1.0">
+    <Device>
+        <DeviceInfo>
+            <Manufacturer>ActivIdentity</Manufacturer>
+            <SerialNo>34567890</SerialNo>
+        </DeviceInfo>
+        <Key KeyAlgorithm="http://www.actividentity.com/2008/04/algorithms/algorithms#ActivIdentity-3DES"
+        KeyId="12345677">
+            <Issuer>Issuer</Issuer>
+            <Usage OTP="true">
+                <ResponseFormat Length="8" Format="DECIMAL"/>
+            </Usage>
+            <Data>
+                <Secret>
+                    <PlainValue>
+                    MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+                    </PlainValue>
+                </Secret>
+                <Counter>
+                    <PlainValue>0</PlainValue>
+                </Counter>
+                <Time>
+                    <PlainValue>0</PlainValue>
+                </Time>
+                <TimeInterval>
+                    <PlainValue>32</PlainValue>
+                </TimeInterval>
+                <TimeDrift>
+                    <PlainValue>0</PlainValue>
+                </TimeDrift>
+            </Data>
+        </Key>
+    </Device>
 </KeyContainer>
