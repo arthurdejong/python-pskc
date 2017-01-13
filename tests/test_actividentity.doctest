@@ -1,0 +1,62 @@
+test_actividentity.doctest - tests for ActivIdentity PSKC files
+
+Copyright (C) 2017 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc import PSKC
+
+
+This tests an ActivIdentity PSKC file that was found in the wild. It does not
+follow the RFC 6030 spec but is handled nonetheless.
+
+>>> pskc = PSKC('tests/actividentity/test.pskc')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
+>>> b2a_hex(pskc.encryption.iv)
+'5eeb3496c73eac92e2d2773f00d1345e'
+>>> pskc.encryption.key = a2b_hex('fe0de6b806c09b762c4b49a666a27b72')
+>>> pskc.mac.algorithm
+'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'ActivIdentity'
+>>> key.serial
+'0950380269'
+>>> key.algorithm
+'http://www.ietf.org/keyprov/pskc#hotp'
+>>> key.id
+'0950380269'
+>>> key.issuer
+'ActivIdentity'
+>>> key.policy.key_usage
+['OTP']
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+8
+>>> b2a_hex(key.secret)
+'dce70c2a0c1f5806f316ca8d09456eb4765ad053'
+>>> key.counter
+837830147

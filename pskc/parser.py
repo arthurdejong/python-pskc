@@ -52,9 +52,11 @@ class PSKCParser(object):
         pskc.id = (
             container.get('Id') or container.get('ID') or container.get('id'))
         # handle EncryptionKey entries
-        cls.parse_encryption(pskc.encryption, find(container, 'EncryptionKey'))
+        cls.parse_encryption(pskc.encryption, find(
+            container, 'EncryptionKey', 'EncryptionMethod'))
         # handle MACMethod entries
-        cls.parse_mac_method(pskc.mac, find(container, 'MACMethod'))
+        cls.parse_mac_method(pskc.mac, find(
+            container, 'MACMethod', 'DigestMethod'))
         # fall back to MACAlgorithm
         mac_algorithm = findtext(container, 'MACAlgorithm')
         if mac_algorithm:
@@ -69,10 +71,13 @@ class PSKCParser(object):
         if key_info is None:
             return
         encryption.id = key_info.get('Id')
+        encryption.algorithm = (
+            key_info.get('Algorithm') or encryption.algorithm)
         for name in findall(key_info,
                             'KeyName', 'DerivedKey/MasterKeyName',
                             'DerivedKey/CarriedKeyName'):
             encryption.key_names.append(findtext(name, '.'))
+        encryption.iv = findbin(key_info, 'IV') or encryption.iv
         cls.parse_key_derivation(encryption.derivation, find(
             key_info, 'DerivedKey/KeyDerivationMethod'))
 
@@ -112,15 +117,16 @@ class PSKCParser(object):
     def parse_key_package(cls, device, key_package):
         """Read key information from the provided <KeyPackage> tree."""
 
-        device.manufacturer = findtext(key_package, 'DeviceInfo/Manufacturer')
-        device.serial = findtext(key_package, 'DeviceInfo/SerialNo')
-        device.model = findtext(key_package, 'DeviceInfo/Model')
-        device.issue_no = findtext(key_package, 'DeviceInfo/IssueNo')
-        device.device_binding = findtext(
-            key_package, 'DeviceInfo/DeviceBinding')
-        device.start_date = findtime(key_package, 'DeviceInfo/StartDate')
-        device.expiry_date = findtime(key_package, 'DeviceInfo/ExpiryDate')
-        device.device_userid = findtext(key_package, 'DeviceInfo/UserId')
+        info = find(key_package, 'DeviceInfo', 'DeviceId')
+        if info is not None:
+            device.manufacturer = findtext(info, 'Manufacturer')
+            device.serial = findtext(info, 'SerialNo')
+            device.model = findtext(info, 'Model')
+            device.issue_no = findtext(info, 'IssueNo')
+            device.device_binding = findtext(info, 'DeviceBinding')
+            device.start_date = findtime(info, 'StartDate')
+            device.expiry_date = findtime(info, 'ExpiryDate')
+            device.device_userid = findtext(info, 'UserId')
 
         device.crypto_module = findtext(key_package, 'CryptoModuleInfo/Id')
 
@@ -141,6 +147,14 @@ class PSKCParser(object):
             cls.parse_datatype(key._time_offset, find(data, 'Time'))
             cls.parse_datatype(key._time_interval, find(data, 'TimeInterval'))
             cls.parse_datatype(key._time_drift, find(data, 'TimeDrift'))
+
+        for data in findall(key_elm, 'Data'):
+            name = data.get('Name')
+            if name:
+                cls.parse_datatype(dict(
+                    secret=key._secret, counter=key._counter,
+                    time=key._time_offset, time_interval=key._time_interval
+                ).get(name.lower()), data)
 
         key.issuer = findtext(key_elm, 'Issuer')
         key.key_profile = findtext(key_elm, 'KeyProfileId')
@@ -225,9 +239,16 @@ class PSKCParser(object):
             if not dt.pskc.encryption.algorithm and dt.algorithm:
                 dt.pskc.encryption.algorithm = dt.algorithm
         # read MAC information from <ValueMAC>
-        value_mac = findbin(element, 'ValueMAC')
+        value_mac = findbin(element, 'ValueMAC', 'ValueDigest')
         if value_mac is not None:
             dt.value_mac = value_mac
+        # read legacy <Value> elements (can be plain or encrypted)
+        value = find(element, 'Value')
+        if value is not None:
+            if dt.pskc.encryption.algorithm and dt.value_mac:
+                dt.cipher_value = findbin(element, 'Value')
+            else:
+                dt.value = dt._from_text(findtext(element, 'Value'))
 
     @classmethod
     def parse_policy(cls, policy, policy_elm):

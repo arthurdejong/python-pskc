@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Test file provided by a customer of ActivIdentity. The file has been
+  modified to include only one token and all secret values have been modified
+  to not leak any actual data. Note that the MAC uses the same key as was
+  used for encryption and is over the plaintext.
+-->
+
+<KeyContainer xmlns="urn:ietf:params:xml:ns:keyprov:container:1.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:ietf:params:xml:ns:keyprov:container:1.0:keyprov-pskc-1.0.xsd" version="1.0">
+<EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc">
+<IV>Xus0lsc+rJLi0nc/ANE0Xg==</IV>
+</EncryptionMethod>
+<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1"/>
+<Device>
+<DeviceId>
+<Manufacturer>ActivIdentity</Manufacturer>
+<SerialNo>0950380269</SerialNo>
+</DeviceId>
+<Key KeyAlgorithm="http://www.ietf.org/keyprov/pskc#hotp" KeyId="0950380269">
+<Issuer>ActivIdentity</Issuer>
+<Usage OTP="true">
+<ResponseFormat Format="DECIMAL" Length="8"/>
+</Usage>
+<Data Name="SECRET">
+<Value>1HBJThmzYDCU7YCrML6OZKMsRQriSvZpoqeMfBui9dI=</Value>
+<ValueDigest>SlinEB9YUzcR04MUZDF5dBLtK1c=</ValueDigest>
+</Data>
+<Data Name="COUNTER">
+<Value>AAAAADHwRgM=</Value>
+</Data>
+</Key>
+</Device>
+</KeyContainer>
