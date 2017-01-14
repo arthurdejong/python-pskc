@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Second example from draft-josefsson-keyprov-pskc-yubikey-00 illustrating
+  how both slots can be programmed at the same time.
+-->
+
+<KeyContainer Version="1.0"
+              Id="yk-pskc-283598"
+              xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <DeviceInfo>
+      <Manufacturer>oath.UB</Manufacturer>
+      <SerialNo>283598</SerialNo>
+      <StartDate>2009-01-22T00:25:10Z</StartDate>
+    </DeviceInfo>
+    <CryptoModuleInfo>
+      <Id>1</Id>
+    </CryptoModuleInfo>
+    <Key Id="283598:1"
+         Algorithm="http://www.yubico.com/#yubikey-aes">
+      <Issuer>ACME Inc.</Issuer>
+      <AlgorithmParameters>
+        <ResponseFormat Encoding="ALPHANUMERIC" Length="44"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret>
+          <PlainValue>
+            Vpg1bTCGjEIB4m9mxYK7RQ==
+          </PlainValue>
+        </Secret>
+      </Data>
+      <UserId>CN=ekhgjhbctrgn, UID=ca62baca62ba</UserId>
+    </Key>
+  </KeyPackage>
+  <KeyPackage>
+    <DeviceInfo>
+      <Manufacturer>oath.UB</Manufacturer>
+      <SerialNo>283598</SerialNo>
+      <StartDate>2009-01-22T00:25:10Z</StartDate>
+    </DeviceInfo>
+    <CryptoModuleInfo>
+      <Id>2</Id>
+    </CryptoModuleInfo>
+    <Key Id="283598:2"
+         Algorithm="http://www.yubico.com/#yubikey-aes">
+      <Issuer>ACME Inc.</Issuer>
+      <AlgorithmParameters>
+        <ResponseFormat Encoding="ALPHANUMERIC" Length="44"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret>
+          <PlainValue>
+            OIkrgqvxgHeIRY/FpRZcgA==
+          </PlainValue>
+        </Secret>
+      </Data>
+      <UserId>CN=ekhgjhbctrgn, UID=ca62baca62ba</UserId>
+    </Key>
+  </KeyPackage>
+</KeyContainer>

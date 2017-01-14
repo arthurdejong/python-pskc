@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  First example from draft-josefsson-keyprov-pskc-yubikey-00 illustrating how
+  slot 1 of the YubiKey with serial number 283599 is provisioned with public
+  identifier "ekhgjhbctrgn", internal identity "ca62baca62ba" and the
+  indicated encryption key.
+-->
+
+<KeyContainer Version="1.0"
+              Id="yk-pskc-283599"
+              xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <DeviceInfo>
+      <Manufacturer>oath.UB</Manufacturer>
+      <SerialNo>283599</SerialNo>
+      <StartDate>2009-01-22T00:25:11Z</StartDate>
+    </DeviceInfo>
+    <CryptoModuleInfo>
+      <Id>1</Id>
+    </CryptoModuleInfo>
+    <Key Id="283599:1"
+         Algorithm="http://www.yubico.com/#yubikey-aes">
+      <Issuer>ACME Inc.</Issuer>
+      <AlgorithmParameters>
+        <ResponseFormat Encoding="ALPHANUMERIC" Length="44"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret>
+          <PlainValue>
+            K34VFiiu0qar9xWICc9PPA==
+          </PlainValue>
+        </Secret>
+      </Data>
+      <UserId>CN=ekhgjhbctrgn, UID=ca62baca62ba</UserId>
+    </Key>
+  </KeyPackage>
+</KeyContainer>

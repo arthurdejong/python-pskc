@@ -1,0 +1,149 @@
+test_yubico.doctest - tests for Yubico PSKC files
+
+Copyright (C) 2017 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc import PSKC
+
+
+This tests the first example from draft-josefsson-keyprov-pskc-yubikey-00.
+
+>>> pskc = PSKC('tests/yubico/example1.pskcxml')
+>>> pskc.id
+'yk-pskc-283599'
+>>> len(pskc.keys)
+1
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'oath.UB'
+>>> key.serial
+'283599'
+>>> key.start_date
+datetime.datetime(2009, 1, 22, 0, 25, 11, tzinfo=tzutc())
+>>> key.crypto_module
+'1'
+>>> key.id
+'283599:1'
+>>> key.algorithm
+'http://www.yubico.com/#yubikey-aes'
+>>> key.issuer
+'ACME Inc.'
+>>> key.response_encoding
+'ALPHANUMERIC'
+>>> key.response_length
+44
+>>> b2a_hex(key.secret)
+'2b7e151628aed2a6abf7158809cf4f3c'
+>>> key.key_userid
+'CN=ekhgjhbctrgn, UID=ca62baca62ba'
+
+
+This tests the second example from draft-josefsson-keyprov-pskc-yubikey-00.
+
+>>> pskc = PSKC('tests/yubico/example2.pskcxml')
+>>> pskc.id
+'yk-pskc-283598'
+>>> len(pskc.keys)
+2
+>>> key = pskc.keys[0]  # first key
+>>> key.manufacturer
+'oath.UB'
+>>> key.serial
+'283598'
+>>> key.start_date
+datetime.datetime(2009, 1, 22, 0, 25, 10, tzinfo=tzutc())
+>>> key.crypto_module
+'1'
+>>> key.id
+'283598:1'
+>>> key.algorithm
+'http://www.yubico.com/#yubikey-aes'
+>>> key.issuer
+'ACME Inc.'
+>>> key.response_encoding
+'ALPHANUMERIC'
+>>> key.response_length
+44
+>>> b2a_hex(key.secret)
+'5698356d30868c4201e26f66c582bb45'
+>>> key.key_userid
+'CN=ekhgjhbctrgn, UID=ca62baca62ba'
+>>> key = pskc.keys[1]  # second key
+>>> key.manufacturer
+'oath.UB'
+>>> key.serial
+'283598'
+>>> key.start_date
+datetime.datetime(2009, 1, 22, 0, 25, 10, tzinfo=tzutc())
+>>> key.crypto_module
+'2'
+>>> key.id
+'283598:2'
+>>> key.algorithm
+'http://www.yubico.com/#yubikey-aes'
+>>> key.issuer
+'ACME Inc.'
+>>> key.response_encoding
+'ALPHANUMERIC'
+>>> key.response_length
+44
+>>> b2a_hex(key.secret)
+'38892b82abf1807788458fc5a5165c80'
+>>> key.key_userid
+'CN=ekhgjhbctrgn, UID=ca62baca62ba'
+
+
+This tests the third example from draft-josefsson-keyprov-pskc-yubikey-00.
+
+>>> pskc = PSKC('tests/yubico/example3.pskcxml')
+>>> pskc.id
+'yk-pskc-283597'
+>>> len(pskc.keys)
+1
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'oath.UB'
+>>> key.serial
+'283597'
+>>> key.start_date
+datetime.datetime(2009, 1, 22, 0, 25, 9, tzinfo=tzutc())
+>>> key.crypto_module
+'1'
+>>> key.id
+'283597:1'
+>>> key.algorithm
+'http://www.yubico.com/#yubikey-aes'
+>>> key.issuer
+'ACME Inc.'
+>>> key.response_encoding
+'ALPHANUMERIC'
+>>> key.response_length
+40
+>>> b2a_hex(key.secret)
+'2b7e151628aed2a6abf7158809cf4f3c'
+>>> key.key_userid
+'CN=ekhgjhbctrgn, UID=ca62baca62ba'
+
+# TODO: support extensions

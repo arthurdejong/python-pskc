@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Third example from draft-josefsson-keyprov-pskc-yubikey-00 illustrating how
+  additional parameters, locking code and unlocking code, can be provided
+  through an extension. Note that python-pskc does not expose these
+  extensions through its API.
+-->
+
+<KeyContainer Version="1.0"
+              Id="yk-pskc-283597"
+              xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+  <KeyPackage>
+    <DeviceInfo>
+      <Manufacturer>oath.UB</Manufacturer>
+      <SerialNo>283597</SerialNo>
+      <StartDate>2009-01-22T00:25:09Z</StartDate>
+    </DeviceInfo>
+    <CryptoModuleInfo>
+      <Id>1</Id>
+    </CryptoModuleInfo>
+    <Key Id="283597:1"
+         Algorithm="http://www.yubico.com/#yubikey-aes">
+      <Issuer>ACME Inc.</Issuer>
+      <AlgorithmParameters>
+        <ResponseFormat Encoding="ALPHANUMERIC" Length="40"/>
+      </AlgorithmParameters>
+      <Data>
+        <Secret>
+          <PlainValue>
+            K34VFiiu0qar9xWICc9PPA==
+          </PlainValue>
+        </Secret>
+      </Data>
+      <UserId>CN=ekhgjhbctrgn, UID=ca62baca62ba</UserId>
+      <Extensions>
+        <YubiKey xmlns="http://www.yubico.com/#yubikey-aes-ext">
+          <YubiKeyConfig Flag="TKTFLAG_APPEND_DELAY1"/>
+          <YubiKeyConfig Flag="TKTFLAG_APPEND_CR"/>
+          <YubiKeyConfig Flag="CFGFLAG_PACING_10MS"/>
+          <YubiKeyLock Code="98566d358630"/>
+          <YubiKeyUnlock Code="45bb428ce201"/>
+        </YubiKey>
+      </Extensions>
+    </Key>
+  </KeyPackage>
+</KeyContainer>
