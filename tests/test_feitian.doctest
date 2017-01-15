@@ -1,4 +1,4 @@
-test_vendors.doctest - test for PSKC files provided by vendors
+test_feitian.doctest - tests for Feitian PSKC files
 
 Copyright (C) 2016 Arthur de Jong
 
@@ -76,29 +76,3 @@ datetime.datetime(2022, 9, 1, 0, 0, tzinfo=tzutc())
 datetime.datetime(2012, 9, 19, 0, 0, tzinfo=tzutc())
 >>> key.policy.expiry_date
 datetime.datetime(2022, 9, 1, 0, 0, tzinfo=tzutc())
-
-
-This tests a simple PSKC file from NagraID which is protected by a pre-shared
-key. The file contains three OCRA keys.
-
->>> pskc = PSKC('tests/nagraid/file1.pskcxml')
->>> print('\n'.join(key.serial for key in pskc.keys))  #doctest: +REPORT_UDIFF
-306EUO4-00960
-306EUO4-00954
-306EUO4-00958
->>> key = pskc.keys[0]
->>> bool(key.secret)  # doctest: +IGNORE_EXCEPTION_DETAIL
-Traceback (most recent call last):
-    ...
-DecryptionError: No key available
->>> pskc.encryption.key_name
-'Pre-shared-key'
->>> pskc.encryption.key = a2b_hex('4A057F6AB6FCB57AB5408E46A9835E68')
->>> bool(key.secret)
-True
->>> key.check()
-True
->>> print('\n'.join(key.algorithm_suite for key in pskc.keys))  #doctest: +REPORT_UDIFF
-OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1
-OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1
-OCRA-1:HOTP-SHA1-6:C-QN08-PSHA1
