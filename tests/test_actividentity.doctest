@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 This tests an ActivIdentity PSKC file that was found in the wild. It does not
 follow the RFC 6030 spec but is handled nonetheless.
 
->>> pskc = PSKC('tests/actividentity/test.pskc')
+>>> pskc = PSKC('tests/actividentity/test.pskcxml')
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
 >>> b2a_hex(pskc.encryption.iv)
