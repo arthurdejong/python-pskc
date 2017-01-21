@@ -1,3 +1,300 @@
+2017-01-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [29a183d] tests/test_feitian.doctest, tests/test_nagraid.doctest:
+	  Split vendor tests
+
+	  Have one doctest file per vendor to make tests a little more
+	  manageable.
+
+2017-01-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [02eb520] tests/test_yubico.doctest, tests/yubico/example1.pskcxml,
+	  tests/yubico/example2.pskcxml, tests/yubico/example3.pskcxml:
+	  Add tests for Yubikey files
+
+	  This adds tests from draft-josefsson-keyprov-pskc-yubikey-00.
+
+2017-01-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [12dfa64] pskc/parser.py, tests/actividentity/test.pskc,
+	  tests/test_actividentity.doctest: Support legacy ActivIdentity
+	  files
+
+	  This adds support for parsing ActivIdentity files that conform
+	  to a very old version of an Internet Draft. The implementation
+	  and test were based on a file provided by Jaap Ruijgrok.
+
+2017-01-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a5e2343] pskc/parser.py,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/actividentity-3des.pskcxml,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/ocra.pskcxml,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/securid-aes-counter.pskcxml,
+	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/totp.pskcxml:
+	  Use original examples from old profiles Internet Draft
+
+	  This updates the tests to use the original examples from
+	  draft-hoyer-keyprov-pskc-algorithm-profiles-01 instead of
+	  modifying them to fit the RFC 6030 schema (but does include some
+	  minor changes to make them valid XML).
+
+	  This adds a few additions to the parser to handle legacy challenge
+	  and resposne encoding and a few key policy properties.
+
+	  This also includes a fix for 0b757ec in the handling of the
+	  <ChallengeFormat> element under a <Usage> element.
+
+2016-12-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2f7cb1a] tests/rfc6030/figure8.pskcxml,
+	  tests/rfc6030/figure9.pskcxml, tests/test_rfc6030.doctest:
+	  Add all figures from RFC 6030 to test suite
+
+	  Note that asymmetric encryption and digital signature checking
+	  has not yet been implemented so the tests are pretty minimal.
+2016-12-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0b757ec] pskc/parser.py, pskc/xml.py,
+	  tests/draft-ietf-keyprov-pskc-02/figure2.pskcxml,
+	  tests/draft-ietf-keyprov-pskc-02/figure3.pskcxml,
+	  tests/draft-ietf-keyprov-pskc-02/figure4.pskcxml,
+	  tests/draft-ietf-keyprov-pskc-02/figure5.pskcxml,
+	  tests/draft-ietf-keyprov-pskc-02/figure6.pskcxml,
+	  tests/draft-ietf-keyprov-pskc-02/figure7.pskcxml,
+	  tests/draft-ietf-keyprov-pskc-02/figure8.pskcxml,
+	  tests/draft-ietf-keyprov-pskc-02/figure9.pskcxml,
+	  tests/test_draft_ietf_keyprov_pskc_02.doctest: Add support for
+	  older Internet Draft version
+
+	  This adds support for parsing most examples from
+	  draft-ietf-keyprov-pskc-02. That file uses a few other names
+	  for elements and attributes of the PSKC file and a few other
+	  minor differences.
+
+	  The XML parsing has been changed to allow specifying multiple
+	  matches and the find*() functions now return the first found match.
+
+	  While all examples from draft-ietf-keyprov-pskc-02 are tested
+	  support for verifying digital signatures and asymmetric keys
+	  have not yet been implemented.
+
+2016-12-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [09076f8] tests/test_encryption.doctest: Fix typo in test
+
+2016-12-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [46fa5f1] setup.cfg: Fail tests on missing coverage
+
+2016-12-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [047a2a9] pskc/key.py, pskc/mac.py,
+	  tests/encryption/mac-over-plaintext.pskcxml,
+	  tests/invalid/mac-missing.pskcxml, tests/invalid/mac-value.pskcxml,
+	  tests/invalid/missing-encryption-method.pskcxml,
+	  tests/test_encryption.doctest, tests/test_invalid.doctest:
+	  Allow MAC over plaintext or ciphertext
+
+	  RFC 6030 implies that the MAC should be performed over the
+	  ciphertext but some earlier drafts implied that the MAC should
+	  be performed on the plaintext. This change accpets the MAC if
+	  either the plaintext or ciphertext match.
+
+	  Note that this change allows for a padding oracle attack when
+	  CBC encryption modes are used because decryption (and unpadding)
+	  needs to be done before MAC checking. However, this module is
+	  not expected to be available to users to process arbitrary PSKC
+	  files repeatedly.
+
+	  This removes the tests for a missing MAC key (and replaces it for
+	  tests of missing EncryptionMethod) because falling back to using
+	  the encryption key (implemented in a444f78) in combination with
+	  this change means that decryption is performed before MAC checking
+	  and is no longer possible to trigger a missing MAC key error.
+
+2016-12-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bae7084] pskc/crypto/__init__.py, pskc/encryption.py,
+	  tests/test_crypto.doctest: Add sanity checks to unpadding
+
+2016-12-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d864bc8] pskc/serialiser.py: Ensure XML file ends with a newline
+
+2016-12-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c631628] pskc/xml.py: Adapt coverage pragma annotations
+
+	  This fixes the pragma directives to be be correct independently
+	  of whether lxml is installed or not.
+
+2016-12-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [18d82dc] .gitignore, tox.ini: Add Tox configuration
+
+	  This sets up Tox with various versions of Python and for each
+	  version a run with and without lxml.
+
+2016-12-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [71058e2] tests/test_write.doctest: Close read files in tests
+
+	  This ensures that the files that are read in the test suite are
+	  properly closed to avoid leaking open file descriptors.
+
+2016-12-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f0a0a3b] pskc/parser.py: Support missing or lowercase version
+	  attribute
+
+2016-09-26  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [3bf4737] docs/usage.rst: Fix copy-pasto in documentation
+
+	  This accidentally slipped in as part of beafc6b.  2016-09-19
+Arthur de Jong <arthur@arthurdejong.org>
+
+	* [02b30a9] pskc/__init__.py, pskc/parser.py, pskc/serialiser.py:
+	  Also move outer writing and parsing to modules
+
+2016-09-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b1f8f87] .gitignore, README, pskc/__init__.py: Add writing
+	  example to toplevel documentation
+
+2016-09-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e23a467] pskc/key.py: Use custom data descriptors for key
+	  properties
+
+	  This uses a custom data descriptor (property) for secret, counter,
+	  time_offset, time_interval and time_drift.
+
+2016-09-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [beafc6b] docs/usage.rst, pskc/__init__.py, pskc/device.py,
+	  pskc/key.py, pskc/parser.py, pskc/policy.py, pskc/serialiser.py,
+	  tests/test_misc.doctest, tests/test_write.doctest: Support
+	  separate device from key
+
+	  This allows having multiple keys per device while also maintaining
+	  the previous API.
+
+	  Note that having multiple keys per device is not allowed by the
+	  RFC 6030 schema but is allowed by some older internet drafts.
+
+2016-09-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [84bfb8a] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
+	  pskc/mac.py, pskc/policy.py, pskc/serialiser.py: Move XML
+	  generation to own module
+
+	  Similar to the change for parsing, move the XML serialisation
+	  of PSKC data to a single class in a separate module.
+
+2016-09-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [426e821] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
+	  pskc/mac.py, pskc/parser.py, pskc/policy.py: Move document
+	  parsing to own module
+
+	  This moves all the parse() functions to a single class in a
+	  dedicated module that can be used for parsing PSKC files. This
+	  should make it easier to subclass the parser.
+
+2016-09-14  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bf34209] tests/invalid/no-mac-method.pskcxml,
+	  tests/test_invalid.doctest, tests/test_rfc6030.doctest: Some
+	  minor improvements to the tests
+
+2016-09-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [600ae68] pskc/encryption.py, pskc/key.py, pskc/xml.py,
+	  setup.cfg, tests/invalid/empty-mac-key.pskcxml,
+	  tests/invalid/incomplete-derivation.pskcxml,
+	  tests/invalid/missing-encryption.pskcxml,
+	  tests/misc/SampleFullyQualifiedNS.xml, tests/misc/policy.pskcxml,
+	  tests/test_aeskw.doctest, tests/test_encryption.doctest,
+	  tests/test_invalid.doctest, tests/test_misc.doctest,
+	  tests/test_write.doctest: Improve branch coverage
+
+	  This enables branch coverage testing and adds tests to improve
+	  coverage.
+
+2016-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [713d106] pskc/encryption.py, tests/test_encryption.doctest:
+	  Support specifying PRF in setup_pbkdf2()
+
+	  This also ensures that the PRF URL is normalised.
+
+2016-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ff811c9] pskc/encryption.py: Fix bug in passing explicit key
+	  to setup_preshared_key()
+
+2016-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fa07aa5] docs/encryption.rst, pskc/encryption.py: Clarify
+	  encryption.setup_*() documentation
+
+	  This tries to make it clearer that the setup_preshared_key()
+	  and setup_pbkdf2() functions are meant to be used when writing
+	  out PSKC files.
+
+2016-04-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a444f78] pskc/key.py, pskc/mac.py,
+	  tests/encryption/no-mac-key.pskcxml,
+	  tests/invalid/mac-missing.pskcxml, tests/test_encryption.doctest,
+	  tests/test_invalid.doctest: Fall back to encryption key for MAC
+
+	  This uses the encryption key also as MAC key if no MAC key has
+	  been specified in the PSKC file. Earlier versions of the PSKC
+	  draft specified this behaviour.
+
+2016-04-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9b76135] pskc/encryption.py,
+	  tests/encryption/aes128-cbc-noiv.pskcxml,
+	  tests/test_encryption.doctest: Allow global specification of IV
+
+	  In older versions of the PSKC standard it was allowed to
+	  have a global initialization vector for CBC based encryption
+	  algorithms. It is probably not a good idea to re-use an IV
+	  in general.
+
+2016-04-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d53f05b] pskc/encryption.py, pskc/mac.py: Move crypto to functions
+
+	  This makes it much easier to test the encryption, decryption
+	  and HMAC processing separate from the PSKC parsing.
+
+2016-04-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5dbfefd] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
+	  pskc/policy.py: Remove parse call from constructors
+
+	  This makes the creation if internal instances a litte more
+	  consistent.
+
+2016-04-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0d7caf1] pskc/algorithms.py, pskc/encryption.py, pskc/mac.py:
+	  Move algorithm uri handling to separate module
+
+2016-03-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [22ba9f1] pskc/crypto/__init__.py, pskc/encryption.py: Move
+	  padding functions to crypto package
+
+2016-03-28  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [efbe94c] ChangeLog, NEWS, pskc/__init__.py, setup.py: Get files
+	  ready for 0.4 release
+
 2016-03-26  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [0c57335] docs/policy.rst: Document may_use() policy function
@@ -134,7 +431,6 @@
 2016-03-19  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [cadc6d9] pskc/key.py, pskc/mac.py,
-	  tests/invalid/encryption.pskcxml,
 	  tests/invalid/missing-encryption.pskcxml,
 	  tests/invalid/not-boolean.pskcxml,
 	  tests/invalid/not-integer.pskcxml,
@@ -205,16 +501,10 @@
 2016-01-24  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [c86aaea] README, pskc/__init__.py,
-	  tests/SampleFullyQualifiedNS.xml, tests/aes128-cbc.pskcxml,
-	  tests/aes192-cbc.pskcxml, tests/aes256-cbc.pskcxml,
 	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/actividentity-3des.pskcxml,
 	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/ocra.pskcxml,
 	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/securid-aes-counter.pskcxml,
 	  tests/draft-hoyer-keyprov-pskc-algorithm-profiles-01/totp.pskcxml,
-	  tests/draft-keyprov-actividentity-3des.pskcxml,
-	  tests/draft-keyprov-ocra.pskcxml,
-	  tests/draft-keyprov-securid-aes-counter.pskcxml,
-	  tests/draft-keyprov-totp.pskcxml,
 	  tests/encryption/aes128-cbc.pskcxml,
 	  tests/encryption/aes192-cbc.pskcxml,
 	  tests/encryption/aes256-cbc.pskcxml,
@@ -223,32 +513,21 @@
 	  tests/encryption/kw-aes256.pskcxml,
 	  tests/encryption/kw-tripledes.pskcxml,
 	  tests/encryption/tripledes-cbc.pskcxml,
-	  tests/invalid-encryption.pskcxml,
-	  tests/invalid-mac-algorithm.pskcxml,
-	  tests/invalid-mac-value.pskcxml,
-	  tests/invalid-no-mac-method.pskcxml, tests/invalid-notxml.pskcxml,
-	  tests/invalid-wrongelement.pskcxml,
-	  tests/invalid-wrongversion.pskcxml,
 	  tests/invalid/encryption.pskcxml,
 	  tests/invalid/mac-algorithm.pskcxml,
 	  tests/invalid/mac-value.pskcxml,
-	  tests/invalid/no-mac-method.pskcxml,
-	  tests/invalid/notxml.pskcxml, tests/invalid/wrongelement.pskcxml,
-	  tests/invalid/wrongversion.pskcxml, tests/kw-aes128.pskcxml,
-	  tests/kw-aes192.pskcxml, tests/kw-aes256.pskcxml,
-	  tests/kw-tripledes.pskcxml, tests/misc/SampleFullyQualifiedNS.xml,
-	  tests/misc/odd-namespace.pskcxml, tests/odd-namespace.pskcxml,
-	  tests/rfc6030-figure10.pskcxml, tests/rfc6030-figure2.pskcxml,
-	  tests/rfc6030-figure3.pskcxml, tests/rfc6030-figure4.pskcxml,
-	  tests/rfc6030-figure5.pskcxml, tests/rfc6030-figure6.pskcxml,
-	  tests/rfc6030-figure7.pskcxml, tests/rfc6030/figure10.pskcxml,
+	  tests/invalid/no-mac-method.pskcxml, tests/invalid/notxml.pskcxml,
+	  tests/invalid/wrongelement.pskcxml,
+	  tests/invalid/wrongversion.pskcxml,
+	  tests/misc/SampleFullyQualifiedNS.xml,
+	  tests/misc/odd-namespace.pskcxml, tests/rfc6030/figure10.pskcxml,
 	  tests/rfc6030/figure2.pskcxml, tests/rfc6030/figure3.pskcxml,
 	  tests/rfc6030/figure4.pskcxml, tests/rfc6030/figure5.pskcxml,
 	  tests/rfc6030/figure6.pskcxml, tests/rfc6030/figure7.pskcxml,
 	  tests/test_draft_keyprov.doctest, tests/test_encryption.doctest,
 	  tests/test_invalid.doctest, tests/test_misc.doctest,
-	  tests/test_rfc6030.doctest, tests/test_write.doctest,
-	  tests/tripledes-cbc.pskcxml: Re-organise test files
+	  tests/test_rfc6030.doctest, tests/test_write.doctest: Re-organise
+	  test files
 
 	  This puts the test PSKC files in subdirectories so they can be
 	  organised more cleanly.
@@ -407,11 +686,10 @@
 
 2014-06-30  Arthur de Jong <arthur@arthurdejong.org>
 
-	* [1363564] pskc/aeskw.py, pskc/crypto/__init__.py,
-	  pskc/crypto/aeskw.py, pskc/crypto/tripledeskw.py,
-	  pskc/encryption.py, pskc/tripledeskw.py, tests/test_aeskw.doctest,
-	  tests/test_tripledeskw.doctest: Move encryption functions in
-	  pskc.crypto package
+	* [1363564] pskc/crypto/__init__.py, pskc/crypto/aeskw.py,
+	  pskc/crypto/tripledeskw.py, pskc/encryption.py,
+	  tests/test_aeskw.doctest, tests/test_tripledeskw.doctest: Move
+	  encryption functions in pskc.crypto package
 
 	  This moves the encryption functions under the pskc.crypto package
 	  to more clearly separate it from the other code. Ideally this
@@ -420,8 +698,8 @@
 2014-06-30  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [e468ebe] pskc/__init__.py, pskc/encryption.py, pskc/key.py,
-	  pskc/mac.py, pskc/parse.py, pskc/policy.py, pskc/xml.py: Rename
-	  pskc.parse to pskc.xml
+	  pskc/mac.py, pskc/policy.py, pskc/xml.py: Rename pskc.parse
+	  to pskc.xml
 
 	  This renames the parse module to xml to better reflect the
 	  purpose of the module and it's functions.
@@ -831,15 +1109,11 @@
 
 2014-05-23  Arthur de Jong <arthur@arthurdejong.org>
 
-	* [15ca643] README, pskc/__init__.py, tests/rfc6030-figure10.pskc,
-	  tests/rfc6030-figure10.pskcxml, tests/rfc6030-figure2.pskc,
-	  tests/rfc6030-figure2.pskcxml, tests/rfc6030-figure3.pskc,
-	  tests/rfc6030-figure3.pskcxml, tests/rfc6030-figure4.pskc,
-	  tests/rfc6030-figure4.pskcxml, tests/rfc6030-figure5.pskc,
-	  tests/rfc6030-figure5.pskcxml, tests/rfc6030-figure6.pskc,
-	  tests/rfc6030-figure6.pskcxml, tests/rfc6030-figure7.pskc,
-	  tests/rfc6030-figure7.pskcxml, tests/test_rfc6030.doctest:
-	  Use pskcxml as file name extension
+	* [15ca643] README, pskc/__init__.py, tests/rfc6030-figure10.pskcxml,
+	  tests/rfc6030-figure2.pskcxml, tests/rfc6030-figure3.pskcxml,
+	  tests/rfc6030-figure4.pskcxml, tests/rfc6030-figure5.pskcxml,
+	  tests/rfc6030-figure6.pskcxml, tests/rfc6030-figure7.pskcxml,
+	  tests/test_rfc6030.doctest: Use pskcxml as file name extension
 
 	  This is the extension that is suggested in RFC6030.
 
@@ -1034,8 +1308,8 @@
 
 2014-04-07  Arthur de Jong <arthur@arthurdejong.org>
 
-	* [e72369f] tests/rfc6030-figure3.pskc, tests/test-rfc6030.doctest,
-	  tests/test_rfc6030.doctest: Add test for Figure 3 from RFC6030
+	* [e72369f] tests/rfc6030-figure3.pskc, tests/test_rfc6030.doctest:
+	  Add test for Figure 3 from RFC6030
 
 	  This tests Figure 3 from RFC6030 with a very basic plain text
 	  secret key and some supplementary data.

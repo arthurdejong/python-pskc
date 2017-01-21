@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'python-pskc'
-copyright = u'2014-2016 Arthur de Jong'
+copyright = u'2014-2017 Arthur de Jong'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

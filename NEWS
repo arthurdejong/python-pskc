@@ -1,3 +1,25 @@
+changes from 0.4 to 0.5
+-----------------------
+
+* numerous compatibility improvements for reading PSKC files that do not
+  follow the RFC 6030 schema exactly: specifically accept a number of old
+  Internet Draft specifications that preceded RFC 6030 and support an
+  ActivIdentity file format
+* split device information from key information (keep old API available) to
+  allow multiple keys per device (this is not allowed by RFC 6030 but was
+  allowed in older Internet Drafts)
+* accept MAC to be over plaintext in addition to ciphertext
+* fall back to using encryption key as MAC key
+* refactoring of some encryption, parsing and serialising functionality into
+  separate modules for better maintainability
+* add configuration for running test suite via Tox
+* addition of a large number of test cases, bringing the branch coverage to
+  100%
+* documentation improvements
+* drop official support for Python 2.6 (the module still works but is just no
+  longer tested with it)
+
+
 changes from 0.3 to 0.4
 -----------------------
 

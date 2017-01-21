@@ -3,7 +3,7 @@
 
 # pskc2csv.py - script to convert a PSKC file to CSV
 #
-# Copyright (C) 2014-2016 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@ version_string = '''
 pskc2csv (python-pskc) %s
 Written by Arthur de Jong.
 
-Copyright (C) 2014-2016 Arthur de Jong
+Copyright (C) 2014-2017 Arthur de Jong
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 '''.strip() % pskc.__version__
