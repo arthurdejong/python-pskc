@@ -40,7 +40,7 @@ setup(
     author='Arthur de Jong',
     author_email='arthur@arthurdejong.org',
     keywords=['PSKC', 'RFC 6030', 'key container'],
-    url='http://arthurdejong.org/python-pskc/',
+    url='https://arthurdejong.org/python-pskc/',
     license='LGPL',
     classifiers=[
         'Development Status :: 4 - Beta',

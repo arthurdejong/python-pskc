@@ -10,7 +10,7 @@ other authentication devices.
 This module can be used to extract keys from PSKC files for use in an OTP
 authentication system. The module can also be used for authoring PSKC files.
 
-http://arthurdejong.org/python-pskc/
+https://arthurdejong.org/python-pskc/
 
 
 API

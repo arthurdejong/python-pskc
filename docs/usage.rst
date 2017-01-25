@@ -158,7 +158,7 @@ The Key class
       +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
       | ``urn:ietf:params:xml:ns:keyprov:pskc:hotp``   | `OATH event-based OTP <https://tools.ietf.org/html/rfc6030#section-10.1>`_                                                  |
       +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
-      | ``urn:ietf:params:xml:ns:keyprov:pskc#totp``   | `OATH time-based OTP <http://tools.ietf.org/html/draft-hoyer-keyprov-pskc-algorithm-profiles-01#section-4>`_                |
+      | ``urn:ietf:params:xml:ns:keyprov:pskc#totp``   | `OATH time-based OTP <https://tools.ietf.org/html/draft-hoyer-keyprov-pskc-algorithm-profiles-01#section-4>`_               |
       | ``urn:ietf:params:xml:ns:keyprov:pskc:totp``   |                                                                                                                             |
       +------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+
       | ``urn:ietf:params:xml:ns:keyprov:pskc#OCRA-1`` | `OATH challenge-response algorithm <https://tools.ietf.org/html/draft-hoyer-keyprov-pskc-algorithm-profiles-01#section-3>`_ |
@@ -251,7 +251,7 @@ The Key class
    .. attribute:: challenge_check
 
       Boolean that indicates whether the device will check an embedded
-      `Luhn check digit <http://arthurdejong.org/python-stdnum/doc/stdnum.luhn.html>`_
+      `Luhn check digit <https://arthurdejong.org/python-stdnum/doc/stdnum.luhn.html>`_
       contained in the challenge.
 
    .. attribute:: response_encoding
@@ -266,7 +266,7 @@ The Key class
    .. attribute:: response_check
 
       Boolean that indicates whether the device will append a
-      `Luhn check digit <http://arthurdejong.org/python-stdnum/doc/stdnum.luhn.html>`_
+      `Luhn check digit <https://arthurdejong.org/python-stdnum/doc/stdnum.luhn.html>`_
       to the response.
 
    .. attribute:: policy
@@ -315,7 +315,7 @@ The Device class
       provisioned.
       `RFC 6030 <https://tools.ietf.org/html/rfc6030#section-4.3.1>`__
       prescribes that the value is of the form ``oath.prefix`` for `OATH
-      Manufacturer Prefixes <http://www.openauthentication.org/oath-id/prefixes/>`_
+      Manufacturer Prefixes <https://openauthentication.org/oath-manufacturers/>`_
       or ``iana.organisation`` for `IANA Private Enterprise Numbers
       <https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers>`_
       however, it is generally just a string.
