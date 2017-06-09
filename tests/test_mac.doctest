@@ -1,0 +1,126 @@
+test_mac.doctest - test various mac schemes
+
+Copyright (C) 2017 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+>>> import hashlib
+
+>>> from pskc.mac import mac, mac_key_length
+
+
+The module supports a wide variety of HMAC algorithms.
+
+
+Some test cases from RFC 2202 for HMAC-MD5 and HMAC-SHA-1.
+
+>>> key = a2b_hex('0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b')
+>>> b2a_hex(mac('HMAC-MD5', key, b'Hi There'))
+'9294727a3638bb1c13f48ef8158bfc9d'
+>>> b2a_hex(mac('HMAC-MD5', b'Jefe', b'what do ya want for nothing?'))
+'750c783e6ab0b503eaa86e310a5db738'
+
+>>> key = a2b_hex('0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b')
+>>> b2a_hex(mac('HMAC-SHA-1', key, b'Hi There'))
+'b617318655057264e28bc0b6fb378c8ef146be00'
+>>> b2a_hex(mac('HMAC-SHA-1', b'Jefe', b'what do ya want for nothing?'))
+'effcdf6ae5eb2fa2d27416d5f184df9c259a7c79'
+
+
+Some test cases from RFC 4231 for HMAC-SHA-224, HMAC-SHA-256, HMAC-SHA-384
+and HMAC-SHA-512.
+
+>>> key = a2b_hex('0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b')
+>>> data = b'Hi There'
+>>> b2a_hex(mac('HMAC-SHA-224', key, data))
+'896fb1128abbdf196832107cd49df33f47b4b1169912ba4f53684b22'
+>>> b2a_hex(mac('HMAC-SHA-256', key, data))
+'b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7'
+>>> b2a_hex(mac('HMAC-SHA-384', key, data))
+'afd03944d84895626b0825f4ab46907f15f9dadbe4101ec682aa034c7cebc59cfaea9ea9076ede7f4af152e8b2fa9cb6'
+>>> b2a_hex(mac('HMAC-SHA-512', key, data))
+'87aa7cdea5ef619d4ff0b4241a1d6cb02379f4e2ce4ec2787ad0b30545e17cdedaa833b7d6b8a702038b274eaea3f4e4be9d914eeb61f1702e696c203a126854'
+
+>>> key = b'Jefe'
+>>> data = b'what do ya want for nothing?'
+>>> b2a_hex(mac('HMAC-SHA-224', key, data))
+'a30e01098bc6dbbf45690f3a7e9e6d0f8bbea2a39e6148008fd05e44'
+>>> b2a_hex(mac('HMAC-SHA-256', key, data))
+'5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843'
+>>> b2a_hex(mac('HMAC-SHA-384', key, data))
+'af45d2e376484031617f78d2b58a6b1b9c7ef464f5a01b47e42ec3736322445e8e2240ca5e69e2c78b3239ecfab21649'
+>>> b2a_hex(mac('HMAC-SHA-512', key, data))
+'164b7a7bfcf819e2e395fbe73b56e0a387bd64222e831fd610270cd7ea2505549758bf75c05a994a6d034f65f8f0e6fdcaeab1a34d4a6b4b636e070a38bce737'
+
+
+Some test cases from RFC 2857 for HMAC-RIPEMD160 but not all versions of
+hashlib have RIPEMD-160.
+
+>>> if 'ripemd160' in hashlib.algorithms_available:
+...     key = a2b_hex('0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b')
+...     b2a_hex(mac('HMAC-RIPEMD160', key, b'Hi There')) == \
+...         '24cb4bd67d20fc1a5d2ed7732dcc39377f0a5668'
+...     b2a_hex(mac('HMAC-RIPEMD160', b'Jefe', b'what do ya want for nothing?')) == \
+...         'dda6c0213a485a9e24f4742064a7f033b43c4069'
+... else:
+...     True  # some hashlib implementations
+...     True  # do not have RIPEMD-160
+True
+True
+
+
+Some recommended minimal key lengths for some algorithms.
+
+>>> mac_key_length('HMAC-MD5')
+16
+>>> mac_key_length('HMAC-SHA-1')
+20
+>>> mac_key_length('HMAC-SHA-224')
+28
+>>> mac_key_length('HMAC-SHA-256')
+32
+>>> mac_key_length('HMAC-SHA-384')
+48
+>>> mac_key_length('HMAC-SHA-512')
+64
+
+
+Unknown algorithms should raise an exception for the mac() function.
+
+>>> mac('unknown', b'FOO', b'BAR')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: Unsupported MAC algorithm: 'unknown'
+>>> mac('hmac-unknown', b'FOO', b'BAR')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: Unsupported MAC algorithm: 'hmac-unknown'
+
+
+The mac_key_length() function should return a default value for unknown
+MACs.
+
+>>> mac_key_length('unknown')
+16
+>>> mac_key_length('hmac-unknown')
+16

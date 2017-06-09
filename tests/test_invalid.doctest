@@ -1,6 +1,6 @@
 test_invalid.doctest - test for invalid PSKC file
 
-Copyright (C) 2014-2016 Arthur de Jong
+Copyright (C) 2014-2017 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -141,6 +141,16 @@ Specify an unknown PBKDF2 PRF (pseudorandom function).
 Traceback (most recent call last):
     ...
 KeyDerivationError: Pseudorandom function unsupported: 'unknown'
+
+
+Specify an unknown hash for the HMAC for the PBKDF2 PRF.
+
+>>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
+>>> pskc.encryption.derivation.pbkdf2_prf = 'hmac-unknown'
+>>> pskc.encryption.derive_key('qwerty')  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+KeyDerivationError: Pseudorandom function unsupported: 'hmac-unknown'
 
 
 There is a ValueMAC element but no MACMethod element.

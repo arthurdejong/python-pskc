@@ -1,7 +1,7 @@
 # encryption.py - module for handling encrypted values
 # coding: utf-8
 #
-# Copyright (C) 2014-2016 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -144,21 +144,21 @@ class KeyDerivation(object):
 
     def derive_pbkdf2(self, password):
         from Crypto.Protocol.KDF import PBKDF2
-        from pskc.mac import get_hmac
-        from pskc.exceptions import KeyDerivationError
+        from pskc.mac import get_mac_fn
+        from pskc.exceptions import DecryptionError, KeyDerivationError
         prf = None
         if self.pbkdf2_prf:
-            prf = get_hmac(self.pbkdf2_prf)
-            if prf is None:
-                raise KeyDerivationError(
-                    'Pseudorandom function unsupported: %r' %
-                    self.pbkdf2_prf)
+            prf = get_mac_fn(self.pbkdf2_prf)
         if not all((password, self.pbkdf2_salt, self.pbkdf2_key_length,
                    self.pbkdf2_iterations)):
             raise KeyDerivationError('Incomplete PBKDF2 configuration')
-        return PBKDF2(
-            password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
-            count=self.pbkdf2_iterations, prf=prf)
+        try:
+            return PBKDF2(
+                password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
+                count=self.pbkdf2_iterations, prf=prf)
+        except DecryptionError:
+            raise KeyDerivationError(
+                    'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
 
     def derive(self, password):
         """Derive a key from the password."""

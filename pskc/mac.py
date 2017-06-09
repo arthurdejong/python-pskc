@@ -1,7 +1,7 @@
 # mac.py - module for checking value signatures
 # coding: utf-8
 #
-# Copyright (C) 2014-2016 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -32,36 +32,46 @@ with the PSKC encryption key.
 import re
 
 
-_hmac_url_re = re.compile(r'^.*#hmac-(?P<hash>[a-z0-9]+)$')
+_hmac_url_re = re.compile(r'^(.*#)?hmac-(?P<hash>[a-z0-9-]+)$')
 
 
-def get_hash(algorithm):
-    """Return the hash function for the specifies HMAC algorithm."""
+def _get_hash_obj(algorithm, *args):
+    """Return an instantiated hash object."""
     import hashlib
-    match = _hmac_url_re.search(algorithm)
-    if match:
-        return getattr(hashlib, match.group('hash'), None)
-
-
-def get_hmac(algorithm):
-    """Return an HMAC function that takes a secret and a value and returns a
-    digest."""
-    import hmac
-    digestmod = get_hash(algorithm)
-    if digestmod is not None:
-        return lambda key, value: hmac.new(key, value, digestmod).digest()
-
-
-def get_mac(algorithm, key, value):
-    """Generate the MAC value over the specified value."""
+    from pskc.algorithms import normalise_algorithm
     from pskc.exceptions import DecryptionError
-    if algorithm is None:
-        raise DecryptionError('No MAC algorithm set')
-    hmacfn = get_hmac(algorithm)
-    if hmacfn is None:
-        raise DecryptionError(
-            'Unsupported MAC algorithm: %r' % algorithm)
-    return hmacfn(key, value)
+    match = _hmac_url_re.search(normalise_algorithm(algorithm) or '')
+    if match:
+        try:
+            return hashlib.new(match.group('hash'), *args)
+        except ValueError:
+            pass
+    raise DecryptionError('Unsupported MAC algorithm: %r' % algorithm)
+
+
+def get_mac_fn(algorithm):
+    """Return a function that takes a key and a value and returns an HMAC for
+    the specified algorithm."""
+    import hmac
+    return lambda key, value: hmac.new(
+        key, value,
+        lambda *args: _get_hash_obj(algorithm, *args)).digest()
+
+
+def mac(algorithm, key, value):
+    """Generate the MAC value over the specified value."""
+    return get_mac_fn(algorithm)(key, value)
+
+
+def mac_key_length(algorithm):
+    """Recommended minimal key length in bytes for the set algorithm."""
+    # https://tools.ietf.org/html/rfc2104#section-3
+    # an HMAC key should be at least as long as the hash output length
+    from pskc.exceptions import DecryptionError
+    try:
+        return int(_get_hash_obj(algorithm).digest_size)
+    except DecryptionError:
+        return 16  # fallback value
 
 
 class MAC(object):
@@ -110,17 +120,11 @@ class MAC(object):
     @property
     def algorithm_key_length(self):
         """Recommended minimal key length in bytes for the set algorithm."""
-        # https://tools.ietf.org/html/rfc2104#section-3
-        # an HMAC key should be at least as long as the hash output length
-        hashfn = get_hash(self.algorithm)
-        if hashfn is not None:
-            return int(hashfn().digest_size)
-        else:
-            return 16
+        return mac_key_length(self.algorithm)
 
     def generate_mac(self, value):
         """Generate the MAC over the specified value."""
-        return get_mac(self.algorithm, self.key, value)
+        return mac(self.algorithm, self.key, value)
 
     def setup(self, key=None, algorithm=None):
         """Configure an encrypted MAC key.
