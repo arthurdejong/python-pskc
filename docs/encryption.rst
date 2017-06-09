@@ -52,10 +52,14 @@ The Encryption class
 
    .. attribute:: algorithm
 
-      A URI of the encryption algorithm used. Setting a value for this
-      attribute will result in an attempt to use the canonical URI for this
-      algorithm. For instance setting a `3DES-CBC` value will automatically
-      be converted to `http://www.w3.org/2001/04/xmlenc#aes128-cbc`.
+      A URI of the encryption algorithm used. See the section
+      :ref:`encryption-algorithms` below for a list of algorithms URIs.
+
+      Assigned values to this attribute will be converted to the canonical
+      URI for the algorithm if it is known. For instance, the value
+      ``3DES-CBC`` will automatically be converted into
+      ``http://www.w3.org/2001/04/xmlenc#tripledes-cbc``.
+
 
    .. attribute:: key_names
 
@@ -138,3 +142,27 @@ The Encryption class
 
       By default 12000 iterations will be used and a random salt with the
       length of the to-be-generated encryption key will be used.
+
+
+.. _encryption-algorithms:
+
+Supported encryption algorithms
+-------------------------------
+
+The following encryption algorithms are currently supported by python-pskc.
+
++----------------------------------------------------+-----------------------------------------------------+
+| URI                                                | Description                                         |
++====================================================+=====================================================+
+| ``http://www.w3.org/2001/04/xmlenc#aes128-cbc``    | AES encryption in CBC mode with various key lengths |
+| ``http://www.w3.org/2001/04/xmlenc#aes192-cbc``    |                                                     |
+| ``http://www.w3.org/2001/04/xmlenc#aes256-cbc``    |                                                     |
++----------------------------------------------------+-----------------------------------------------------+
+| ``http://www.w3.org/2001/04/xmlenc#kw-aes128``     | AES key wrap with various key lengths               |
+| ``http://www.w3.org/2001/04/xmlenc#kw-aes192``     |                                                     |
+| ``http://www.w3.org/2001/04/xmlenc#kw-aes256``     |                                                     |
++----------------------------------------------------+-----------------------------------------------------+
+| ``http://www.w3.org/2001/04/xmlenc#tripledes-cbc`` | Triple DES (3DES) encryption in CBC mode            |
++----------------------------------------------------+-----------------------------------------------------+
+| ``http://www.w3.org/2001/04/xmlenc#kw-tripledes``  | Triple DES (3DES) key wrap                          |
++----------------------------------------------------+-----------------------------------------------------+

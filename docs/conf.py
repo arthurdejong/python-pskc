@@ -29,7 +29,8 @@ import pskc
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
      'sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.todo',
-     'sphinx.ext.coverage', 'sphinx.ext.autosummary'
+     'sphinx.ext.coverage', 'sphinx.ext.autosummary',
+     'sphinx.ext.intersphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -132,7 +133,7 @@ html_theme = 'default'
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%Y-%m-%d'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -189,3 +190,5 @@ man_pages = [
 
 # If true, show URL addresses after external links.
 #man_show_urls = False
+
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
