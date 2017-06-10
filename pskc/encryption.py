@@ -135,12 +135,34 @@ class KeyDerivation(object):
     """
 
     def __init__(self):
-        self.algorithm = None
+        self._algorithm = None
         # PBKDF2 properties
         self.pbkdf2_salt = None
         self.pbkdf2_iterations = None
         self.pbkdf2_key_length = None
-        self.pbkdf2_prf = None
+        self._pbkdf2_prf = None
+
+    @property
+    def algorithm(self):
+        """Provide the key derivation algorithm used."""
+        if self._algorithm:
+            return self._algorithm
+
+    @algorithm.setter
+    def algorithm(self, value):
+        from pskc.algorithms import normalise_algorithm
+        self._algorithm = normalise_algorithm(value)
+
+    @property
+    def pbkdf2_prf(self):
+        """Provide the PBKDF2 pseudorandom function used."""
+        if self._pbkdf2_prf:
+            return self._pbkdf2_prf
+
+    @pbkdf2_prf.setter
+    def pbkdf2_prf(self, value):
+        from pskc.algorithms import normalise_algorithm
+        self._pbkdf2_prf = normalise_algorithm(value)
 
     def derive_pbkdf2(self, password):
         from Crypto.Protocol.KDF import PBKDF2
@@ -174,8 +196,7 @@ class KeyDerivation(object):
     def setup_pbkdf2(self, password, salt=None, salt_length=16,
                      key_length=None, iterations=None, prf=None):
         from Crypto import Random
-        from pskc.algorithms import normalise_algorithm
-        self.algorithm = normalise_algorithm('pbkdf2')
+        self.algorithm = 'pbkdf2'
         if salt is None:
             salt = Random.get_random_bytes(salt_length)
         self.pbkdf2_salt = salt
@@ -186,7 +207,7 @@ class KeyDerivation(object):
         if key_length:  # pragma: no branch (always specified)
             self.pbkdf2_key_length = key_length
         if prf:
-            self.pbkdf2_prf = normalise_algorithm(prf)
+            self.pbkdf2_prf = prf
         return self.derive_pbkdf2(password)
 
 

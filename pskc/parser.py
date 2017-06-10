@@ -21,7 +21,6 @@
 """Module for parsing PSKC files."""
 
 
-from pskc.algorithms import normalise_algorithm
 from pskc.exceptions import ParseError
 from pskc.xml import (
     find, findall, findbin, findint, findtext, findtime, getbool, getint,
@@ -99,8 +98,7 @@ class PSKCParser(object):
             # pseudorandom function used
             prf = find(pbkdf2, 'PRF')
             if prf is not None:
-                derivation.pbkdf2_prf = normalise_algorithm(
-                    prf.get('Algorithm'))
+                derivation.pbkdf2_prf = prf.get('Algorithm')
 
     @classmethod
     def parse_mac_method(cls, mac, mac_method):
