@@ -1,7 +1,7 @@
 # key.py - module for handling keys from pskc files
 # coding: utf-8
 #
-# Copyright (C) 2014-2016 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -275,3 +275,8 @@ class Key(object):
                 self.secret, self.counter, self.time_offset,
                 self.time_interval, self.time_drift)):
             return True
+
+    @property
+    def userid(self):
+        """User identifier (either the key or device userid)."""
+        return self.key_userid or self.device_userid

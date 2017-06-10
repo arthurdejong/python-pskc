@@ -223,6 +223,12 @@ The Key class
       The distinguished name of the user associated with the key.
       Also see :attr:`~pskc.device.Device.device_userid`.
 
+   .. attribute:: userid
+
+      The distinguished name of the user associated with the key or the device,
+      taken from :attr:`key_userid` or :attr:`~pskc.device.Device.device_userid`
+      whichever one is defined.
+
    .. attribute:: algorithm_suite
 
       Additional algorithm-specific characteristics. For example, in an

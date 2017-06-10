@@ -56,7 +56,7 @@ datetime.datetime(2009, 1, 22, 0, 25, 11, tzinfo=tzutc())
 44
 >>> b2a_hex(key.secret)
 '2b7e151628aed2a6abf7158809cf4f3c'
->>> key.key_userid
+>>> key.userid
 'CN=ekhgjhbctrgn, UID=ca62baca62ba'
 
 
@@ -88,7 +88,7 @@ datetime.datetime(2009, 1, 22, 0, 25, 10, tzinfo=tzutc())
 44
 >>> b2a_hex(key.secret)
 '5698356d30868c4201e26f66c582bb45'
->>> key.key_userid
+>>> key.userid
 'CN=ekhgjhbctrgn, UID=ca62baca62ba'
 >>> key = pskc.keys[1]  # second key
 >>> key.manufacturer
@@ -111,7 +111,7 @@ datetime.datetime(2009, 1, 22, 0, 25, 10, tzinfo=tzutc())
 44
 >>> b2a_hex(key.secret)
 '38892b82abf1807788458fc5a5165c80'
->>> key.key_userid
+>>> key.userid
 'CN=ekhgjhbctrgn, UID=ca62baca62ba'
 
 
@@ -143,7 +143,7 @@ datetime.datetime(2009, 1, 22, 0, 25, 9, tzinfo=tzutc())
 40
 >>> b2a_hex(key.secret)
 '2b7e151628aed2a6abf7158809cf4f3c'
->>> key.key_userid
+>>> key.userid
 'CN=ekhgjhbctrgn, UID=ca62baca62ba'
 
 # TODO: support extensions
