@@ -60,7 +60,7 @@ def parse(source):
 def remove_namespaces(tree):
     """Remove namespaces from all elements in the tree."""
     import re
-    for elem in tree.getiterator():
+    for elem in tree.iter():
         if isinstance(elem.tag, ''.__class__):  # pragma: no branch
             elem.tag = re.sub(r'^\{[^}]*\}', '', elem.tag)
 
