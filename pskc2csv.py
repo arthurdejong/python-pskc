@@ -58,6 +58,7 @@ class VersionAction(argparse.Action):
         print(version_string)
         parser.exit()
 
+
 epilog = '''
 supported columns:
   id, serial, secret, counter, time_offset, time_interval, interval,
@@ -93,6 +94,8 @@ parser.add_argument(
 # Python 3 compatible version of b2a_hex
 def decode(f):
     return lambda x: str(f(x).decode())
+
+
 b2a_hex = decode(b2a_hex)
 
 

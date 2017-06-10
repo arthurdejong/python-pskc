@@ -31,6 +31,8 @@ class PSKCParser(object):
 
     @classmethod
     def parse_file(cls, pskc, filename):
+        """Parse the provided file and store information in the existing
+        PSKC instance."""
         try:
             tree = parse(filename)
         except Exception:
@@ -136,7 +138,8 @@ class PSKCParser(object):
         """Read key information from the provided <KeyPackage> tree."""
 
         key.id = key_elm.get('Id') or key_elm.get('KeyId')
-        key.algorithm = key_elm.get('Algorithm') or key_elm.get('KeyAlgorithm')
+        key.algorithm = (
+            key_elm.get('Algorithm') or key_elm.get('KeyAlgorithm'))
 
         data = find(key_elm, 'Data')
         if data is not None:

@@ -1,7 +1,7 @@
 # xml.py - module for parsing and writing XML for PSKC files
 # coding: utf-8
 #
-# Copyright (C) 2014-2016 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -47,9 +47,13 @@ namespaces = dict(
 )
 
 
-# register the namespaces so the correct short names will be used
-for ns, namespace in namespaces.items():
-    etree.register_namespace(ns, namespace)
+def register_namespaces():
+    """Register the namespaces so the correct short names will be used."""
+    for ns, namespace in namespaces.items():
+        etree.register_namespace(ns, namespace)
+
+
+register_namespaces()
 
 
 def parse(source):

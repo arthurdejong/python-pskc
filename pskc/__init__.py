@@ -86,6 +86,7 @@ class PSKC(object):
 
     @property
     def keys(self):
+        """list of keys"""
         return tuple(key for device in self.devices for key in device.keys)
 
     def add_device(self, **kwargs):

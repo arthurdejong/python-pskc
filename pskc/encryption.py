@@ -172,7 +172,7 @@ class KeyDerivation(object):
         if self.pbkdf2_prf:
             prf = get_mac_fn(self.pbkdf2_prf)
         if not all((password, self.pbkdf2_salt, self.pbkdf2_key_length,
-                   self.pbkdf2_iterations)):
+                    self.pbkdf2_iterations)):
             raise KeyDerivationError('Incomplete PBKDF2 configuration')
         try:
             return PBKDF2(
@@ -180,7 +180,7 @@ class KeyDerivation(object):
                 count=self.pbkdf2_iterations, prf=prf)
         except DecryptionError:
             raise KeyDerivationError(
-                    'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
+                'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
 
     def derive(self, password):
         """Derive a key from the password."""

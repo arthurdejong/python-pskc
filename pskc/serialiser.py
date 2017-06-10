@@ -1,7 +1,7 @@
 # serialiser.py - PSKC file parsing functions
 # coding: utf-8
 #
-# Copyright (C) 2016 Arthur de Jong
+# Copyright (C) 2016-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -202,9 +202,10 @@ class PSKCSerialiser(object):
         # check if any policy attribute is set
         if not policy.key_usage and all(x is None for x in (
                 policy.start_date, policy.expiry_date,
-                policy.number_of_transactions, policy.pin_key_id, policy.pin_usage,
-                policy.pin_max_failed_attemtps, policy.pin_min_length,
-                policy.pin_max_length, policy.pin_encoding)):
+                policy.number_of_transactions, policy.pin_key_id,
+                policy.pin_usage, policy.pin_max_failed_attemtps,
+                policy.pin_min_length, policy.pin_max_length,
+                policy.pin_encoding)):
             return
         policy_elm = mk_elem(key_elm, 'pskc:Policy', empty=True)
         mk_elem(policy_elm, 'pskc:StartDate', policy.start_date)
