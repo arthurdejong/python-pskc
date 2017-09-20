@@ -22,6 +22,7 @@
 
 from __future__ import print_function
 import argparse
+import base64
 import csv
 import getpass
 import operator
@@ -89,21 +90,23 @@ parser.add_argument(
 parser.add_argument(
     '-s', '--secret', metavar='KEY/FILE',
     help='hex encoded encryption key or file containing the binary key')
+encodings = {
+    'hex': b2a_hex,
+    'base32': base64.b32encode,
+    'base64': base64.b64encode,
+}
+parser.add_argument(
+    '-e', '--secret-encoding', choices=sorted(encodings.keys()),
+    help='encoding used for outputting key material',
+    default='hex')
 
 
-# Python 3 compatible version of b2a_hex
-def decode(f):
-    return lambda x: str(f(x).decode())
-
-
-b2a_hex = decode(b2a_hex)
-
-
-def get_column(key, column):
+def get_column(key, column, encoding):
     """Return a string value for the given column."""
     value = operator.attrgetter(column)(key)
     if column == 'secret':
-        return b2a_hex(value)
+        # Python 3 compatible construct for outputting a string
+        return str(encodings[encoding](value).decode())
     return value
 
 
@@ -149,4 +152,5 @@ if __name__ == '__main__':
         csvfile.writerow(args.columns)
         for key in pskcfile.keys:
             csvfile.writerow([
-                get_column(key, column) for column in args.columns])
+                get_column(key, column, args.secret_encoding)
+                for column in args.columns])
