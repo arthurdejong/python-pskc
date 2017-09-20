@@ -192,8 +192,7 @@ class PSKCSerialiser(object):
                     dt.value_mac).decode())
             elif dt.pskc.mac.algorithm:
                 mk_elem(element, 'pskc:ValueMAC', base64.b64encode(
-                    dt.pskc.mac.generate_mac(dt.cipher_value)
-                ).decode())
+                    dt.pskc.mac.generate_mac(dt.cipher_value)).decode())
         else:
             mk_elem(element, 'pskc:PlainValue', dt._to_text(dt.value))
 

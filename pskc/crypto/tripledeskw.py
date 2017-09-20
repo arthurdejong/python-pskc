@@ -26,11 +26,11 @@ from Crypto import Random
 from Crypto.Cipher import DES3
 from Crypto.Hash import SHA
 
-from pskc.exceptions import EncryptionError, DecryptionError
+from pskc.exceptions import DecryptionError, EncryptionError
 
 
 def _cms_hash(value):
-    """The key checksum algorithm described in RFC 3217 section 2."""
+    """Return the key hash algorithm described in RFC 3217 section 2."""
     return SHA.new(value).digest()[:8]
 
 
@@ -42,7 +42,8 @@ def wrap(plaintext, key, iv=None):
 
     This uses the algorithm from RFC 3217 to encrypt the plaintext (the key
     to wrap) using the provided key. If the iv is None, it is randomly
-    generated."""
+    generated.
+    """
     if len(plaintext) % DES3.block_size != 0:
         raise EncryptionError('Plaintext length wrong')
     if iv is None:
@@ -57,7 +58,8 @@ def unwrap(ciphertext, key):
     """Unwrap a key (typically Triple DES key ) with another Triple DES key.
 
     This uses the algorithm from RFC 3217 to decrypt the ciphertext (the
-    previously wrapped key) using the provided key."""
+    previously wrapped key) using the provided key.
+    """
     if len(ciphertext) % DES3.block_size != 0:
         raise DecryptionError('Ciphertext length wrong')
     cipher = DES3.new(key, DES3.MODE_CBC, RFC3217_IV)

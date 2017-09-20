@@ -136,7 +136,7 @@ class Policy(object):
 
     @property
     def pin_key(self):
-        """Reference to the PSKC Key that holds the PIN (if any)."""
+        """Provide the PSKC Key that holds the PIN (if any)."""
         if self.pin_key_id and self.key and self.key.device.pskc:
             for key in self.key.device.pskc.keys:
                 if key.id == self.pin_key_id:
@@ -144,7 +144,7 @@ class Policy(object):
 
     @property
     def pin(self):
-        """PIN value referenced by PINKeyId if any."""
+        """Provide the PIN value referenced by PINKeyId if any."""
         key = self.pin_key
         if key:
             return str(key.secret.decode())

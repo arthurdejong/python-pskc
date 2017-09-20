@@ -153,8 +153,10 @@ class PSKCParser(object):
             name = data.get('Name')
             if name:
                 cls.parse_datatype(dict(
-                    secret=key._secret, counter=key._counter,
-                    time=key._time_offset, time_interval=key._time_interval
+                    secret=key._secret,
+                    counter=key._counter,
+                    time=key._time_offset,
+                    time_interval=key._time_interval,
                 ).get(name.lower()), data)
 
         key.issuer = findtext(key_elm, 'Issuer')

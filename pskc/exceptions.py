@@ -23,6 +23,7 @@
 
 class PSKCError(Exception):
     """General top-level exception."""
+
     pass
 
 
@@ -30,12 +31,15 @@ class ParseError(PSKCError):
     """Something went wrong with parsing the PSKC file.
 
     Either the file is invalid XML or required elements or attributes are
-    missing."""
+    missing.
+    """
+
     pass
 
 
 class EncryptionError(PSKCError):
     """There was a problem encrypting the value."""
+
     pass
 
 
@@ -43,10 +47,13 @@ class DecryptionError(PSKCError):
     """There was a problem decrypting the value.
 
     The encrypted value as available but something went wrong with decrypting
-    it."""
+    it.
+    """
+
     pass
 
 
 class KeyDerivationError(PSKCError):
     """There was a problem performing the key derivation."""
+
     pass

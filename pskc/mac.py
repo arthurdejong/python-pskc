@@ -92,7 +92,7 @@ class MAC(object):
 
     @property
     def key(self):
-        """Provides access to the MAC key binary value if available."""
+        """Provide access to the MAC key binary value if available."""
         if self.key_plain_value:
             return self.key_plain_value
         elif self.key_cipher_value:

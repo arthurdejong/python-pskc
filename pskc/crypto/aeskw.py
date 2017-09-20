@@ -26,7 +26,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.number import bytes_to_long, long_to_bytes
 from Crypto.Util.strxor import strxor
 
-from pskc.exceptions import EncryptionError, DecryptionError
+from pskc.exceptions import DecryptionError, EncryptionError
 
 
 def _split(value):
