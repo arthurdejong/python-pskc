@@ -250,6 +250,18 @@ signature to sign the PSKC file. Note that python-pskc currently does not yet
 support checking this signature so this test is very limited.
 
 >>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure8.pskcxml')
+>>> pskc.signature.is_signed
+True
+>>> pskc.signature.canonicalization_method
+'http://www.w3.org/2001/10/xml-exc-c14n#'
+>>> pskc.signature.algorithm
+'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
+>>> pskc.signature.digest_algorithm
+'http://www.w3.org/2000/09/xmldsig#sha1'
+>>> pskc.signature.issuer
+'CN=Example.com,C=US'
+>>> pskc.signature.serial
+'12345678'
 >>> key = pskc.keys[0]
 >>> key.manufacturer
 'TokenVendorAcme'
