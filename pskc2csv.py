@@ -81,8 +81,9 @@ parser.add_argument(
     '-o', '--output', metavar='FILE',
     help='write CSV to file instead of stdout')
 parser.add_argument(
-    '-c', '--columns', metavar='COL,COL', type=lambda x: x.split(','),
-    help='list of columns to export',
+    '-c', '--columns', metavar='COL:LABEL,COL,..',
+    type=lambda x: [column.split(':', 1) for column in x.split(',')],
+    help='list of columns with optional labels to export',
     default='serial,secret,algorithm,response_length,time_interval')
 parser.add_argument(
     '-p', '--password', '--passwd', metavar='PASS/FILE',
@@ -149,8 +150,8 @@ if __name__ == '__main__':
     # open output CSV file, write header and keys
     with open(args.output, 'wb') if args.output else sys.stdout as output:
         csvfile = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
-        csvfile.writerow(args.columns)
+        csvfile.writerow([column[-1] for column in args.columns])
         for key in pskcfile.keys:
             csvfile.writerow([
-                get_column(key, column, args.secret_encoding)
+                get_column(key, column[0], args.secret_encoding)
                 for column in args.columns])
