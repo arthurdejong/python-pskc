@@ -73,7 +73,7 @@ class PSKCSerialiser(object):
             if derivation.pbkdf2_salt:
                 salt = mk_elem(pbkdf2, 'Salt', empty=True)
                 mk_elem(salt, 'Specified',
-                        base64.b64encode(derivation.pbkdf2_salt))
+                        base64.b64encode(derivation.pbkdf2_salt).decode())
             mk_elem(pbkdf2, 'IterationCount', derivation.pbkdf2_iterations)
             mk_elem(pbkdf2, 'KeyLength', derivation.pbkdf2_key_length)
             mk_elem(pbkdf2, 'PRF', derivation.pbkdf2_prf)

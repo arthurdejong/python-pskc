@@ -1,6 +1,6 @@
 test_write.doctest - tests for writing PSKC files
 
-Copyright (C) 2014-2016 Arthur de Jong
+Copyright (C) 2014-2017 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -339,7 +339,9 @@ Use PBKDF2 to derive a key instead of using a pre-shared key.
 ...     id='1', serial='123456', secret='1234', counter=42)
 >>> pskc.encryption.setup_pbkdf2(
 ...     'passphrase', key_name='Passphrase')
->>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
+>>> pskc.write(f.name)
+>>> with open(f.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
  <pskc:EncryptionKey>
@@ -386,6 +388,22 @@ Use PBKDF2 to derive a key instead of using a pre-shared key.
   </pskc:Key>
  </pskc:KeyPackage>
 </pskc:KeyContainer>
+
+
+Read the generated file back in and verify that it matches the original data.
+
+>>> newpskc = PSKC(f.name)
+>>> newpskc.encryption.algorithm == pskc.encryption.algorithm
+True
+>>> newpskc.encryption.derive_key('passphrase')
+>>> all(newkey.check() for newkey in newpskc.keys)
+True
+>>> key = pskc.keys[0]
+>>> newkey = newpskc.keys[0]
+>>> newkey.secret == key.secret
+True
+>>> newkey.counter == key.counter
+True
 
 
 Test encryption and decryption of the generated file to test encryption/
