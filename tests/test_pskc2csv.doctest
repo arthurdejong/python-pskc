@@ -1,0 +1,185 @@
+test_pskc2csv.doctest - tests for the pskc2csv script
+
+Copyright (C) 2017 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex
+>>> import getpass
+>>> import shlex
+>>> import sys
+>>> import tempfile
+
+>>> from pskc import PSKC
+>>> from pskc2csv import main
+
+
+Sadly we cannot test --help and --version properly because argparse calls
+exit(0) which doctest does not like.
+
+>>> sys.argv = shlex.split('pskc2csv --help')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+SystemExit: 0
+>>> sys.argv = shlex.split('pskc2csv --version')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+SystemExit: 0
+
+
+We can output a CSV file with some columns with the just default arguments.
+
+>>> sys.argv = shlex.split('pskc2csv tests/rfc6030/figure5.pskcxml')
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+987654321,31323334,urn:ietf:params:xml:ns:keyprov:pskc:pin,4,
+
+
+We can also save the output to a file.
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure5.pskcxml --output') + [f.name]
+>>> main()
+>>> with open(f.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+987654321,31323334,urn:ietf:params:xml:ns:keyprov:pskc:pin,4,
+
+
+We can specify the columns to output with the --columns option and this also
+allows specifying custom CSV file column headers.
+
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure5.pskcxml' +
+...     ' --columns id:NUMBER,secret,counter,policy.pin_min_length')
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+NUMBER,secret,counter,policy.pin_min_length
+12345678,3132333435363738393031323334353637383930,0,4
+123456781,31323334,,
+
+
+For password-encrypted files we should be prompted on the command line for a
+password if the --password option was not specified. The prompt should
+include the key name if one is present in the PSKC file. The --password
+option can specify a literal password on the command line of point to a file
+containing the password.
+
+>>> getpass.getpass = lambda x: 'qwerty' if 'My Password 1' in x else 'WRONG'
+>>> sys.argv = shlex.split('pskc2csv tests/rfc6030/figure7.pskcxml')
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+
+>>> getpass.getpass = lambda x: 'WRONGPASSWORD'
+>>> sys.argv = shlex.split('pskc2csv tests/rfc6030/figure7.pskcxml')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: ...
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc = PSKC()
+>>> key = pskc.add_key(secret='1234')
+>>> pskc.encryption.setup_pbkdf2('qwerty')
+>>> pskc.write(f.name)
+>>> getpass.getpass = lambda x: 'qwerty'
+>>> sys.argv = shlex.split('pskc2csv') + [f.name]
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+,31323334,,,
+
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure7.pskcxml --password qwerty')
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> with open(f.name, 'w') as f2:  # open second file to keep tempfile
+...     x = f2.write('qwerty\n')
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure7.pskcxml --password') + [f.name]
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+
+
+For PSKC files that are encrypted with a pre-shared key we can use --secret
+option to either supply a hex-encoded secret or point to a file name that
+holds the secret.
+
+>>> sys.argv = shlex.split('pskc2csv tests/rfc6030/figure6.pskcxml')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+KeyDerivationError: ...
+
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure6.pskcxml' +
+...     ' --secret 12345678901234567890123456789012')
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> with open(f.name, 'wb') as f2:  # open second file to keep tempfile
+...     x = f2.write(a2b_hex('12345678901234567890123456789012'))
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure6.pskcxml --secret') + [f.name]
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval
+987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+
+
+The --secret-encoding option can be used to specify the output encoding of
+the secret (HEX, BASE64 or BASE32).
+
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure5.pskcxml' +
+...     ' -c serial,secret -e base64')
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret
+987654321,MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+987654321,MTIzNA==
+
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure5.pskcxml' +
+...     ' -c serial,secret -e base32')
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret
+987654321,GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ
+987654321,GEZDGNA=
+
+
+Corner-case test: we an also handle empty PSKC files.
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> with open(f.name, 'w') as f2:  # open second file to keep tempfile
+...     x = f2.write('''
+... <?xml version="1.0"?>
+... <KeyContainer xmlns="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+...   <KeyPackage/>
+... </KeyContainer>
+... '''.strip())
+>>> sys.argv = shlex.split('pskc2csv') + [f.name]
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+serial,secret,algorithm,response_length,time_interval

@@ -122,7 +122,7 @@ def is_encrypted(pskcfile):
     return False
 
 
-if __name__ == '__main__':
+def main():
     # parse command-line arguments
     args = parser.parse_args()
     # open and parse input PSKC file
@@ -148,10 +148,14 @@ if __name__ == '__main__':
         passwd = getpass.getpass(prompt)
         pskcfile.encryption.derive_key(passwd)
     # open output CSV file, write header and keys
-    with open(args.output, 'wb') if args.output else sys.stdout as output:
-        csvfile = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
-        csvfile.writerow([column[-1] for column in args.columns])
-        for key in pskcfile.keys:
-            csvfile.writerow([
-                get_column(key, column[0], args.secret_encoding)
-                for column in args.columns])
+    output = open(args.output, 'w') if args.output else sys.stdout
+    csvfile = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
+    csvfile.writerow([column[-1] for column in args.columns])
+    for key in pskcfile.keys:
+        csvfile.writerow([
+            get_column(key, column[0], args.secret_encoding)
+            for column in args.columns])
+
+
+if __name__ == '__main__':  # pragma: no cover
+    main()
