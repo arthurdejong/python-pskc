@@ -76,7 +76,10 @@ and HMAC-SHA-512.
 Some test cases from RFC 2857 for HMAC-RIPEMD160 but not all versions of
 hashlib have RIPEMD-160.
 
->>> if 'ripemd160' in hashlib.algorithms_available:
+>>> hashlib_algorithms = (
+...     getattr(hashlib, 'algorithms_available', None) or
+...     getattr(hashlib, 'algorithms', None))
+>>> if 'ripemd160' in hashlib_algorithms:
 ...     key = a2b_hex('0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b')
 ...     b2a_hex(mac('HMAC-RIPEMD160', key, b'Hi There')) == \
 ...         '24cb4bd67d20fc1a5d2ed7732dcc39377f0a5668'
