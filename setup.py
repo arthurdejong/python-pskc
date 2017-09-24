@@ -63,4 +63,8 @@ setup(
     ],
     packages=find_packages(),
     install_requires=['pycrypto', 'python-dateutil'],
+    extras_require={
+        'lxml':  ['lxml'],
+        'defuse':  ['defusedxml'],
+    },
 )

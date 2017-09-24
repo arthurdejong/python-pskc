@@ -25,11 +25,22 @@ This module provides some utility functions for parsing XML files.
 
 from __future__ import absolute_import
 
-# try to find a usable ElementTree module
-try:
-    from lxml import etree
+# try to find a usable ElementTree implementation
+try:  # pragma: no cover (different implementations)
+    from lxml.etree import parse as xml_parse, tostring as xml_tostring
+    from lxml.etree import register_namespace, Element, SubElement
+    try:
+        from defusedxml.lxml import parse as xml_parse  # noqa: F811
+    except ImportError:
+        pass
 except ImportError:  # pragma: no cover (different implementations)
-    import xml.etree.ElementTree as etree
+    from xml.etree.ElementTree import (
+        parse as xml_parse, tostring as xml_tostring)
+    from xml.etree.ElementTree import register_namespace, Element, SubElement
+    try:
+        from defusedxml.ElementTree import parse as xml_parse  # noqa: F811
+    except ImportError:
+        pass
 
 
 # the relevant XML namespaces for PSKC
@@ -50,7 +61,7 @@ namespaces = dict(
 def register_namespaces():
     """Register the namespaces so the correct short names will be used."""
     for ns, namespace in namespaces.items():
-        etree.register_namespace(ns, namespace)
+        register_namespace(ns, namespace)
 
 
 register_namespaces()
@@ -58,7 +69,7 @@ register_namespaces()
 
 def parse(source):
     """Parse the provided file and return an element tree."""
-    return etree.parse(source)
+    return xml_parse(source)
 
 
 def remove_namespaces(tree):
@@ -165,9 +176,9 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
         ns, name = tag.split(':', 1)
         tag = '{%s}%s' % (namespaces[ns], name)
     if parent is None:
-        element = etree.Element(tag)
+        element = Element(tag)
     else:
-        element = etree.SubElement(parent, tag)
+        element = SubElement(parent, tag)
     # set text of element
     if text is not None:
         element.text = _format(text)
@@ -188,10 +199,10 @@ def tostring(element):
         for e in element.iter():
             nsmap.update(e.nsmap)
         # replace toplevel element with all namespaces
-        e = etree.Element(element.tag, attrib=element.attrib, nsmap=nsmap)
+        e = Element(element.tag, attrib=element.attrib, nsmap=nsmap)
         for a in element:
             e.append(a)
         element = e
-    xml = etree.tostring(element, encoding='UTF-8')
+    xml = xml_tostring(element, encoding='UTF-8')
     return minidom.parseString(xml).toprettyxml(
         indent=' ', encoding='UTF-8').strip()
