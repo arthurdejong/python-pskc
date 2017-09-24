@@ -103,7 +103,7 @@ argument).
 >>> with open(f.name, 'r') as r:
 ...     x = sys.stdout.write(r.read())  #doctest: +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
  <pskc:KeyPackage>
   <pskc:DeviceInfo>
    <pskc:Manufacturer>Manufacturer</pskc:Manufacturer>
@@ -197,7 +197,7 @@ Read an encrypted PSKC file and write it out as an unencrypted file.
 >>> pskc.encryption.key_name = None
 >>> pskc.write(sys.stdout)  #doctest: +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
  <pskc:KeyPackage>
   <pskc:Key>
    <pskc:Data>
@@ -216,7 +216,7 @@ providing the encryption key.
 >>> pskc = PSKC('tests/rfc6030/figure6.pskcxml')
 >>> pskc.write(sys.stdout)  #doctest: +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+<pskc:KeyContainer xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Version="1.0">
  <pskc:EncryptionKey>
   <ds:KeyName>Pre-shared-key</ds:KeyName>
  </pskc:EncryptionKey>
@@ -274,7 +274,7 @@ Set up an encrypted PSKC file and generate a pre-shared key for it.
 >>> with open(f.name, 'r') as r:
 ...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+<pskc:KeyContainer xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Version="1.0">
  <pskc:EncryptionKey>
   <ds:KeyName>Pre-shared KEY</ds:KeyName>
  </pskc:EncryptionKey>
@@ -343,7 +343,7 @@ Use PBKDF2 to derive a key instead of using a pre-shared key.
 >>> with open(f.name, 'r') as r:
 ...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" Version="1.0">
  <pskc:EncryptionKey>
   <xenc11:DerivedKey>
    <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
@@ -488,7 +488,7 @@ result in an empty KeyDerivation element.
 >>> pskc.encryption.derivation.algorithm = 'unknown'
 >>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" Version="1.0">
  <pskc:EncryptionKey>
   <xenc11:DerivedKey>
    <xenc11:KeyDerivationMethod Algorithm="unknown"/>
@@ -511,7 +511,7 @@ We can make the PKKDF2 salt have to be transmitted out-of-bounds:
 >>> pskc.encryption.derivation.pbkdf2_salt = None
 >>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" Version="1.0">
  <pskc:EncryptionKey>
   <xenc11:DerivedKey>
    <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
@@ -541,7 +541,7 @@ set on one key end up being applied to both keys.
 >>> key = device.add_key(id='pin0', secret='5678')
 >>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer Version="1.0" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc">
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
  <pskc:KeyPackage>
   <pskc:DeviceInfo>
    <pskc:Manufacturer>TokenVendorAcme</pskc:Manufacturer>

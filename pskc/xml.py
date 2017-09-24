@@ -25,6 +25,8 @@ This module provides some utility functions for parsing XML files.
 
 from __future__ import absolute_import
 
+from collections import OrderedDict
+
 # try to find a usable ElementTree implementation
 try:  # pragma: no cover (different implementations)
     from lxml.etree import parse as xml_parse, tostring as xml_tostring
@@ -176,9 +178,9 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
         ns, name = tag.split(':', 1)
         tag = '{%s}%s' % (namespaces[ns], name)
     if parent is None:
-        element = Element(tag)
+        element = Element(tag, OrderedDict())
     else:
-        element = SubElement(parent, tag)
+        element = SubElement(parent, tag, OrderedDict())
     # set text of element
     if text is not None:
         element.text = _format(text)
@@ -189,9 +191,28 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
     return element
 
 
+def reformat(element, indent=''):
+    """Reformat the XML tree to have nice wrapping and indenting."""
+    # re-order attributes by alphabet
+    attrib = sorted(element.attrib.items())
+    element.attrib.clear()
+    element.attrib.update(attrib)
+    if len(element) == 0:
+        # clean up inner text
+        if element.text:
+            element.text = element.text.strip()
+    else:
+        # indent children
+        element.text = '\n ' + indent
+        childred = list(element)
+        for child in childred:
+            reformat(child, indent + ' ')
+        childred[-1].tail = '\n' + indent
+    element.tail = '\n' + indent
+
+
 def tostring(element):
     """Return a serialised XML document for the element tree."""
-    from xml.dom import minidom
     # if we are using lxml.etree move namespaces to toplevel element
     if hasattr(element, 'nsmap'):  # pragma: no cover (only on lxml)
         # get all used namespaces
@@ -203,6 +224,11 @@ def tostring(element):
         for a in element:
             e.append(a)
         element = e
+    reformat(element)
     xml = xml_tostring(element, encoding='UTF-8')
-    return minidom.parseString(xml).toprettyxml(
-        indent=' ', encoding='UTF-8').strip()
+    xml_decl = b"<?xml version='1.0' encoding='UTF-8'?>\n"
+    if xml.startswith(xml_decl):  # pragma: no cover (only a few cases)
+        xml = xml[len(xml_decl):]
+    return (
+        b'<?xml version="1.0" encoding="UTF-8"?>\n' +
+        xml.replace(b' />', b'/>').strip() + b'\n')
