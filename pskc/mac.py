@@ -50,18 +50,12 @@ def _get_hash_obj(algorithm, *args):
     raise DecryptionError('Unsupported MAC algorithm: %r' % algorithm)
 
 
-def get_mac_fn(algorithm):
-    """Return a function that takes a key and a value and returns an HMAC for
-    the specified algorithm."""
-    import hmac
-    return lambda key, value: hmac.new(
-        key, value,
-        lambda *args: _get_hash_obj(algorithm, *args)).digest()
-
-
 def mac(algorithm, key, value):
     """Generate the MAC value over the specified value."""
-    return get_mac_fn(algorithm)(key, value)
+    import hmac
+    return hmac.new(
+        key, value,
+        lambda *args: _get_hash_obj(algorithm, *args)).digest()
 
 
 def mac_key_length(algorithm):

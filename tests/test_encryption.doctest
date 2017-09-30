@@ -1,6 +1,6 @@
 test_encryption.doctest - test various encryption schemes
 
-Copyright (C) 2014-2016 Arthur de Jong
+Copyright (C) 2014-2017 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -77,6 +77,11 @@ DecryptionError: Invalid key length
 Traceback (most recent call last):
     ...
 DecryptionError: Invalid key length
+>>> pskc.encryption.key = a2b_hex('11111111111111111111111111111111')
+>>> pskc.keys[0].secret  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+DecryptionError: Invalid padding
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
 >>> tostr(pskc.keys[0].secret)
 '12345678901234567890'

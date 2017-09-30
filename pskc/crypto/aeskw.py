@@ -23,7 +23,8 @@
 import binascii
 import struct
 
-from Crypto.Cipher import AES
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from pskc.exceptions import DecryptionError, EncryptionError
 
@@ -71,19 +72,20 @@ def wrap(plaintext, key, iv=None, pad=None):
         else:
             iv = RFC3394_IV
 
-    encrypt = AES.new(key).encrypt
+    cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
+    encryptor = cipher.encryptor()
     n = len(plaintext) // 8
 
     if n == 1:
         # RFC 5649 shortcut
-        return encrypt(iv + plaintext)
+        return encryptor.update(iv + plaintext)
 
     A = iv
     R = [plaintext[i * 8:i * 8 + 8]
          for i in range(n)]
     for j in range(6):
         for i in range(n):
-            A, R[i] = _split(encrypt(A + R[i]))
+            A, R[i] = _split(encryptor.update(A + R[i]))
             A = _strxor(A, struct.pack('>Q', n * j + i + 1))
     return A + b''.join(R)
 
@@ -103,11 +105,12 @@ def unwrap(ciphertext, key, iv=None, pad=None):
     if len(ciphertext) % 8 != 0 or (pad is False and len(ciphertext) < 24):
         raise DecryptionError('Ciphertext length wrong')
 
-    decrypt = AES.new(key).decrypt
+    cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
+    decryptor = cipher.decryptor()
     n = len(ciphertext) // 8 - 1
 
     if n == 1:
-        A, plaintext = _split(decrypt(ciphertext))
+        A, plaintext = _split(decryptor.update(ciphertext))
     else:
         A = ciphertext[:8]
         R = [ciphertext[(i + 1) * 8:(i + 2) * 8]
@@ -115,7 +118,7 @@ def unwrap(ciphertext, key, iv=None, pad=None):
         for j in reversed(range(6)):
             for i in reversed(range(n)):
                 A = _strxor(A, struct.pack('>Q', n * j + i + 1))
-                A, R[i] = _split(decrypt(A + R[i]))
+                A, R[i] = _split(decryptor.update(A + R[i]))
         plaintext = b''.join(R)
 
     if iv is None:

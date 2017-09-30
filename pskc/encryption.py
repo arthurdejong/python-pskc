@@ -51,8 +51,30 @@ def algorithm_key_lengths(algorithm):
         raise DecryptionError('Unsupported algorithm: %r' % algorithm)
 
 
+def _decrypt_cbc(algorithm, key, ciphertext, iv=None):
+    """Decrypt the ciphertext and return the plaintext value."""
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import padding
+    from cryptography.hazmat.primitives.ciphers import Cipher, modes
+    from pskc.exceptions import DecryptionError
+    if not iv:
+        iv = ciphertext[:algorithm.block_size // 8]
+        ciphertext = ciphertext[algorithm.block_size // 8:]
+    cipher = Cipher(
+        algorithm(key), modes.CBC(iv), backend=default_backend())
+    decryptor = cipher.decryptor()
+    unpadder = padding.PKCS7(algorithm.block_size).unpadder()
+    try:
+        return unpadder.update(
+            decryptor.update(ciphertext) +
+            decryptor.finalize()) + unpadder.finalize()
+    except ValueError:
+        raise DecryptionError('Invalid padding')
+
+
 def decrypt(algorithm, key, ciphertext, iv=None):
     """Decrypt the ciphertext and return the plaintext value."""
+    from cryptography.hazmat.primitives.ciphers import algorithms
     from pskc.exceptions import DecryptionError
     if key is None:
         raise DecryptionError('No key available')
@@ -63,21 +85,9 @@ def decrypt(algorithm, key, ciphertext, iv=None):
     if algorithm.endswith('#aes128-cbc') or \
             algorithm.endswith('#aes192-cbc') or \
             algorithm.endswith('#aes256-cbc'):
-        from Crypto.Cipher import AES
-        from pskc.crypto import unpad
-        if not iv:
-            iv = ciphertext[:AES.block_size]
-            ciphertext = ciphertext[AES.block_size:]
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        return unpad(cipher.decrypt(ciphertext), AES.block_size)
+        return _decrypt_cbc(algorithms.AES, key, ciphertext, iv)
     elif algorithm.endswith('#tripledes-cbc'):
-        from Crypto.Cipher import DES3
-        from pskc.crypto import unpad
-        if not iv:
-            iv = ciphertext[:DES3.block_size]
-            ciphertext = ciphertext[DES3.block_size:]
-        cipher = DES3.new(key, DES3.MODE_CBC, iv)
-        return unpad(cipher.decrypt(ciphertext), DES3.block_size)
+        return _decrypt_cbc(algorithms.TripleDES, key, ciphertext, iv)
     elif algorithm.endswith('#kw-aes128') or \
             algorithm.endswith('#kw-aes192') or \
             algorithm.endswith('#kw-aes256'):
@@ -89,8 +99,25 @@ def decrypt(algorithm, key, ciphertext, iv=None):
     # no fallthrough because algorithm_key_lengths() fails with unknown algo
 
 
+def _encrypt_cbc(algorithm, key, plaintext, iv=None):
+    """Encrypt the provided value with the key using the algorithm."""
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import padding
+    from cryptography.hazmat.primitives.ciphers import Cipher, modes
+    iv = iv or os.urandom(algorithm.block_size // 8)
+    cipher = Cipher(
+        algorithm(key), modes.CBC(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+    padder = padding.PKCS7(algorithm.block_size).padder()
+    return (
+        iv + encryptor.update(
+            padder.update(plaintext) + padder.finalize()) +
+        encryptor.finalize())
+
+
 def encrypt(algorithm, key, plaintext, iv=None):
     """Encrypt the provided value with the key using the algorithm."""
+    from cryptography.hazmat.primitives.ciphers import algorithms
     from pskc.exceptions import EncryptionError
     if key is None:
         raise EncryptionError('No key available')
@@ -101,17 +128,9 @@ def encrypt(algorithm, key, plaintext, iv=None):
     if algorithm.endswith('#aes128-cbc') or \
             algorithm.endswith('#aes192-cbc') or \
             algorithm.endswith('#aes256-cbc'):
-        from Crypto.Cipher import AES
-        from pskc.crypto import pad
-        iv = iv or os.urandom(AES.block_size)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        return iv + cipher.encrypt(pad(plaintext, AES.block_size))
+        return _encrypt_cbc(algorithms.AES, key, plaintext, iv)
     elif algorithm.endswith('#tripledes-cbc'):
-        from Crypto.Cipher import DES3
-        from pskc.crypto import pad
-        iv = iv or os.urandom(DES3.block_size)
-        cipher = DES3.new(key, DES3.MODE_CBC, iv)
-        return iv + cipher.encrypt(pad(plaintext, DES3.block_size))
+        return _encrypt_cbc(algorithms.TripleDES, key, plaintext, iv)
     elif algorithm.endswith('#kw-aes128') or \
             algorithm.endswith('#kw-aes192') or \
             algorithm.endswith('#kw-aes256'):
