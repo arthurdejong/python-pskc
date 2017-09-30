@@ -1,6 +1,6 @@
 test_keywrap.doctest - test keywrap functions
 
-Copyright (C) 2014-2016 Arthur de Jong
+Copyright (C) 2014-2017 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
->>> from Crypto.Util.number import long_to_bytes
+>>> import struct
 >>> from binascii import a2b_hex
 >>> from pskc.crypto.aeskw import wrap, unwrap
 
@@ -210,7 +210,7 @@ works because we have padded the plaintext with two 0 bytes.
 
 >>> key = a2b_hex('5840df6e29b02af1ab493b705bf16ea1ae8338f4dcc176a8')
 >>> plaintext = a2b_hex('c37b7e6492584340bed1220765460000')
->>> iv = a2b_hex('a65959a6') + long_to_bytes(14, 4)
+>>> iv = a2b_hex('a65959a6') + struct.pack('>I', 14)
 >>> ciphertext = wrap(plaintext, key, iv=iv)
 >>> unwrap(ciphertext, key, iv=iv) == plaintext
 True
@@ -221,7 +221,7 @@ True
 If we mangle the IV to look like an RFC 5649 value but with an invalid
 padding length we should get an exception.
 
->>> iv = a2b_hex('a65959a6') + long_to_bytes(12, 4)
+>>> iv = a2b_hex('a65959a6') + struct.pack('>I', 12)
 >>> ciphertext = wrap(plaintext, key, iv=iv)
 >>> unwrap(ciphertext, key, iv=iv) == plaintext
 True

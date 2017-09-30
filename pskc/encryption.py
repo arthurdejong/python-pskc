@@ -27,6 +27,9 @@ The encryption key can be derived using the KeyDerivation class.
 """
 
 
+import os
+
+
 def algorithm_key_lengths(algorithm):
     """Return the possible key lengths for the configured algorithm."""
     from pskc.exceptions import DecryptionError
@@ -38,8 +41,7 @@ def algorithm_key_lengths(algorithm):
         return [int(algorithm[-7:-4]) // 8]
     elif algorithm.endswith('#tripledes-cbc') or \
             algorithm.endswith('#kw-tripledes'):
-        from Crypto.Cipher import DES3
-        return list(DES3.key_size)
+        return [16, 24]
     elif algorithm.endswith('#kw-aes128') or \
             algorithm.endswith('#kw-aes192') or \
             algorithm.endswith('#kw-aes256'):
@@ -98,17 +100,15 @@ def encrypt(algorithm, key, plaintext, iv=None):
     if algorithm.endswith('#aes128-cbc') or \
             algorithm.endswith('#aes192-cbc') or \
             algorithm.endswith('#aes256-cbc'):
-        from Crypto import Random
         from Crypto.Cipher import AES
         from pskc.crypto import pad
-        iv = iv or Random.get_random_bytes(AES.block_size)
+        iv = iv or os.urandom(AES.block_size)
         cipher = AES.new(key, AES.MODE_CBC, iv)
         return iv + cipher.encrypt(pad(plaintext, AES.block_size))
     elif algorithm.endswith('#tripledes-cbc'):
-        from Crypto import Random
         from Crypto.Cipher import DES3
         from pskc.crypto import pad
-        iv = iv or Random.get_random_bytes(DES3.block_size)
+        iv = iv or os.urandom(DES3.block_size)
         cipher = DES3.new(key, DES3.MODE_CBC, iv)
         return iv + cipher.encrypt(pad(plaintext, DES3.block_size))
     elif algorithm.endswith('#kw-aes128') or \
@@ -195,10 +195,9 @@ class KeyDerivation(object):
 
     def setup_pbkdf2(self, password, salt=None, salt_length=16,
                      key_length=None, iterations=None, prf=None):
-        from Crypto import Random
         self.algorithm = 'pbkdf2'
         if salt is None:
-            salt = Random.get_random_bytes(salt_length)
+            salt = os.urandom(salt_length)
         self.pbkdf2_salt = salt
         if iterations:
             self.pbkdf2_iterations = iterations
@@ -298,9 +297,8 @@ class Encryption(object):
         self._setup_encryption(kwargs)
         self.key = kwargs.pop('key', self.key)
         if not self.key:
-            from Crypto import Random
-            self.key = Random.get_random_bytes(kwargs.pop(
-                'key_length', self.algorithm_key_lengths[-1]))
+            self.key = os.urandom(
+                kwargs.pop('key_length', self.algorithm_key_lengths[-1]))
 
     def setup_pbkdf2(self, password, **kwargs):
         """Configure password-based PSKC encryption when writing the file.

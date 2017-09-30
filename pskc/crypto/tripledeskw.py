@@ -1,7 +1,7 @@
 # tripledeskw.py - implementation of Triple DES key wrapping
 # coding: utf-8
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,8 @@
 """Implement Triple DES key wrapping as described in RFC 3217."""
 
 import binascii
+import os
 
-from Crypto import Random
 from Crypto.Cipher import DES3
 from Crypto.Hash import SHA
 
@@ -47,7 +47,7 @@ def wrap(plaintext, key, iv=None):
     if len(plaintext) % DES3.block_size != 0:
         raise EncryptionError('Plaintext length wrong')
     if iv is None:
-        iv = Random.get_random_bytes(8)
+        iv = os.urandom(8)
     cipher = DES3.new(key, DES3.MODE_CBC, iv)
     tmp = iv + cipher.encrypt(plaintext + _cms_hash(plaintext))
     cipher = DES3.new(key, DES3.MODE_CBC, RFC3217_IV)

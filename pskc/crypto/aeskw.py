@@ -1,7 +1,7 @@
 # aeskw.py - implementation of AES key wrapping
 # coding: utf-8
 #
-# Copyright (C) 2014-2015 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,12 +21,19 @@
 """Implement key wrapping as described in RFC 3394 and RFC 5649."""
 
 import binascii
+import struct
 
 from Crypto.Cipher import AES
-from Crypto.Util.number import bytes_to_long, long_to_bytes
-from Crypto.Util.strxor import strxor
 
 from pskc.exceptions import DecryptionError, EncryptionError
+
+
+def _strxor(a, b):
+    """Return a XOR b."""
+    if isinstance(b'', str):  # pragma: no cover (Python 2 specific)
+        return b''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b))
+    else:  # pragma: no cover (Python 3 specific)
+        return bytes(x ^ y for (x, y) in zip(a, b))
 
 
 def _split(value):
@@ -60,7 +67,7 @@ def wrap(plaintext, key, iv=None, pad=None):
 
     if iv is None:
         if len(plaintext) != mli or pad is True:
-            iv = RFC5649_IV + long_to_bytes(mli, 4)
+            iv = RFC5649_IV + struct.pack('>I', mli)
         else:
             iv = RFC3394_IV
 
@@ -77,7 +84,7 @@ def wrap(plaintext, key, iv=None, pad=None):
     for j in range(6):
         for i in range(n):
             A, R[i] = _split(encrypt(A + R[i]))
-            A = strxor(A, long_to_bytes(n * j + i + 1, 8))
+            A = _strxor(A, struct.pack('>Q', n * j + i + 1))
     return A + b''.join(R)
 
 
@@ -107,7 +114,7 @@ def unwrap(ciphertext, key, iv=None, pad=None):
              for i in range(n)]
         for j in reversed(range(6)):
             for i in reversed(range(n)):
-                A = strxor(A, long_to_bytes(n * j + i + 1, 8))
+                A = _strxor(A, struct.pack('>Q', n * j + i + 1))
                 A, R[i] = _split(decrypt(A + R[i]))
         plaintext = b''.join(R)
 
@@ -115,7 +122,7 @@ def unwrap(ciphertext, key, iv=None, pad=None):
         if A == RFC3394_IV and pad is not True:
             return plaintext
         elif A[:4] == RFC5649_IV and pad is not False:
-            mli = bytes_to_long(A[4:])
+            mli = struct.unpack('>I', A[4:])[0]
             # check padding length is valid and plaintext only contains zeros
             if 8 * (n - 1) < mli <= 8 * n and \
                plaintext.endswith((len(plaintext) - mli) * b'\0'):

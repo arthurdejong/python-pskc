@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> from pskc import PSKC
 
 >>> import datetime
+>>> import os
 >>> import sys
 >>> import tempfile
->>> from Crypto import Random
 >>> from binascii import a2b_hex
 >>> from dateutil.tz import tzutc
 
@@ -412,7 +412,7 @@ decryption combinations.
 >>> def test_algorithm(algorithm):
 ...     f = tempfile.NamedTemporaryFile()
 ...     pskc1 = PSKC()
-...     pskc1.add_key(secret=Random.get_random_bytes(16))
+...     pskc1.add_key(secret=os.urandom(16))
 ...     pskc1.encryption.setup_preshared_key(algorithm=algorithm)
 ...     pskc1.write(f.name)
 ...     pskc2 = PSKC(f.name)

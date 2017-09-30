@@ -29,6 +29,7 @@ with the PSKC encryption key.
 """
 
 
+import os
 import re
 
 
@@ -145,5 +146,4 @@ class MAC(object):
             self.algorithm = 'hmac-sha1'
         # generate an HMAC key
         if not self.key:
-            from Crypto import Random
-            self.key = Random.get_random_bytes(self.algorithm_key_length)
+            self.key = os.urandom(self.algorithm_key_length)
