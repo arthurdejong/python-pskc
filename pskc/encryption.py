@@ -28,6 +28,7 @@ The encryption key can be derived using the KeyDerivation class.
 
 
 import os
+import re
 
 
 def algorithm_key_lengths(algorithm):
@@ -165,20 +166,28 @@ class KeyDerivation(object):
         self._pbkdf2_prf = normalise_algorithm(value)
 
     def derive_pbkdf2(self, password):
-        from Crypto.Protocol.KDF import PBKDF2
-        from pskc.mac import get_mac_fn
-        from pskc.exceptions import DecryptionError, KeyDerivationError
-        prf = None
+        from hashlib import pbkdf2_hmac
+        from pskc.exceptions import KeyDerivationError
+        prf = 'sha1'
         if self.pbkdf2_prf:
-            prf = get_mac_fn(self.pbkdf2_prf)
+            match = re.search(
+                r'^(.*#)?hmac-(?P<hash>[a-z0-9-]+)$', self.pbkdf2_prf)
+            if match:
+                prf = match.group('hash')
+            else:
+                raise KeyDerivationError(
+                    'Unsupported PRF: %r' % self.pbkdf2_prf)
         if not all((password, self.pbkdf2_salt, self.pbkdf2_key_length,
                     self.pbkdf2_iterations)):
             raise KeyDerivationError('Incomplete PBKDF2 configuration')
+        # force conversion to bytestring on Python 3
+        if not isinstance(password, type(b'')):
+            password = password.encode()  # pragma: no cover (Py3 specific)
         try:
-            return PBKDF2(
-                password, self.pbkdf2_salt, dkLen=self.pbkdf2_key_length,
-                count=self.pbkdf2_iterations, prf=prf)
-        except DecryptionError:
+            return pbkdf2_hmac(
+                prf, password, self.pbkdf2_salt, self.pbkdf2_iterations,
+                self.pbkdf2_key_length)
+        except ValueError:
             raise KeyDerivationError(
                 'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
 
