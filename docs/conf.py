@@ -173,7 +173,7 @@ html_show_sourcelink = False
 #html_file_suffix = None
 
 # Suffix for generated links to HTML files.
-#html_link_suffix = ''
+html_link_suffix = ''
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'python-pskcdoc'
@@ -184,11 +184,11 @@ htmlhelp_basename = 'python-pskcdoc'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'python-pskc', u'python-pskc Documentation',
+    ('pskc2csv', 'pskc2csv', u'Convert a PSKC file to CSV',
      [u'Arthur de Jong'], 1)
 ]
 
 # If true, show URL addresses after external links.
-#man_show_urls = False
+man_show_urls = True
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
