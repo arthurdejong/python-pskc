@@ -51,6 +51,10 @@ def algorithm_key_lengths(algorithm):
             algorithm.endswith('#camellia192-cbc') or
             algorithm.endswith('#camellia256-cbc')):
         return [int(algorithm[-7:-4]) // 8]
+    elif (algorithm.endswith('#kw-camellia128') or
+            algorithm.endswith('#kw-camellia192') or
+            algorithm.endswith('#kw-camellia256')):
+        return [int(algorithm[-3:]) // 8]
     else:
         raise DecryptionError('Unsupported algorithm: %r' % algorithm)
 
@@ -100,10 +104,15 @@ def decrypt(algorithm, key, ciphertext, iv=None):
     elif algorithm.endswith('#kw-tripledes'):
         from pskc.crypto.tripledeskw import unwrap
         return unwrap(ciphertext, key)
-    elif (algorithm.endswith('#camellia128-cbc') or  # pragma: no branch
+    elif (algorithm.endswith('#camellia128-cbc') or
             algorithm.endswith('#camellia192-cbc') or
             algorithm.endswith('#camellia256-cbc')):
         return _decrypt_cbc(algorithms.Camellia, key, ciphertext, iv)
+    elif (algorithm.endswith('#kw-camellia128') or  # pragma: no branch
+            algorithm.endswith('#kw-camellia192') or
+            algorithm.endswith('#kw-camellia256')):
+        from pskc.crypto.aeskw import unwrap
+        return unwrap(ciphertext, key, algorithm=algorithms.Camellia)
     # no fallthrough because algorithm_key_lengths() fails with unknown algo
 
 
@@ -147,10 +156,15 @@ def encrypt(algorithm, key, plaintext, iv=None):
     elif algorithm.endswith('#kw-tripledes'):
         from pskc.crypto.tripledeskw import wrap
         return wrap(plaintext, key)
-    elif (algorithm.endswith('#camellia128-cbc') or  # pragma: no branch
+    elif (algorithm.endswith('#camellia128-cbc') or
             algorithm.endswith('#camellia192-cbc') or
             algorithm.endswith('#camellia256-cbc')):
         return _encrypt_cbc(algorithms.Camellia, key, plaintext, iv)
+    elif (algorithm.endswith('#kw-camellia128') or  # pragma: no branch
+            algorithm.endswith('#kw-camellia192') or
+            algorithm.endswith('#kw-camellia256')):
+        from pskc.crypto.aeskw import wrap
+        return wrap(plaintext, key, algorithm=algorithms.Camellia)
     # no fallthrough because algorithm_key_lengths() fails with unknown algo
 
 

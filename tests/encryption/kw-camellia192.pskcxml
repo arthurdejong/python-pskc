@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Test that holds an kw-camellia192 encrypted value. The encryption key is
+  5eb0bccad29abe52d143d5aebc1c1ba174b8d379ce763c28 and the resulting
+  plaintext should be 12345678901234567890.
+-->
+
+<KeyContainer Version="1.0"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+  xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <EncryptionKey>
+  <KeyName xmlns="http://www.w3.org/2000/09/xmldsig#">Pre-shared-key</KeyName>
+ </EncryptionKey>
+ <KeyPackage>
+  <Key>
+   <Data>
+    <Secret>
+     <EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#kw-camellia192"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>y/wSpn3aNjeXzY1giHLOy0P+WQ+NmkN7EovBtHBXZ14=</xenc:CipherValue>
+      </xenc:CipherData>
+     </EncryptedValue>
+    </Secret>
+   </Data>
+  </Key>
+ </KeyPackage>
+</KeyContainer>

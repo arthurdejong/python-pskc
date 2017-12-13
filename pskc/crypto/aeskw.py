@@ -45,7 +45,7 @@ RFC3394_IV = binascii.a2b_hex('a6a6a6a6a6a6a6a6')
 RFC5649_IV = binascii.a2b_hex('a65959a6')
 
 
-def wrap(plaintext, key, iv=None, pad=None):
+def wrap(plaintext, key, iv=None, pad=None, algorithm=algorithms.AES):
     """Apply the AES key wrap algorithm to the plaintext.
 
     The iv can specify an initial value, otherwise the value from RFC 3394 or
@@ -72,7 +72,7 @@ def wrap(plaintext, key, iv=None, pad=None):
         else:
             iv = RFC3394_IV
 
-    cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
+    cipher = Cipher(algorithm(key), modes.ECB(), default_backend())
     encryptor = cipher.encryptor()
     n = len(plaintext) // 8
 
@@ -90,7 +90,7 @@ def wrap(plaintext, key, iv=None, pad=None):
     return A + b''.join(R)
 
 
-def unwrap(ciphertext, key, iv=None, pad=None):
+def unwrap(ciphertext, key, iv=None, pad=None, algorithm=algorithms.AES):
     """Apply the AES key unwrap algorithm to the ciphertext.
 
     The iv can specify an initial value, otherwise the value from RFC 3394 or
@@ -105,7 +105,7 @@ def unwrap(ciphertext, key, iv=None, pad=None):
     if len(ciphertext) % 8 != 0 or (pad is False and len(ciphertext) < 24):
         raise DecryptionError('Ciphertext length wrong')
 
-    cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
+    cipher = Cipher(algorithm(key), modes.ECB(), default_backend())
     decryptor = cipher.decryptor()
     n = len(ciphertext) // 8 - 1
 

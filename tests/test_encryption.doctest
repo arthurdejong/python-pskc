@@ -163,6 +163,36 @@ DecryptionError: Invalid key length
 'X7We+WREABNPa0jlsUHZqF5CWUQiPYdXJ+7ure96AcNH/7TXcQs4mFuSCOHpiv/W'
 
 
+>>> pskc = PSKC('tests/encryption/kw-camellia128.pskcxml')
+>>> pskc.encryption.key = a2b_hex('e35b135a09bfff8b314a5a0c32193c37')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#kw-camellia128'
+>>> tostr(pskc.keys[0].secret)
+'12345678901234567890'
+>>> tostr(base64.b64encode(encrypt(pskc.encryption.algorithm, pskc.encryption.key, pskc.keys[0].secret)))
+'WB128TBZ1WGZzPNJNbwNrWRqQceU7M4FQSJPy2nw6iI='
+
+
+>>> pskc = PSKC('tests/encryption/kw-camellia192.pskcxml')
+>>> pskc.encryption.key = a2b_hex('5eb0bccad29abe52d143d5aebc1c1ba174b8d379ce763c28')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#kw-camellia192'
+>>> tostr(pskc.keys[0].secret)
+'12345678901234567890'
+>>> tostr(base64.b64encode(encrypt(pskc.encryption.algorithm, pskc.encryption.key, pskc.keys[0].secret)))
+'y/wSpn3aNjeXzY1giHLOy0P+WQ+NmkN7EovBtHBXZ14='
+
+
+>>> pskc = PSKC('tests/encryption/kw-camellia256.pskcxml')
+>>> pskc.encryption.key = a2b_hex('0e187c656c36975b0d6bded79d7089142209457114ce8e6f4ae78339d71114e8')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmldsig-more#kw-camellia256'
+>>> tostr(pskc.keys[0].secret)
+'12345678901234567890'
+>>> tostr(base64.b64encode(encrypt(pskc.encryption.algorithm, pskc.encryption.key, pskc.keys[0].secret)))
+'tCrhhD62tBGCcbsp8GV91+79MhaXTy1MP1SkaT2OLaU='
+
+
 The IV can also be specified globally.
 
 >>> pskc = PSKC('tests/encryption/aes128-cbc-noiv.pskcxml')
