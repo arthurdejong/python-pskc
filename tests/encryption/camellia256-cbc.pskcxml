@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Test that holds an camellia256-cbc encrypted value. Encryption key is
+  33b37e31c5a0a16f004e7fe727d4ff808fc1f879d85ccd8f06dbb5799565d2f5.
+-->
+
+<KeyContainer Version="1.0"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <EncryptionKey>
+  <ds:KeyName>Pre-shared-key</ds:KeyName>
+ </EncryptionKey>
+ <MACMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#hmac-sha224">
+  <MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#camellia256-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>uj9VFSjENtykiBdHoxF/CZ8y2XnWA/fW89i4xonEH9iYK2AH0/hkH7bVmI2ObcSa</xenc:CipherValue>
+   </xenc:CipherData>
+  </MACKey>
+ </MACMethod>
+ <KeyPackage>
+  <Key>
+   <Data>
+    <Secret>
+     <EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#camellia256-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>X7We+WREABNPa0jlsUHZqF5CWUQiPYdXJ+7ure96AcNH/7TXcQs4mFuSCOHpiv/W</xenc:CipherValue>
+      </xenc:CipherData>
+     </EncryptedValue>
+     <ValueMAC>RDATcSJh3n8TAvMDoPzKqobgOCPZSluA7Gmvpg==</ValueMAC>
+    </Secret>
+   </Data>
+  </Key>
+ </KeyPackage>
+</KeyContainer>

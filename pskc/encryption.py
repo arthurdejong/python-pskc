@@ -47,6 +47,10 @@ def algorithm_key_lengths(algorithm):
             algorithm.endswith('#kw-aes192') or \
             algorithm.endswith('#kw-aes256'):
         return [int(algorithm[-3:]) // 8]
+    elif (algorithm.endswith('#camellia128-cbc') or
+            algorithm.endswith('#camellia192-cbc') or
+            algorithm.endswith('#camellia256-cbc')):
+        return [int(algorithm[-7:-4]) // 8]
     else:
         raise DecryptionError('Unsupported algorithm: %r' % algorithm)
 
@@ -93,9 +97,13 @@ def decrypt(algorithm, key, ciphertext, iv=None):
             algorithm.endswith('#kw-aes256'):
         from pskc.crypto.aeskw import unwrap
         return unwrap(ciphertext, key)
-    elif algorithm.endswith('#kw-tripledes'):  # pragma: no branch
+    elif algorithm.endswith('#kw-tripledes'):
         from pskc.crypto.tripledeskw import unwrap
         return unwrap(ciphertext, key)
+    elif (algorithm.endswith('#camellia128-cbc') or  # pragma: no branch
+            algorithm.endswith('#camellia192-cbc') or
+            algorithm.endswith('#camellia256-cbc')):
+        return _decrypt_cbc(algorithms.Camellia, key, ciphertext, iv)
     # no fallthrough because algorithm_key_lengths() fails with unknown algo
 
 
@@ -136,9 +144,13 @@ def encrypt(algorithm, key, plaintext, iv=None):
             algorithm.endswith('#kw-aes256'):
         from pskc.crypto.aeskw import wrap
         return wrap(plaintext, key)
-    elif algorithm.endswith('#kw-tripledes'):  # pragma: no branch
+    elif algorithm.endswith('#kw-tripledes'):
         from pskc.crypto.tripledeskw import wrap
         return wrap(plaintext, key)
+    elif (algorithm.endswith('#camellia128-cbc') or  # pragma: no branch
+            algorithm.endswith('#camellia192-cbc') or
+            algorithm.endswith('#camellia256-cbc')):
+        return _encrypt_cbc(algorithms.Camellia, key, plaintext, iv)
     # no fallthrough because algorithm_key_lengths() fails with unknown algo
 
 
