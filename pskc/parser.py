@@ -66,11 +66,13 @@ class PSKCParser(object):
     @classmethod
     def parse_document(cls, pskc, container):
         """Read information from the provided <KeyContainer> tree."""
-        if container.tag != 'KeyContainer':
+        if container.tag not in ('KeyContainer', 'SecretContainer'):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
         pskc.version = container.get('Version') or container.get('version')
-        if pskc.version and pskc.version not in ('1', '1.0'):
+        if (container.tag == 'KeyContainer' and
+                pskc.version and
+                pskc.version not in ('1', '1.0')):
             raise ParseError('Unsupported version %r' % pskc.version)
         # unique identifier for the container
         pskc.id = (
@@ -96,7 +98,9 @@ class PSKCParser(object):
             return
         encryption.id = key_info.get('Id')
         encryption.algorithm = (
-            key_info.get('Algorithm') or encryption.algorithm)
+            key_info.get('Algorithm') or
+            key_info.get('algorithm') or
+            encryption.algorithm)
         for name in findall(key_info,
                             'KeyName', 'DerivedKey/MasterKeyName',
                             'DerivedKey/CarriedKeyName'):
@@ -104,6 +108,19 @@ class PSKCParser(object):
         encryption.iv = findbin(key_info, 'IV') or encryption.iv
         cls.parse_key_derivation(encryption.derivation, find(
             key_info, 'DerivedKey/KeyDerivationMethod'))
+        encryption.derivation.pbkdf2_salt = (
+            findbin(key_info, 'PBESalt') or encryption.derivation.pbkdf2_salt)
+        encryption.derivation.pbkdf2_iterations = (
+            findint(key_info, 'PBEIterationCount') or
+            encryption.derivation.pbkdf2_iterations)
+        algorithm = (
+            key_info.get('Algorithm') or key_info.get('algorithm') or '')
+        if (algorithm.lower().startswith('pbe') and
+                not encryption.derivation.algorithm):
+            encryption.derivation.algorithm = 'pbkdf2'
+            encryption.derivation.pbkdf2_key_length = (
+                encryption.derivation.pbkdf2_key_length or
+                encryption.algorithm_key_lengths[0])
 
     @classmethod
     def parse_key_derivation(cls, derivation, key_derivation):
@@ -130,7 +147,9 @@ class PSKCParser(object):
         """Read MAC information from the <MACMethod> XML tree."""
         if mac_method is None:
             return
-        mac.algorithm = mac_method.get('Algorithm')
+        mac.algorithm = (
+            mac_method.get('Algorithm') or
+            mac_method.get('algorithm'))
         mac_key = find(mac_method, 'MACKey')
         if mac_key is not None:
             mac.key_algorithm, mac.key_cipher_value = (
@@ -148,21 +167,24 @@ class PSKCParser(object):
             device.issue_no = findtext(info, 'IssueNo')
             device.device_binding = findtext(info, 'DeviceBinding')
             device.start_date = findtime(info, 'StartDate')
-            device.expiry_date = findtime(info, 'ExpiryDate')
+            device.expiry_date = findtime(info, 'ExpiryDate', 'Expiry')
             device.device_userid = findtext(info, 'UserId')
 
         device.crypto_module = findtext(key_package, 'CryptoModuleInfo/Id')
 
-        for key_elm in findall(key_package, 'Key'):
+        for key_elm in findall(key_package, 'Key', 'Secret'):
             cls.parse_key(device.add_key(), key_elm)
 
     @classmethod
     def parse_key(cls, key, key_elm):
         """Read key information from the provided <KeyPackage> tree."""
 
-        key.id = key_elm.get('Id') or key_elm.get('KeyId')
+        key.id = (
+            key_elm.get('Id') or key_elm.get('KeyId') or
+            key_elm.get('SecretId'))
         key.algorithm = (
-            key_elm.get('Algorithm') or key_elm.get('KeyAlgorithm'))
+            key_elm.get('Algorithm') or key_elm.get('KeyAlgorithm') or
+            key_elm.get('SecretAlgorithm'))
 
         data = find(key_elm, 'Data')
         if data is not None:
@@ -198,9 +220,14 @@ class PSKCParser(object):
         if challenge_format is not None:
             key.challenge_encoding = (
                 challenge_format.get('Encoding') or
-                challenge_format.get('Format'))
-            key.challenge_min_length = getint(challenge_format, 'Min')
-            key.challenge_max_length = getint(challenge_format, 'Max')
+                challenge_format.get('Format') or
+                challenge_format.get('format'))
+            key.challenge_min_length = (
+                getint(challenge_format, 'Min') or
+                getint(challenge_format, 'min'))
+            key.challenge_max_length = (
+                getint(challenge_format, 'Max') or
+                getint(challenge_format, 'max'))
             key.challenge_check = getbool(
                 challenge_format, 'CheckDigits', getbool(
                     challenge_format, 'CheckDigit'))
@@ -211,8 +238,11 @@ class PSKCParser(object):
         if response_format is not None:
             key.response_encoding = (
                 response_format.get('Encoding') or
-                response_format.get('Format'))
-            key.response_length = getint(response_format, 'Length')
+                response_format.get('Format') or
+                response_format.get('format'))
+            key.response_length = (
+                getint(response_format, 'Length') or
+                getint(response_format, 'length'))
             key.response_check = getbool(
                 response_format, 'CheckDigits', getbool(
                     response_format, 'CheckDigit'))

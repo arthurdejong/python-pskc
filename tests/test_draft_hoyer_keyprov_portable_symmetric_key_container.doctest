@@ -1,0 +1,180 @@
+test_draft_hoyer_keyprov_portable_symmetric_key_container.doctest -
+    tests for examples from various versions of
+    draft-hoyer-keyprov-portable-symmetric-key-container
+
+Copyright (C) 2017 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc import PSKC
+
+
+This reads a simple PSKC file with a single non-encrypted HOTP secret key
+example from section 10.1 of
+draft-hoyer-keyprov-portable-symmetric-key-container-00.
+
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/non-encrypted.pskcxml')
+>>> pskc.encryption.algorithm is None
+True
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'Token Manufacturer'
+>>> key.serial
+'98765432187'
+>>> key.id
+'98765432187'
+>>> key.algorithm
+'HOTP'
+>>> key.expiry_date
+datetime.datetime(2008, 1, 1, 0, 0)
+>>> key.issuer
+'Credential Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> key.friendly_name
+'MyFirstToken'
+>>> b2a_hex(key.secret)
+'5a57634c7670466f584e4841472b6c78332b5277'
+>>> key.counter
+12
+
+
+This reads a simple PSKC file with a single password-based encrypted HOTP
+secret key example from section 10.2 of
+draft-hoyer-keyprov-portable-symmetric-key-container-00.
+
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#tripledes-cbc'
+>>> pskc.encryption.derivation.algorithm
+'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
+>>> pskc.encryption.derivation.pbkdf2_iterations
+999
+>>> b2a_hex(pskc.encryption.derivation.pbkdf2_salt)
+'cba4f372478b450c'
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.encryption.key)
+'651f8b1cafafa433d8c46ec996b3a274'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'Token Manufacturer'
+>>> key.serial
+'98765432187'
+>>> key.id
+'77654321870'
+>>> key.algorithm
+'HOTP'
+>>> key.expiry_date
+datetime.datetime(2008, 1, 1, 0, 0)
+>>> key.issuer
+'Credential Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> key.friendly_name
+'MySecondToken'
+>>> b2a_hex(key.secret)
+'65670bbe91685cd1c01be971dfe470'
+>>> key.counter
+100
+
+
+This reads a simple PSKC file with a single non-encrypted HOTP secret key
+example from section 10.1 of
+draft-hoyer-keyprov-portable-symmetric-key-container-01.
+
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-portable-symmetric-key-container-01/non-encrypted.pskcxml')
+>>> pskc.encryption.algorithm is None
+True
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'Token Manufacturer'
+>>> key.serial
+'98765432187'
+>>> key.id
+'98765432187'
+>>> key.algorithm
+'HOTP'
+>>> key.expiry_date
+datetime.datetime(2008, 1, 1, 0, 0)
+>>> key.issuer
+'Credential Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> key.friendly_name
+'MyFirstToken'
+>>> b2a_hex(key.secret)
+'5a57634c7670466f584e4841472b6c78332b5277'
+>>> key.counter
+42
+
+
+This reads a simple PSKC file with a single password-based encrypted HOTP
+secret key example from section 10.2 of
+draft-hoyer-keyprov-portable-symmetric-key-container-01.
+
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-portable-symmetric-key-container-01/password-encrypted.pskcxml')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#tripledes-cbc'
+>>> pskc.encryption.derivation.algorithm
+'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
+>>> pskc.encryption.derivation.pbkdf2_iterations
+999
+>>> b2a_hex(pskc.encryption.derivation.pbkdf2_salt)
+'cba4f372478b450c'
+>>> pskc.encryption.derive_key('qwerty')
+>>> b2a_hex(pskc.encryption.key)
+'651f8b1cafafa433d8c46ec996b3a274'
+>>> pskc.mac.algorithm
+'http://www.w3.org/2000/09/xmldsig#hmac-sha1'
+>>> key = pskc.keys[0]
+>>> key.manufacturer
+'Token Manufacturer'
+>>> key.serial
+'98765432187'
+>>> key.id
+'77654321870'
+>>> key.algorithm
+'HOTP'
+>>> key.expiry_date
+datetime.datetime(2008, 1, 1, 0, 0)
+>>> key.issuer
+'Credential Issuer'
+>>> key.response_encoding
+'DECIMAL'
+>>> key.response_length
+6
+>>> key.friendly_name
+'MySecondToken'
+>>> b2a_hex(key.secret)
+'65670bbe91685cd1c01be971dfe470'
+>>> key.counter
+100

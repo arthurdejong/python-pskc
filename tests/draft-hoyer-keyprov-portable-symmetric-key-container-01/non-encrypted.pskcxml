@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Symmetric key container with a single non-encrypted HOTP secret key example
+  from section 10.1 of
+  draft-hoyer-keyprov-portable-symmetric-key-container-01. The COUNTER value
+  was modified to be a valid big endian number 42 and the file version number
+  was removed.
+-->
+
+<KeyContainer
+xmlns="urn:ietf:params:xml:ns:keyprov:container"
+xmlns:logo="urn:ietf:params:xml:ns:keyprov:logo"
+xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="urn:ietf:params:xml:ns:keyprov:container
+keyprov_pskc_schema_v1.1.xsd">
+  <EncryptionMethod algorithm="NONE"/>
+  <DigestMethod algorithm="HMAC-SHA1"></DigestMethod>
+  <Device>
+    <DeviceId>
+      <Manufacturer>Token Manufacturer</Manufacturer>
+      <SerialNo>98765432187</SerialNo>
+      <Expiry>01/01/2008</Expiry>
+    </DeviceId>
+    <Key KeyAlgorithm="HOTP"  KeyId="98765432187">
+      <Issuer>Credential Issuer</Issuer>
+      <Usage>
+       <ResponseFormat format="DECIMAL" length="6"/>
+      </Usage>
+      <FriendlyName>MyFirstToken</FriendlyName>
+      <Data Name="SECRET">
+        <Value>WldjTHZwRm9YTkhBRytseDMrUnc=</Value>
+        <ValueDigest>WldjTHZwRm9YTkhBRytseDM=</ValueDigest>
+      </Data>
+      <Data Name="COUNTER">
+        <Value>AAAAAAAAACo=</Value>
+        <ValueDigest>WldjTHZwRm9YTkhBRytseDM=</ValueDigest>
+      </Data>
+    </Key>
+  </Device>
+</KeyContainer>
