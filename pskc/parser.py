@@ -21,10 +21,33 @@
 """Module for parsing PSKC files."""
 
 
+import array
+import base64
+
 from pskc.exceptions import ParseError
+from pskc.key import EncryptedIntegerValue, EncryptedValue
 from pskc.xml import (
     find, findall, findbin, findint, findtext, findtime, getbool, getint,
     parse, remove_namespaces)
+
+
+def plain2int(value):
+    """Convert a plain text value to an int."""
+    # try normal integer string parsing
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    # fall back to base64 decoding
+    value = base64.b64decode(value)
+    # try to handle value as ASCII representation
+    if value.isdigit():
+        return int(value)
+    # fall back to do big-endian decoding
+    result = 0
+    for x in array.array('B', value):
+        result = (result << 8) + x
+    return result
 
 
 class PSKCParser(object):
@@ -143,20 +166,20 @@ class PSKCParser(object):
 
         data = find(key_elm, 'Data')
         if data is not None:
-            cls.parse_datatype(key._secret, find(data, 'Secret'))
-            cls.parse_datatype(key._counter, find(data, 'Counter'))
-            cls.parse_datatype(key._time_offset, find(data, 'Time'))
-            cls.parse_datatype(key._time_interval, find(data, 'TimeInterval'))
-            cls.parse_datatype(key._time_drift, find(data, 'TimeDrift'))
+            cls.parse_data(key, 'secret', find(data, 'Secret'))
+            cls.parse_data(key, 'counter', find(data, 'Counter'))
+            cls.parse_data(key, 'time_offset', find(data, 'Time'))
+            cls.parse_data(key, 'time_interval', find(data, 'TimeInterval'))
+            cls.parse_data(key, 'time_drift', find(data, 'TimeDrift'))
 
         for data in findall(key_elm, 'Data'):
             name = data.get('Name')
             if name:
-                cls.parse_datatype(dict(
-                    secret=key._secret,
-                    counter=key._counter,
-                    time=key._time_offset,
-                    time_interval=key._time_interval,
+                cls.parse_data(key, dict(
+                    secret='secret',
+                    counter='counter',
+                    time='time_offset',
+                    time_interval='time_interval',
                 ).get(name.lower()), data)
 
         key.issuer = findtext(key_elm, 'Issuer')
@@ -221,7 +244,7 @@ class PSKCParser(object):
         return (algorithm, cipher_value)
 
     @classmethod
-    def parse_datatype(cls, dt, element):
+    def parse_data(cls, key, field, element):
         """Read information from the provided element.
 
         The element is expected to contain <PlainValue>, <EncryptedValue>
@@ -229,29 +252,44 @@ class PSKCParser(object):
         value."""
         if element is None:
             return
+        pskc = key.device.pskc
+        plain_value = None
+        cipher_value = None
+        algorithm = None
+        # get the plain2value function and encryption storage
+        if field == 'secret':
+            plain2value = base64.b64decode
+            encrypted_value_cls = EncryptedValue
+        else:
+            plain2value = plain2int
+            encrypted_value_cls = EncryptedIntegerValue
         # read plaintext value from <PlainValue>
         plain_value = findtext(element, 'PlainValue')
         if plain_value is not None:
-            dt.value = dt._from_text(plain_value)
+            plain_value = plain2value(plain_value)
         # read encrypted data from <EncryptedValue>
         encrypted_value = find(element, 'EncryptedValue')
         if encrypted_value is not None:
-            dt.algorithm, dt.cipher_value = cls.parse_encrypted_value(
+            algorithm, cipher_value = cls.parse_encrypted_value(
                 encrypted_value)
             # store the found algorithm in the pskc.encryption property
-            if not dt.pskc.encryption.algorithm and dt.algorithm:
-                dt.pskc.encryption.algorithm = dt.algorithm
+            if not pskc.encryption.algorithm and algorithm:
+                pskc.encryption.algorithm = algorithm
         # read MAC information from <ValueMAC>
-        value_mac = findbin(element, 'ValueMAC', 'ValueDigest')
-        if value_mac is not None:
-            dt.value_mac = value_mac
+        mac_value = findbin(element, 'ValueMAC', 'ValueDigest')
         # read legacy <Value> elements (can be plain or encrypted)
-        value = find(element, 'Value')
+        value = findtext(element, 'Value')
         if value is not None:
-            if dt.pskc.encryption.algorithm and dt.value_mac:
-                dt.cipher_value = findbin(element, 'Value')
+            if pskc.encryption.algorithm and mac_value:
+                cipher_value = findbin(element, 'Value')
             else:
-                dt.value = dt._from_text(findtext(element, 'Value'))
+                plain_value = plain2value(value)
+        # store the found information
+        if plain_value is not None:
+            setattr(key, field, plain_value)
+        elif cipher_value:
+            setattr(key, field,
+                    encrypted_value_cls(cipher_value, mac_value, algorithm))
 
     @classmethod
     def parse_policy(cls, policy, policy_elm):

@@ -22,118 +22,57 @@
 
 
 import array
-import base64
 import binascii
 
 from pskc.policy import Policy
 
 
-class DataType(object):
-    """Provide access to possibly encrypted, MAC'ed information.
+class EncryptedValue(object):
+    """A container for an encrypted value."""
 
-    This class is meant to be subclassed to provide typed access to stored
-    values. Instances of this class provide the following attributes:
+    def __init__(self, cipher_value, mac_value, algorithm):
+        self.cipher_value = cipher_value
+        self.mac_value = mac_value
+        self.algorithm = algorithm
 
-      value: unencrypted value
-      cipher_value: encrypted value
-      algorithm: encryption algorithm of encrypted value
-      value_mac: MAC of the encrypted value
-    """
+    @classmethod
+    def create(cls, pskc, value):
+        # force conversion to bytestring on Python 3
+        if not isinstance(value, type(b'')):
+            value = value.encode()  # pragma: no cover (Python 3 specific)
+        cipher_value = pskc.encryption.encrypt_value(value)
+        mac_value = None
+        if pskc.mac.algorithm:
+            mac_value = pskc.mac.generate_mac(cipher_value)
+        return cls(cipher_value, mac_value, pskc.encryption.algorithm)
 
-    def __init__(self, pskc):
-        self.pskc = pskc
-        self.value = None
-        self.cipher_value = None
-        self.algorithm = None
-        self.value_mac = None
-
-    @staticmethod
-    def _from_text(value):
-        """Convert the plain value to native representation."""
-        raise NotImplementedError  # pragma: no cover
-
-    @staticmethod
-    def _from_bin(value):
-        """Convert the unencrypted binary to native representation."""
-        raise NotImplementedError  # pragma: no cover
-
-    @staticmethod
-    def _to_text(value):
-        """Convert the value to an unencrypted string representation."""
-        raise NotImplementedError  # pragma: no cover
-
-    def get_value(self):
-        """Provide the attribute value, decrypting as needed."""
+    def get_value(self, pskc):
+        """Provide the decrypted value."""
         from pskc.exceptions import DecryptionError
-        if self.value is not None:
-            return self.value
-        if self.cipher_value:
-            plaintext = self.pskc.encryption.decrypt_value(
-                self.cipher_value, self.algorithm)
-            # allow MAC over plaintext or cipertext
-            # (RFC6030 implies MAC over ciphertext but older draft used
-            # MAC over plaintext)
-            if self.value_mac and self.value_mac not in (
-                    self.pskc.mac.generate_mac(self.cipher_value),
-                    self.pskc.mac.generate_mac(plaintext)):
-                raise DecryptionError('MAC value does not match')
-            return self._from_bin(plaintext)
-
-    def set_value(self, value):
-        """Set the unencrypted value."""
-        self.value = value
-        self.cipher_value = None
-        self.algorithm = None
-        self.value_mac = None
+        plaintext = pskc.encryption.decrypt_value(
+            self.cipher_value, self.algorithm)
+        # allow MAC over plaintext or cipertext
+        # (RFC6030 implies MAC over ciphertext but older draft used
+        # MAC over plaintext)
+        if self.mac_value and self.mac_value not in (
+                pskc.mac.generate_mac(self.cipher_value),
+                pskc.mac.generate_mac(plaintext)):
+            raise DecryptionError('MAC value does not match')
+        return plaintext
 
 
-class BinaryDataType(DataType):
-    """Subclass of DataType for binary data (e.g. keys)."""
+class EncryptedIntegerValue(EncryptedValue):
 
-    @staticmethod
-    def _from_text(value):
-        """Convert the plain value to native representation."""
-        return base64.b64decode(value)
+    @classmethod
+    def create(cls, pskc, value):
+        value = '%x' % value
+        n = len(value)
+        value = binascii.unhexlify(value.zfill(n + (n & 1)))
+        return super(EncryptedIntegerValue, cls).create(pskc, value)
 
-    @staticmethod
-    def _from_bin(value):
-        """Convert the unencrypted binary to native representation."""
-        return value
-
-    @staticmethod
-    def _to_text(value):
-        """Convert the value to an unencrypted string representation."""
-        # force conversion to bytestring on Python 3
-        if not isinstance(value, type(b'')):
-            value = value.encode()  # pragma: no cover (Python 3 specific)
-        return base64.b64encode(value).decode()
-
-    @staticmethod
-    def _to_bin(value):
-        """Convert the value to binary representation for encryption."""
-        # force conversion to bytestring on Python 3
-        if not isinstance(value, type(b'')):
-            value = value.encode()  # pragma: no cover (Python 3 specific)
-        return value
-
-
-class IntegerDataType(DataType):
-    """Subclass of DataType for integer types (e.g. counters)."""
-
-    @staticmethod
-    def _from_text(value):
-        """Convert the plain value to native representation."""
-        # try normal integer string parsing
-        try:
-            return int(value)
-        except ValueError:
-            pass
-        # fall back to base64 decoding
-        return IntegerDataType._from_bin(base64.b64decode(value))
-
-    @staticmethod
-    def _from_bin(value):
-        """Convert the unencrypted binary to native representation."""
+    def get_value(self, pskc):
+        """Provide the decrypted integer value."""
+        value = super(EncryptedIntegerValue, self).get_value(pskc)
         # try to handle value as ASCII representation
         if value.isdigit():
             return int(value)
@@ -142,18 +81,6 @@ class IntegerDataType(DataType):
         for x in array.array('B', value):
             result = (result << 8) + x
         return result
-
-    @staticmethod
-    def _to_text(value):
-        """Convert the value to an unencrypted string representation."""
-        return str(value)
-
-    @staticmethod
-    def _to_bin(value):
-        """Convert the value to binary representation for encryption."""
-        value = '%x' % value
-        n = len(value)
-        return binascii.unhexlify(value.zfill(n + (n & 1)))
 
 
 class DataTypeProperty(object):
@@ -164,10 +91,14 @@ class DataTypeProperty(object):
         self.__doc__ = doc
 
     def __get__(self, obj, objtype):
-        return getattr(obj, '_' + self.name).get_value()
+        value = getattr(obj, '_' + self.name, None)
+        if hasattr(value, 'get_value'):
+            return value.get_value(obj.device.pskc)
+        else:
+            return value
 
     def __set__(self, obj, val):
-        getattr(obj, '_' + self.name).set_value(val)
+        setattr(obj, '_' + self.name, val)
 
 
 class DeviceProperty(object):
@@ -221,12 +152,6 @@ class Key(object):
 
         self.id = None
         self.algorithm = None
-
-        self._secret = BinaryDataType(self.device.pskc)
-        self._counter = IntegerDataType(self.device.pskc)
-        self._time_offset = IntegerDataType(self.device.pskc)
-        self._time_interval = IntegerDataType(self.device.pskc)
-        self._time_drift = IntegerDataType(self.device.pskc)
 
         self.issuer = None
         self.key_profile = None

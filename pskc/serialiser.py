@@ -23,7 +23,15 @@
 
 import base64
 
+from pskc.key import EncryptedIntegerValue, EncryptedValue
 from pskc.xml import find, mk_elem, tostring
+
+
+def my_b64encode(value):
+    """Wrap around b64encode to handle types correctly."""
+    if not isinstance(value, type(b'')):
+        value = value.encode()  # pragma: no cover (Python 3 specific)
+    return base64.b64encode(value).decode()
 
 
 class PSKCSerialiser(object):
@@ -146,55 +154,59 @@ class PSKCSerialiser(object):
         mk_elem(key_elm, 'pskc:KeyProfileId', key.key_profile)
         mk_elem(key_elm, 'pskc:KeyReference', key.key_reference)
         mk_elem(key_elm, 'pskc:FriendlyName', key.friendly_name)
-        cls.serialise_datatype(
-            key._secret, key_elm, 'pskc:Secret', 'secret')
-        cls.serialise_datatype(
-            key._counter, key_elm, 'pskc:Counter', 'counter')
-        cls.serialise_datatype(
-            key._time_offset, key_elm, 'pskc:Time', 'time_offset')
-        cls.serialise_datatype(
-            key._time_interval, key_elm, 'pskc:TimeInterval', 'time_interval')
-        cls.serialise_datatype(
-            key._time_drift, key_elm, 'pskc:TimeDrift', 'time_drif')
+        cls.serialise_data(
+            key, 'secret', key_elm, 'pskc:Secret')
+        cls.serialise_data(
+            key, 'counter', key_elm, 'pskc:Counter')
+        cls.serialise_data(
+            key, 'time_offset', key_elm, 'pskc:Time')
+        cls.serialise_data(
+            key, 'time_interval', key_elm, 'pskc:TimeInterval')
+        cls.serialise_data(
+            key, 'time_drift', key_elm, 'pskc:TimeDrift')
         mk_elem(key_elm, 'pskc:UserId', key.key_userid)
         cls.serialise_policy(key.policy, key_elm)
 
     @classmethod
-    def serialise_datatype(cls, dt, key_elm, tag, field):
+    def serialise_data(cls, key, field, key_elm, tag):
+        value = getattr(key, '_%s' % field, None)
+        pskc = key.device.pskc
         # skip empty values
-        if dt.value in (None, '') and not dt.cipher_value:
+        if value in (None, ''):
             return
+        # get the value2text and encryption storage
+        if field == 'secret':
+            value2text = my_b64encode
+            encrypted_value_cls = EncryptedValue
+        else:
+            value2text = str
+            encrypted_value_cls = EncryptedIntegerValue
         # find the data tag and create our tag under it
         data = find(key_elm, 'pskc:Data')
         if data is None:
             data = mk_elem(key_elm, 'pskc:Data', empty=True)
         element = mk_elem(data, tag, empty=True)
-        # see if we should encrypt
-        if field in dt.pskc.encryption.fields and not dt.cipher_value:
-            dt.cipher_value = dt.pskc.encryption.encrypt_value(
-                dt._to_bin(dt.value))
-            dt.algorithm = dt.pskc.encryption.algorithm
-            dt.value = None
+        # see if we should encrypt the value
+        if field in pskc.encryption.fields and not hasattr(
+                value, 'get_value'):
+            value = encrypted_value_cls.create(pskc, value)
         # write out value
-        if dt.cipher_value:
+        if not hasattr(value, 'get_value'):
+            # unencrypted value
+            mk_elem(element, 'pskc:PlainValue', value2text(value))
+        else:
+            # encrypted value
             encrypted_value = mk_elem(
                 element, 'pskc:EncryptedValue', empty=True)
-            mk_elem(
-                encrypted_value, 'xenc:EncryptionMethod',
-                Algorithm=dt.algorithm)
+            mk_elem(encrypted_value, 'xenc:EncryptionMethod',
+                    Algorithm=value.algorithm)
             cipher_data = mk_elem(
                 encrypted_value, 'xenc:CipherData', empty=True)
-            mk_elem(
-                cipher_data, 'xenc:CipherValue',
-                base64.b64encode(dt.cipher_value).decode())
-            if dt.value_mac:
-                mk_elem(element, 'pskc:ValueMAC', base64.b64encode(
-                    dt.value_mac).decode())
-            elif dt.pskc.mac.algorithm:
-                mk_elem(element, 'pskc:ValueMAC', base64.b64encode(
-                    dt.pskc.mac.generate_mac(dt.cipher_value)).decode())
-        else:
-            mk_elem(element, 'pskc:PlainValue', dt._to_text(dt.value))
+            mk_elem(cipher_data, 'xenc:CipherValue',
+                    base64.b64encode(value.cipher_value).decode())
+            if value.mac_value:
+                mk_elem(element, 'pskc:ValueMAC',
+                        base64.b64encode(value.mac_value).decode())
 
     @classmethod
     def serialise_policy(cls, policy, key_elm):

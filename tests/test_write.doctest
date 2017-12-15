@@ -264,7 +264,7 @@ Set up an encrypted PSKC file and generate a pre-shared key for it.
 
 >>> pskc = PSKC()
 >>> key = pskc.add_key(
-...     id='1', serial='123456', secret='1234', counter=42)
+...     id='1', serial='123456', secret=b'1234', counter=42)
 >>> pskc.encryption.setup_preshared_key(
 ...     algorithm='aes128-cbc',
 ...     key=a2b_hex('12345678901234567890123456789012'),
@@ -336,7 +336,7 @@ Use PBKDF2 to derive a key instead of using a pre-shared key.
 
 >>> pskc = PSKC()
 >>> key = pskc.add_key(
-...     id='1', serial='123456', secret='1234', counter=42)
+...     id='1', serial='123456', secret=b'1234', counter=42)
 >>> pskc.encryption.setup_pbkdf2(
 ...     'passphrase', key_name='Passphrase')
 >>> pskc.write(f.name)

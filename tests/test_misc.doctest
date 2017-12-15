@@ -1,6 +1,6 @@
 test_misc.doctest - miscellaneous tests
 
-Copyright (C) 2014-2016 Arthur de Jong
+Copyright (C) 2014-2017 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -256,3 +256,11 @@ challenge 'DECIMAL' 16 87 False
 response  'DECIMAL' 3 True
 challenge 'HEXADECIMAL' 4 6 None
 response  'ALPHANUMERIC' 6 None
+
+
+This checks an PSKC file with a number of different empty sections that
+normally contain data.
+
+>>> pskc = PSKC('tests/misc/partialxml.pskcxml')
+>>> all(key.counter is None for key in pskc.keys)
+True

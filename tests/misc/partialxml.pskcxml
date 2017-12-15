@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  This test file contains various incomplete but otherwise valid key entries.
+-->
+
+<KeyContainer Version="1.0"
+  xmlns="urn:ietf:params:xml:ns:keyprov:pskc"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+ <!-- empty key package -->
+ <KeyPackage></KeyPackage>
+ <!-- key package with empty key -->
+ <KeyPackage><Key></Key></KeyPackage>
+ <!-- key with empty data -->
+ <KeyPackage><Key><Data></Data></Key></KeyPackage>
+ <!-- key with empty counter -->
+ <KeyPackage><Key><Data><Counter></Counter></Data></Key></KeyPackage>
+ <!-- key with empty counter -->
+ <KeyPackage><Key><Data><Counter></Counter></Data></Key></KeyPackage>
+ <!-- key with empty policy -->
+ <KeyPackage><Key><Policy></Policy></Key></KeyPackage>
+</KeyContainer>
