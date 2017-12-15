@@ -146,6 +146,8 @@ def main():
             for column in args.columns])
     if args.output:
         output.close()
+    else:
+        output.flush()
 
 
 if __name__ == '__main__':  # pragma: no cover
