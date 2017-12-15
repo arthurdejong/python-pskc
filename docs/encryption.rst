@@ -61,6 +61,12 @@ The Encryption class
       ``http://www.w3.org/2001/04/xmlenc#tripledes-cbc``.
 
 
+   .. attribute:: is_encrypted
+
+      An indicator of whether the PSKC file requires an additional pre-shared
+      key or passphrase to decrypt the contents of the file. Will be ``True``
+      if a key or passphrase is needed, ``False`` otherwise.
+
    .. attribute:: key_names
 
       List of names provided for the encryption key.

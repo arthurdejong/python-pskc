@@ -314,6 +314,18 @@ class Encryption(object):
         from pskc.algorithms import normalise_algorithm
         self._algorithm = normalise_algorithm(value)
 
+    @property
+    def is_encrypted(self):
+        """Test whether the PSKC file requires a decryption key."""
+        from pskc.exceptions import DecryptionError
+        try:
+            for key in self.pskc.keys:
+                key.secret, key.counter, key.time_offset
+                key.time_interval, key.time_drift
+        except DecryptionError:
+            return True
+        return False
+
     def derive_key(self, password):
         """Derive a key from the password."""
         self.key = self.derivation.derive(password)

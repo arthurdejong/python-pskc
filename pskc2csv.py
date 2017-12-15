@@ -111,17 +111,6 @@ def get_column(key, column, encoding):
     return value
 
 
-def is_encrypted(pskcfile):
-    """Check whether the PSKC file is encrypted."""
-    try:
-        pskcfile.keys[0].secret
-    except DecryptionError:
-        return True
-    except IndexError:
-        pass
-    return False
-
-
 def main():
     # parse command-line arguments
     args = parser.parse_args()
@@ -140,7 +129,7 @@ def main():
             pskcfile.encryption.derive_key(passwd)
         else:
             pskcfile.encryption.derive_key(args.password)
-    elif sys.stdin.isatty() and is_encrypted(pskcfile):
+    elif sys.stdin.isatty() and pskcfile.encryption.is_encrypted:
         # prompt for a password
         prompt = 'Password: '
         if pskcfile.encryption.key_name:

@@ -160,9 +160,13 @@ encryption.
 Traceback (most recent call last):
     ...
 DecryptionError: No key available
+>>> pskc.encryption.is_encrypted
+True
 >>> pskc.encryption.key_name
 'Pre-shared-key'
 >>> pskc.encryption.key = a2b_hex('12345678901234567890123456789012')
+>>> pskc.encryption.is_encrypted
+False
 >>> pskc.encryption.algorithm
 'http://www.w3.org/2001/04/xmlenc#aes128-cbc'
 >>> b2a_hex(pskc.mac.key)
@@ -186,7 +190,11 @@ This tests a derived master key using PBKDF2 as seen in figure 7 of RFC 6030.
 >>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.key_name
 'My Password 1'
+>>> pskc.encryption.is_encrypted
+True
 >>> pskc.encryption.derive_key('qwerty')
+>>> pskc.encryption.is_encrypted
+False
 >>> b2a_hex(pskc.encryption.key)
 '651e63cd57008476af1ff6422cd02e41'
 >>> pskc.encryption.algorithm
