@@ -32,11 +32,16 @@ if 'sdist' in sys.argv:
     os.system('chmod -R a+rX .')
     os.umask(int('022', 8))
 
+base_dir = os.path.dirname(__file__)
+
+with open(os.path.join(base_dir, 'README'), 'r') as fp:
+    long_description = fp.read()
+
 setup(
     name='python-pskc',
     version=pskc.__version__,
     description='Python module for handling PSKC files',
-    long_description=pskc.__doc__,
+    long_description=long_description,
     author='Arthur de Jong',
     author_email='arthur@arthurdejong.org',
     keywords=['PSKC', 'RFC 6030', 'key container'],

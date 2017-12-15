@@ -1,14 +1,16 @@
-Python PSKC module
-==================
+Python module for handling PSKC files
+=====================================
 
 A Python module to handle Portable Symmetric Key Container (PSKC) files as
 defined in `RFC 6030 <https://tools.ietf.org/html/rfc6030>`_. PSKC files are
 used to transport and provision symmetric keys and key meta data (seed files)
-to different types of crypto modules, commonly one-time password tokens or
+to different types of crypto modules, commonly one-time password systems or
 other authentication devices.
 
 This module can be used to extract keys from PSKC files for use in an OTP
 authentication system. The module can also be used for authoring PSKC files.
+
+This module should be able to handle most common PSKC files.
 
 https://arthurdejong.org/python-pskc/
 
@@ -25,7 +27,7 @@ Extracting key material from encrypted PSKC files is as simple as:
 >>> pskc = PSKC('tests/rfc6030/figure7.pskcxml')
 >>> pskc.encryption.derive_key('qwerty')
 >>> for key in pskc.keys:
-...     print key.serial, key.secret
+...     print('%s %s' % (key.serial, str(key.secret.decode())))
 987654321 12345678901234567890
 
 Writing am encrypted PSKC file is as simple as:
@@ -46,7 +48,7 @@ Security considerations
 
 This code handles private key material and is written in Python. No
 precautions have been taken to lock pages in memory to prevent swapping. Also
-no attempt is currently made to security dispose of memory that may have held
+no attempt is currently made to securely dispose of memory that may have held
 private key material.
 
 
@@ -69,12 +71,3 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
-
-
-Development notes
------------------
-
-This package should use a mostly standard source code layout and support both
-Python 2 (2.6 but 2.7 is recommended) and Python 3 (most recent versions
-should work). The tests can be run with nosetests and the aim is to have
-maximum code coverage.
