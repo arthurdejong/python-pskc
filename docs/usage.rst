@@ -110,6 +110,11 @@ The PSKC class
       :class:`~pskc.mac.MAC` instance for handling integrity checking.
       See :doc:`mac` for more information.
 
+   .. attribute:: signature
+
+      :class:`~pskc.signature.Signature` instance for handling embedded XML
+      signatures in the file.
+      See :doc:`signatures` for more information.
 
    .. function:: add_device([**kwargs])
 

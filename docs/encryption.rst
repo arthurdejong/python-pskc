@@ -99,7 +99,7 @@ The Encryption class
 
       Configure pre-shared key encryption when writing the file.
 
-      :param binary key: the encryption key to use
+      :param bytes key: the encryption key to use
       :param str id: encryption key identifier
       :param str algorithm: encryption algorithm
       :param int key_length: encryption key length in bytes
@@ -132,7 +132,7 @@ The Encryption class
       :param str key_name: a name for the key
       :param list key_names: a number of names for the key
       :param list fields: a list of fields to encrypt
-      :param binary salt: PBKDF2 salt
+      :param bytes salt: PBKDF2 salt
       :param int salt_length: used when generating random salt
       :param int iterations: number of PBKDF2 iterations
       :param function prf: PBKDF2 pseudorandom function

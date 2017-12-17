@@ -48,7 +48,7 @@ The MAC class
       Configure an encrypted MAC key for creating a new PSKC file.
 
       :param str algorithm: encryption algorithm
-      :param binary key: the encryption key to use
+      :param bytes key: the encryption key to use
 
       None of the arguments are required. By default HMAC-SHA1 will be used
       as a MAC algorithm. If no key is configured a random key will be
