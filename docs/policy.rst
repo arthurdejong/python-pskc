@@ -64,7 +64,7 @@ The Policy class
       Describe how the PIN is used during the usage of the key. See
       :ref:`pin-use-constants` below.
 
-   .. attribute:: pin_max_failed_attemtps
+   .. attribute:: pin_max_failed_attempts
 
       The maximum number of times the PIN may be entered wrongly before it
       MUST NOT be possible to use the key any more.

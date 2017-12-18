@@ -71,7 +71,7 @@ Add policy information and a PIN.
 >>> key.policy.number_of_transactions = 42
 >>> key.policy.pin_key_id = 'pinID'
 >>> key.policy.pin_usage = 'Local'
->>> key.policy.pin_max_failed_attemtps = 3
+>>> key.policy.pin_max_failed_attempts = 3
 >>> key.policy.pin_min_length = 4
 >>> key.policy.pin_max_length = 4
 >>> key.policy.pin_encoding = 'DECIMAL'

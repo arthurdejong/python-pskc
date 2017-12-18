@@ -338,7 +338,7 @@ class PSKCParser(object):
         if pin_policy_elm is not None:
             policy.pin_key_id = pin_policy_elm.get('PINKeyId')
             policy.pin_usage = pin_policy_elm.get('PINUsageMode')
-            policy.pin_max_failed_attemtps = getint(
+            policy.pin_max_failed_attempts = getint(
                 pin_policy_elm, 'MaxFailedAttempts')
             policy.pin_min_length = getint(pin_policy_elm, 'MinLength')
             policy.pin_max_length = getint(pin_policy_elm, 'MaxLength')

@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301 USA
 
 
+>>> import warnings
 >>> from binascii import a2b_hex, b2a_hex
 >>> def tostr(x):
 ...     return str(x.decode())
@@ -264,3 +265,21 @@ normally contain data.
 >>> pskc = PSKC('tests/misc/partialxml.pskcxml')
 >>> all(key.counter is None for key in pskc.keys)
 True
+
+
+A typo was fixed and the old name was provided via a deprecation wrapper
+property.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key()
+>>> with warnings.catch_warnings(record=True) as w:
+...     key.policy.pin_max_failed_attemtps = 10
+...     assert len(w) == 1
+...     assert issubclass(w[0].category, DeprecationWarning)
+>>> key.policy.pin_max_failed_attempts
+10
+>>> with warnings.catch_warnings(record=True) as w:
+...     key.policy.pin_max_failed_attemtps
+...     assert len(w) == 1
+...     assert issubclass(w[0].category, DeprecationWarning)
+10

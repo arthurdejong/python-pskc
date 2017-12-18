@@ -1,7 +1,7 @@
 # policy.py - module for handling PSKC policy information
 # coding: utf-8
 #
-# Copyright (C) 2014-2016 Arthur de Jong
+# Copyright (C) 2014-2017 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 # 02110-1301 USA
 
 """Module that provides PSKC key policy information."""
+
+import warnings
 
 
 def _make_aware(d):
@@ -44,7 +46,7 @@ class Policy(object):
       pin_key: reference to the key that holds the PIN
       pin: value of the PIN to use
       pin_usage: define how the PIN is used in relation to the key
-      pin_max_failed_attemtps: max. number of times a wrong PIN may be entered
+      pin_max_failed_attempts: max. number of times a wrong PIN may be entered
       pin_min_length: minimum length of a PIN that may be set
       pin_max_length: maximum length of a PIN that may be set
       pin_encoding: DECIMAL/HEXADECIMAL/ALPHANUMERIC/BASE64/BINARY
@@ -108,11 +110,26 @@ class Policy(object):
         self.key_usage = []
         self.pin_key_id = None
         self.pin_usage = None
-        self.pin_max_failed_attemtps = None
+        self.pin_max_failed_attempts = None
         self.pin_min_length = None
         self.pin_max_length = None
         self.pin_encoding = None
         self.unknown_policy_elements = False
+
+    @property
+    def pin_max_failed_attemtps(self):
+        """Provide access to deprecated name."""
+        warnings.warn(
+            'The pin_max_failed_attemtps property has been renamed to '
+            'pin_max_failed_attempts.', DeprecationWarning, stacklevel=2)
+        return self.pin_max_failed_attempts
+
+    @pin_max_failed_attemtps.setter
+    def pin_max_failed_attemtps(self, value):
+        warnings.warn(
+            'The pin_max_failed_attemtps property has been renamed to '
+            'pin_max_failed_attempts.', DeprecationWarning, stacklevel=2)
+        self.pin_max_failed_attempts = value
 
     def may_use(self, usage=None, now=None):
         """Check whether the key may be used for the provided purpose."""

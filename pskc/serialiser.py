@@ -214,7 +214,7 @@ class PSKCSerialiser(object):
         if not policy.key_usage and all(x is None for x in (
                 policy.start_date, policy.expiry_date,
                 policy.number_of_transactions, policy.pin_key_id,
-                policy.pin_usage, policy.pin_max_failed_attemtps,
+                policy.pin_usage, policy.pin_max_failed_attempts,
                 policy.pin_min_length, policy.pin_max_length,
                 policy.pin_encoding)):
             return
@@ -224,7 +224,7 @@ class PSKCSerialiser(object):
         mk_elem(policy_elm, 'pskc:PINPolicy',
                 PINKeyId=policy.pin_key_id,
                 PINUsageMode=policy.pin_usage,
-                MaxFailedAttempts=policy.pin_max_failed_attemtps,
+                MaxFailedAttempts=policy.pin_max_failed_attempts,
                 MinLength=policy.pin_min_length,
                 MaxLength=policy.pin_max_length,
                 PINEncoding=policy.pin_encoding)
