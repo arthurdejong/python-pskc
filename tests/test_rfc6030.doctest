@@ -241,8 +241,9 @@ DecryptionError: No key available
 
 
 This tests a PSKC file that uses digital signature to sign the PSKC file as
-seen in figure 8 of RFC 6030. Note that python-pskc currently does not yet
-support checking this signature so this test is very limited.
+seen in figure 8 of RFC 6030. Since the RFC does not supply the certificate
+that was used in the signature (which is likely invalid) we cannot verify it
+in this example and can only get some signature properties.
 
 >>> pskc = PSKC('tests/rfc6030/figure9.pskcxml')
 >>> pskc.signature.is_signed

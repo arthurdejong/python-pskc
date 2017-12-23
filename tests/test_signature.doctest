@@ -1,0 +1,219 @@
+test_signature.doctest - test XML signature checking functions
+
+Copyright (C) 2017 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> import sys
+>>> import tempfile
+>>> try:
+...     from StringIO import StringIO
+... except ImportError:
+...     from io import StringIO
+>>> from binascii import a2b_hex, b2a_hex
+>>> def tostr(x):
+...     return str(x.decode())
+>>> def decode(f):
+...     return lambda x: tostr(f(x))
+>>> b2a_hex = decode(b2a_hex)
+
+>>> from pskc import PSKC
+>>> from pskc.encryption import encrypt, decrypt
+
+
+>>> with open('tests/certificate/key.pem', 'rb') as f:
+...     signing_key = f.read()
+>>> with open('tests/certificate/ss-certificate.pem', 'rb') as f:
+...     self_signed_certificate = f.read()
+>>> with open('tests/certificate/certificate.pem', 'rb') as f:
+...     signed_certificate = f.read()
+
+
+Build a simple PSKC structure and sign the file including a self-signed
+certificate.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(id='456', manufacturer='Manufacturer')
+>>> key.secret = a2b_hex('4e1790ba272406ba309c5a31')
+>>> pskc.signature.sign(signing_key, self_signed_certificate)
+
+Write the PSKC file (use temporary file to test passing file name as
+argument).
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc.write(f.name)
+>>> with open(f.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ ...
+ <ds:Signature>
+  <ds:SignedInfo><ds:CanonicalizationMethod Algorithm="..."/><ds:SignatureMethod Algorithm="..."/><ds:Reference...><ds:DigestMethod Algorithm="..."/><ds:DigestValue>...</ds:DigestValue></ds:Reference></ds:SignedInfo>
+  <ds:SignatureValue>...</ds:SignatureValue>
+  <ds:KeyInfo>
+   <ds:X509Data>
+    <ds:X509Certificate>...</ds:X509Certificate>
+   </ds:X509Data>
+  </ds:KeyInfo>
+ </ds:Signature>
+</pskc:KeyContainer>
+
+Read back the PSKC file and verify the signature.
+
+>>> newpskc = PSKC(f.name)
+>>> print(tostr(newpskc.signature.certificate))  #doctest: +ELLIPSIS
+-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----
+>>> newpskc.signature.signed_pskc  # we need a certificate for verification
+Traceback (most recent call last):
+    ...
+InvalidCertificate: [18, 0, 'self signed certificate']
+>>> newpskc.signature.verify(self_signed_certificate)
+True
+>>> newpskc = newpskc.signature.signed_pskc
+>>> newpskc.keys[0].secret == pskc.keys[0].secret
+True
+
+We can also use the certificate that is embedded in the PSKC file but that
+does not add any security.
+
+>>> newpskc = PSKC(f.name)
+>>> newpskc.signature.verify(newpskc.signature.certificate)
+True
+>>> newpskc = newpskc.signature.signed_pskc
+>>> newpskc.keys[0].secret == pskc.keys[0].secret
+True
+
+
+We can also sign a PSKC file without a embedding certificate. This should be
+practically the same as using a self-signed certificate.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(id='456', manufacturer='Manufacturer')
+>>> key.secret = a2b_hex('4e1790ba272406ba309c5a31')
+>>> pskc.signature.sign(signing_key)
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc.write(f.name)
+>>> with open(f.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ ...
+ <ds:Signature>
+  <ds:SignedInfo><ds:CanonicalizationMethod Algorithm="..."/><ds:SignatureMethod Algorithm="..."/><ds:Reference...><ds:DigestMethod Algorithm="..."/><ds:DigestValue>...</ds:DigestValue></ds:Reference></ds:SignedInfo>
+  <ds:SignatureValue>...</ds:SignatureValue>
+  <ds:KeyInfo>
+   <ds:KeyValue>
+    <ds:RSAKeyValue>
+     <ds:Modulus>...</ds:Modulus>
+     <ds:Exponent>...</ds:Exponent>
+    </ds:RSAKeyValue>
+   </ds:KeyValue>
+  </ds:KeyInfo>
+ </ds:Signature>
+</pskc:KeyContainer>
+
+Read the file back in and verify the signature using the self-signed
+certificate.
+
+>>> newpskc = PSKC(f.name)
+>>> newpskc.signature.certificate is None
+True
+>>> newpskc.signature.signed_pskc  # we need a certificate for verification
+Traceback (most recent call last):
+    ...
+InvalidInput: Expected a X.509 certificate based signature
+>>> newpskc.signature.verify(self_signed_certificate)
+True
+>>> newpskc = newpskc.signature.signed_pskc
+>>> newpskc.keys[0].secret == pskc.keys[0].secret
+True
+
+
+We can also sign a PSKC file and include a certificate that can be validated
+using a CA certificate.
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(id='456', manufacturer='Manufacturer')
+>>> key.secret = a2b_hex('4e1790ba272406ba309c5a31')
+>>> pskc.signature.sign(signing_key, signed_certificate)
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc.write(f.name)
+>>> with open(f.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ ...
+ <ds:Signature>
+  <ds:SignedInfo><ds:CanonicalizationMethod Algorithm="..."/><ds:SignatureMethod Algorithm="..."/><ds:Reference...><ds:DigestMethod Algorithm="..."/><ds:DigestValue>...</ds:DigestValue></ds:Reference></ds:SignedInfo>
+  <ds:SignatureValue>...</ds:SignatureValue>
+  <ds:KeyInfo>
+   <ds:X509Data>
+    <ds:X509Certificate>...</ds:X509Certificate>
+   </ds:X509Data>
+  </ds:KeyInfo>
+ </ds:Signature>
+</pskc:KeyContainer>
+
+Read back the PSKC file and verify the signature. This file can be verified
+using the self-signed certificate, the signing certificate or by providing
+the CA certificate.
+
+>>> newpskc = PSKC(f.name)
+>>> newpskc.signature.signed_pskc  # we need a certificate for verification
+Traceback (most recent call last):
+    ...
+InvalidCertificate: [20, 0, 'unable to get local issuer certificate']
+>>> newpskc.signature.verify(self_signed_certificate)
+True
+>>> newpskc.signature.verify(signed_certificate)
+True
+>>> newpskc.signature.verify(ca_pem_file='tests/certificate/ca-certificate.pem')
+True
+
+
+We could also sign a PSKC file and include a certificate that is validated by
+the default operating system recorded CAs but that is sadly not appropriate
+for a test suite (the key needs to be included in the test suite so would not
+be private, depending on the CA used there would be costs involved and the
+certificates would expire too quickly).
+
+
+A simple test for parsing an incomplete signature element.
+
+>>> pskc = PSKC(StringIO('''
+... <?xml version="1.0"?>
+... <KeyContainer Version="1.0" xmlns="urn:ietf:params:xml:ns:keyprov:pskc">
+...  <KeyPackage>
+...   <Key><Data><Secret><PlainValue>TheQuickBrownFox</PlainValue></Secret></Data></Key>
+...  </KeyPackage>
+...  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+...   <SignedInfo/>
+...   <SignatureValue/>
+...   <KeyInfo/>
+...  </Signature>
+... </KeyContainer>
+... '''.strip()))
+>>> len(pskc.keys)
+1
+>>> pskc.signature.canonicalization_method is None
+True
+>>> pskc.signature.algorithm is None
+True
+>>> pskc.signature.digest_algorithm is None
+True

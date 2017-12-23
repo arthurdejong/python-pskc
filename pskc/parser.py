@@ -23,6 +23,7 @@
 
 import array
 import base64
+import copy
 
 from pskc.exceptions import ParseError
 from pskc.key import EncryptedIntegerValue, EncryptedValue
@@ -60,12 +61,14 @@ class PSKCParser(object):
             tree = parse(filename)
         except Exception:
             raise ParseError('Error parsing XML')
-        remove_namespaces(tree)
+        # save a clean copy of the tree for signature checking
+        pskc.signature.tree = copy.deepcopy(tree)
         cls.parse_document(pskc, tree.getroot())
 
     @classmethod
     def parse_document(cls, pskc, container):
         """Read information from the provided <KeyContainer> tree."""
+        remove_namespaces(container)
         if container.tag not in ('KeyContainer', 'SecretContainer'):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema

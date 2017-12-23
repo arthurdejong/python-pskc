@@ -1,0 +1,29 @@
+This directory contains keys and certificates that are used in the
+python-pskc test suite for checking XML signatures.
+
+The CA key and certificate were generated with:
+
+openssl req \
+  -x509 -newkey rsa:2048 -nodes \
+  -keyout ca-key.pem -out ca-certificate.pem \
+  -days 3650 -subj '/C=NL/O=python-pskc/CN=Test CA'
+
+The key used for signing the PSKC files and corresponding self-signed
+certificate were generated with:
+
+openssl req \
+  -x509 -newkey rsa:2048 -nodes \
+  -keyout key.pem -out ss-certificate.pem \
+  -days 3650 -subj '/C=NL/O=python-pskc/CN=Test signing'
+
+The certificate signed by the CA key was generated with:
+
+openssl req \
+  -new \
+  -key key.pem -out request.pem \
+  -subj '/C=NL/O=python-pskc/CN=Test signing'
+
+openssl x509 \
+  -req \
+  -in request.pem -CA ca-certificate.pem -CAkey ca-key.pem -out certificate.pem \
+  -days 3650 -set_serial 42

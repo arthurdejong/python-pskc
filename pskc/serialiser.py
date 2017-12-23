@@ -24,7 +24,7 @@
 import base64
 
 from pskc.key import EncryptedIntegerValue, EncryptedValue
-from pskc.xml import find, mk_elem, tostring
+from pskc.xml import find, mk_elem, move_namespaces, reformat, tostring
 
 
 def my_b64encode(value):
@@ -53,7 +53,7 @@ class PSKCSerialiser(object):
         cls.serialise_mac(pskc.mac, container)
         for device in pskc.devices:
             cls.serialise_key_package(device, container)
-        return container
+        return cls.serialise_signature(pskc.signature, container)
 
     @classmethod
     def serialise_encryption(cls, encryption, container):
@@ -232,3 +232,14 @@ class PSKCSerialiser(object):
             mk_elem(policy_elm, 'pskc:KeyUsage', usage)
         mk_elem(policy_elm, 'pskc:NumberOfTransactions',
                 policy.number_of_transactions)
+
+    @classmethod
+    def serialise_signature(cls, signature, container):
+        if not signature.key:
+            return container
+        # move the namespace to the root element and reformat before signing
+        mk_elem(container, 'ds:Signature', Id='placeholder')
+        container = move_namespaces(container)
+        reformat(container)
+        # sign the document
+        return signature.sign_xml(container)

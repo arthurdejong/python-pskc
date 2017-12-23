@@ -246,8 +246,9 @@ an external mechanism to construct a HOTP key.
 
 
 This tests figure 8 from draft-ietf-keyprov-pskc-02 which uses a a digital
-signature to sign the PSKC file. Note that python-pskc currently does not yet
-support checking this signature so this test is very limited.
+signature to sign the PSKC file. Note that this file does not appear to
+contain a valid signature and if it would it wouldn't have a valid signature
+anyway.
 
 >>> pskc = PSKC('tests/draft-ietf-keyprov-pskc-02/figure8.pskcxml')
 >>> pskc.signature.is_signed

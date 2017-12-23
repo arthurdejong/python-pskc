@@ -208,6 +208,7 @@ def move_namespaces(element):
 
 def reformat(element, indent=''):
     """Reformat the XML tree to have nice wrapping and indenting."""
+    tag = element.tag.split('}')[-1]
     # re-order attributes by alphabet
     attrib = sorted(element.attrib.items())
     element.attrib.clear()
@@ -216,7 +217,9 @@ def reformat(element, indent=''):
         # clean up inner text
         if element.text:
             element.text = element.text.strip()
-    else:
+        if tag in ('X509Certificate', 'SignatureValue'):
+            element.text = ''.join(x for x in element.text if not x.isspace())
+    elif tag != 'SignedInfo':
         # indent children
         element.text = '\n ' + indent
         childred = list(element)
