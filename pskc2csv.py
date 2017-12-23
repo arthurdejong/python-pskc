@@ -155,6 +155,8 @@ def main():
         csvfile.writerow([
             get_column(key, column[0], args.secret_encoding)
             for column in args.columns])
+    if args.output:
+        output.close()
 
 
 if __name__ == '__main__':  # pragma: no cover
