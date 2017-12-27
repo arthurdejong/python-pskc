@@ -23,6 +23,7 @@
 
 import array
 import base64
+import copy
 
 from pskc.exceptions import ParseError
 from pskc.key import EncryptedIntegerValue, EncryptedValue
@@ -60,12 +61,14 @@ class PSKCParser(object):
             tree = parse(filename)
         except Exception:
             raise ParseError('Error parsing XML')
-        remove_namespaces(tree)
+        # save a clean copy of the tree for signature checking
+        pskc.signature.tree = copy.deepcopy(tree)
         cls.parse_document(pskc, tree.getroot())
 
     @classmethod
     def parse_document(cls, pskc, container):
         """Read information from the provided <KeyContainer> tree."""
+        remove_namespaces(container)
         if container.tag not in ('KeyContainer', 'SecretContainer'):
             raise ParseError('Missing KeyContainer')
         # the version of the PSKC schema
@@ -90,6 +93,8 @@ class PSKCParser(object):
         # handle KeyPackage entries
         for key_package in findall(container, 'KeyPackage', 'Device'):
             cls.parse_key_package(pskc.add_device(), key_package)
+        # handle Signature entries
+        cls.parse_signature(pskc.signature, find(container, 'Signature'))
 
     @classmethod
     def parse_encryption(cls, encryption, key_info):
@@ -360,3 +365,31 @@ class PSKCParser(object):
         for child in policy_elm:
             if child.tag not in known_children:
                 policy.unknown_policy_elements = True
+
+    @classmethod
+    def parse_signature(cls, signature, signature_elm):
+        """Read signature information from the <Signature> element."""
+        if signature_elm is None:
+            return
+        cm_elm = find(signature_elm, 'SignedInfo/CanonicalizationMethod')
+        if cm_elm is not None:
+            signature.canonicalization_method = cm_elm.attrib.get('Algorithm')
+        sm_elm = find(signature_elm, 'SignedInfo/SignatureMethod')
+        if sm_elm is not None:
+            signature.algorithm = sm_elm.attrib.get('Algorithm')
+        dm_elm = find(signature_elm, 'SignedInfo/Reference/DigestMethod')
+        if dm_elm is not None:
+            signature.digest_algorithm = dm_elm.attrib.get('Algorithm')
+        issuer = find(signature_elm, 'KeyInfo/X509Data/X509IssuerSerial')
+        if issuer is not None:
+            signature.issuer = findtext(issuer, 'X509IssuerName')
+            signature.serial = findtext(issuer, 'X509SerialNumber')
+        certificate = findbin(
+            signature_elm, 'KeyInfo/X509Data/X509Certificate')
+        if certificate:
+            certificate = base64.b64encode(certificate)
+            signature.certificate = b'\n'.join(
+                [b'-----BEGIN CERTIFICATE-----'] +
+                [certificate[i:i + 64]
+                 for i in range(0, len(certificate), 64)] +
+                [b'-----END CERTIFICATE-----'])

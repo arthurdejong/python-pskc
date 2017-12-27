@@ -191,8 +191,24 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
     return element
 
 
+def move_namespaces(element):
+    """Move the namespace declarations to the toplevel element."""
+    if hasattr(element, 'nsmap'):  # pragma: no cover (only on lxml)
+        # get all used namespaces
+        nsmap = {}
+        for e in element.iter():
+            nsmap.update(e.nsmap)
+        # replace toplevel element with all namespaces
+        e = Element(element.tag, attrib=element.attrib, nsmap=nsmap)
+        for a in element:
+            e.append(a)
+        element = e
+    return element
+
+
 def reformat(element, indent=''):
     """Reformat the XML tree to have nice wrapping and indenting."""
+    tag = element.tag.split('}')[-1]
     # re-order attributes by alphabet
     attrib = sorted(element.attrib.items())
     element.attrib.clear()
@@ -201,7 +217,9 @@ def reformat(element, indent=''):
         # clean up inner text
         if element.text:
             element.text = element.text.strip()
-    else:
+        if tag in ('X509Certificate', 'SignatureValue'):
+            element.text = ''.join(x for x in element.text if not x.isspace())
+    elif tag != 'SignedInfo':
         # indent children
         element.text = '\n ' + indent
         childred = list(element)
@@ -213,17 +231,7 @@ def reformat(element, indent=''):
 
 def tostring(element):
     """Return a serialised XML document for the element tree."""
-    # if we are using lxml.etree move namespaces to toplevel element
-    if hasattr(element, 'nsmap'):  # pragma: no cover (only on lxml)
-        # get all used namespaces
-        nsmap = {}
-        for e in element.iter():
-            nsmap.update(e.nsmap)
-        # replace toplevel element with all namespaces
-        e = Element(element.tag, attrib=element.attrib, nsmap=nsmap)
-        for a in element:
-            e.append(a)
-        element = e
+    element = move_namespaces(element)
     reformat(element)
     xml = xml_tostring(element, encoding='UTF-8')
     xml_decl = b"<?xml version='1.0' encoding='UTF-8'?>\n"

@@ -66,5 +66,6 @@ setup(
     extras_require={
         'lxml':  ['lxml'],
         'defuse':  ['defusedxml'],
+        'signature': ['signxml']
     },
 )

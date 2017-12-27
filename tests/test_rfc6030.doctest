@@ -1,6 +1,6 @@
 test_rfc6030.doctest - test for examples from RFC 6030
 
-Copyright (C) 2014-2016 Arthur de Jong
+Copyright (C) 2014-2017 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -241,10 +241,23 @@ DecryptionError: No key available
 
 
 This tests a PSKC file that uses digital signature to sign the PSKC file as
-seen in figure 8 of RFC 6030. Note that python-pskc currently does not yet
-support checking this signature so this test is very limited.
+seen in figure 8 of RFC 6030. Since the RFC does not supply the certificate
+that was used in the signature (which is likely invalid) we cannot verify it
+in this example and can only get some signature properties.
 
 >>> pskc = PSKC('tests/rfc6030/figure9.pskcxml')
+>>> pskc.signature.is_signed
+True
+>>> pskc.signature.algorithm
+'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
+>>> pskc.signature.canonicalization_method
+'http://www.w3.org/2001/10/xml-exc-c14n#'
+>>> pskc.signature.digest_algorithm
+'http://www.w3.org/2000/09/xmldsig#sha1'
+>>> pskc.signature.issuer
+'CN=Example.com,C=US'
+>>> pskc.signature.serial
+'12345678'
 >>> key = pskc.keys[0]
 >>> key.manufacturer
 'TokenVendorAcme'

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  Figure 9 example from RFC 6030 that has a digital signature.
+  Figure 9 example from RFC 6030 that has a digital signature. The signature
+  is invalid because no certificate can be found for it. The file was
+  modified to put the Signature element in the correct namespace (see errata
+  3418 from RFC 6030).
 -->
 
 <KeyContainer
@@ -32,7 +35,7 @@
             </Data>
         </Key>
     </KeyPackage>
-    <Signature>
+    <ds:Signature>
         <ds:SignedInfo>
             <ds:CanonicalizationMethod
              Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
@@ -61,5 +64,5 @@
                 </ds:X509IssuerSerial>
             </ds:X509Data>
         </ds:KeyInfo>
-    </Signature>
+    </ds:Signature>
 </KeyContainer>

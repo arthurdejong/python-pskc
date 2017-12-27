@@ -11,6 +11,7 @@ Contents
    usage
    encryption
    mac
+   signatures
    policy
    exceptions
    changes

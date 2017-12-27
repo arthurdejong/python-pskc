@@ -72,10 +72,12 @@ class PSKC(object):
 
     def __init__(self, filename=None):
         from pskc.encryption import Encryption
+        from pskc.signature import Signature
         from pskc.mac import MAC
         self.version = None
         self.id = None
         self.encryption = Encryption(self)
+        self.signature = Signature(self)
         self.mac = MAC(self)
         self.devices = []
         if filename is not None:
