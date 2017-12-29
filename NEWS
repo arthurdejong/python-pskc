@@ -1,3 +1,28 @@
+changes from 0.5 to 1.0
+-----------------------
+
+* fix a bug in writing passphrase encrypted PSKC files on Python3
+* fix a typo in the pin_max_failed_attempts attribute (the old name is
+  available as a deprecated property)
+* switch from pycrypto to cryptography as provider for encryption functions
+  because the latter is better supported
+* switch to using the PBKDF2 implementation from hashlib which requires
+  Python 2.7.8 or newer
+* use defusedxml when available (python-pskc now supports both standard
+  xml.etree and lxml with and without defusedxml)
+* support checking and generating embedded XML signatures (this requires the
+  signxml library which is not required for any other operations)
+* add limited support for very old draft PSKC versions (it is speculated that
+  this resembles the "Verisign PSKC format" that some applications produce)
+* support Camellia-CBC and KW-Camellia encryption algorithms
+* support any hashing algorithm available in Python
+* add a --secret-encoding option to pskc2csv to allow base64 encoded binary
+  output
+* support naming the CSV column headers in pskc2csv
+* add a manual page for pskc2csv
+* a number of documentation, code style and test suite improvements
+
+
 changes from 0.4 to 0.5
 -----------------------
 

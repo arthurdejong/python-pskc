@@ -1,3 +1,362 @@
+2017-12-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2651e80] tests/test_write.doctest: Not all XML serialisers
+	  write namespaces in same order
+
+	  This ignores the namespace declarations in the generated XML
+	  files because not all implementations on all environments write
+	  these in the same order.
+
+2017-12-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [44b1353] docs/conf.py, setup.cfg, tox.ini: Add Sphinx
+	  documentation checks
+
+	  This also slightly tunes the way Sphinx documentation is built.
+
+2017-12-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [42be53b] pskc2csv.py, tox.ini: Add support for PyPy
+
+2017-12-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [660ed65] setup.py, tox.ini: Add support for Python 3.7
+
+2017-12-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9cd97c9] README, setup.py: Use README as package long description
+
+2017-12-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [20bf9c5] docs/encryption.rst, pskc/encryption.py, pskc2csv.py,
+	  tests/test_rfc6030.doctest: Add an is_encrypted property
+
+	  This property can be use to see whether the PSKC file needs an
+	  additional pre-shared key or passphrase to decrypt any stored
+	  information.
+
+2017-12-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c365a70] : Implement XML signature checking
+
+2017-12-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [418f3dc] docs/encryption.rst, docs/index.rst, docs/mac.rst,
+	  docs/signatures.rst, docs/usage.rst: Add documentation for signed
+	  PSKC files
+
+2017-12-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [a97ac46] pskc/parser.py, pskc/serialiser.py,
+	  pskc/signature.py, pskc/xml.py, setup.py,
+	  tests/certificate/README, tests/certificate/ca-certificate.pem,
+	  tests/certificate/ca-key.pem, tests/certificate/certificate.pem,
+	  tests/certificate/key.pem, tests/certificate/request.pem,
+	  tests/certificate/ss-certificate.pem,
+	  tests/rfc6030/figure9.pskcxml,
+	  tests/test_draft_ietf_keyprov_pskc_02.doctest,
+	  tests/test_rfc6030.doctest, tests/test_signature.doctest, tox.ini:
+	  Implement signature checking
+
+	  This adds support for creating and verifying embedded XML
+	  signatures in PSKC files. This uses the third-party signxml
+	  library for actual signing and verification.
+
+	  The signxml library has a dependency on lxml and defusedxml
+	  (and a few others) but all parts of python-pskc still work
+	  correctly with our without lxml and/or defusedxml and signxml
+	  is only required when working with embedded signatures.
+
+	  This modifies the tox configuration to skip the signature
+	  checks if singxml is not installed and to only require 100%
+	  code coverage if the signature tests are done.
+
+2017-12-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c0bd21f] pskc/xml.py: Move namespace moving to own function
+
+2017-09-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ea503d6] pskc/__init__.py, pskc/parser.py, pskc/signature.py,
+	  tests/test_draft_ietf_keyprov_pskc_02.doctest,
+	  tests/test_rfc6030.doctest: Implement basic parsing of signature
+	  properties
+
+2017-12-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fcc6cdb] pskc2csv.py: Explicitly close output file in pskc2csv
+
+	  This ensures that the file descriptor is closed if we opened
+	  the file.  This is not a big problem for the script (because
+	  the script exists anyway) but causes problems for the tests.
+
+2017-12-18  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [052f5bc] docs/policy.rst, pskc/parser.py,
+	  pskc/policy.py, pskc/serialiser.py, tests/test_misc.doctest,
+	  tests/test_write.doctest: Fix typo in pin_max_failed_attempts
+	  attribute
+
+	  This makes the old name (pin_max_failed_attemtps) available as
+	  a deprecated property.
+
+2017-12-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6f0ca70] pskc/parser.py,
+	  tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/non-encrypted.pskcxml,
+	  tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml,
+	  tests/draft-hoyer-keyprov-portable-symmetric-key-container-01/non-encrypted.pskcxml,
+	  tests/draft-hoyer-keyprov-portable-symmetric-key-container-01/password-encrypted.pskcxml,
+	  tests/test_draft_hoyer_keyprov_portable_symmetric_key_container.doctest:
+	  Add limited support for very old draft PSKC versions
+
+	  This adds basic support for parsing the PSKC files as specified
+	  in draft-hoyer-keyprov-portable-symmetric-key-container-00 and
+	  draft-hoyer-keyprov-portable-symmetric-key-container-01.
+
+	  It should be able to extract secrets, counters, etc. but not
+	  all properties from the PSKC file are supported.
+
+	  It is speculated that this format resembles the "Verisign PSKC
+	  format" that some applications produce.
+
+2016-09-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9b85634] tests/multiotp/pskc-hotp-aes.txt,
+	  tests/multiotp/pskc-hotp-pbe.txt, tests/multiotp/pskc-totp-aes.txt,
+	  tests/multiotp/pskc-totp-pbe.txt,
+	  tests/multiotp/tokens_hotp_aes.pskc,
+	  tests/multiotp/tokens_hotp_pbe.pskc,
+	  tests/multiotp/tokens_ocra_aes.pskc,
+	  tests/multiotp/tokens_ocra_pbe.pskc,
+	  tests/multiotp/tokens_totp_aes.pskc,
+	  tests/multiotp/tokens_totp_pbe.pskc, tests/test_multiotp.doctest:
+	  Add test files from multiOTP
+
+	  This adds tests for parsing the files that are shipped as part
+	  of the multiOTP test suite.
+
+	  https://www.multiotp.net/
+
+2017-12-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [01507af] pskc/key.py, pskc/parser.py, pskc/serialiser.py,
+	  tests/misc/partialxml.pskcxml, tests/test_misc.doctest,
+	  tests/test_write.doctest: Refactor internal storate of encrypted
+	  values
+
+	  This changes the way encrypted values are stored internally before
+	  being decrypted. For example, the internal _secret property can now
+	  be a decrypted plain value or an EncryptedValue instance instead
+	  of always being a DataType, simplifying some things (e.g. all
+	  XML encoding/decoding is now done in the corresponding module).
+
+	  This should not change the public API but does have consequences
+	  for those who use custom serialisers or parsers.
+
+2017-12-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [dcf1919] pskc/crypto/aeskw.py, pskc/encryption.py,
+	  tests/encryption/kw-camellia128.pskcxml,
+	  tests/encryption/kw-camellia192.pskcxml,
+	  tests/encryption/kw-camellia256.pskcxml,
+	  tests/test_encryption.doctest: Add support for KW-Camellia suite
+	  of algorithms
+
+2017-12-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [364e93d] pskc/encryption.py,
+	  tests/encryption/camellia128-cbc.pskcxml,
+	  tests/encryption/camellia192-cbc.pskcxml,
+	  tests/encryption/camellia256-cbc.pskcxml,
+	  tests/test_encryption.doctest: Add support for Camellia-CBC
+	  suite of algorithms
+
+2017-10-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4c5e046] docs/conf.py, docs/pskc2csv.rst, setup.cfg: Add a
+	  manual page for pskc2csv
+
+2017-10-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [25cb2fc] setup.cfg: Ignore missing docstring in __init__ in flake
+
+2017-09-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [225e569] pskc/crypto/__init__.py, pskc/crypto/aeskw.py,
+	  pskc/crypto/tripledeskw.py, pskc/encryption.py,
+	  pskc/mac.py, setup.cfg, setup.py, tests/test_crypto.doctest,
+	  tests/test_encryption.doctest, tox.ini: Replace pycrypto with
+	  cryptography
+
+	  The cryptography library is better supported.
+
+	  This uses the functions from cryptography for AES and Triple
+	  DES encryption, replaces the (un)padding functions that were
+	  previously implemented in python-pskc with cryptography and uses
+	  PBKDF2 implementation from hashlib.
+
+2017-09-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5dff7d4] pskc/encryption.py: Use PBKDF2 from hashlib
+
+	  This uses pbkdf2_hmac() from hashlib for the PBKDF2 calculation.
+	  The downside of this is that this function is only available
+	  since Python 2.7.8.
+
+2017-09-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2c8a9b7] pskc/crypto/aeskw.py, pskc/crypto/tripledeskw.py,
+	  pskc/encryption.py, pskc/mac.py, tests/test_aeskw.doctest,
+	  tests/test_write.doctest: Replace use of pycrypto utility functions
+
+	  This uses os.urandom() as a source for random data and replaces
+	  other utility functions. This also removes one import for getting
+	  the lengths of Tripple DES keys.
+
+2017-09-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d0eddf8] pskc/serialiser.py, pskc/xml.py,
+	  tests/test_write.doctest: Implement our own XML formatting
+
+	  This avoids a using xml.dom.minidom to indent the XML tree and
+	  keep the attributes ordered alphabetically. This also allows
+	  for customisations to the XML formatting.
+
+2017-09-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4ed4e11] tests/test_mac.doctest: Support hashlib from Python 2.7.3
+
+	  Some Python versions don't have the algorithms_available property
+	  but do have the algorithms property in hashlib.
+
+2017-09-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b90faeb] pskc/xml.py, setup.py, tox.ini: Use defusedxml if
+	  available
+
+	  This uses the defusedxml library if available to defend agains
+	  a number of XML-based attacks.
+
+2017-09-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7272e54] pskc/serialiser.py, tests/test_write.doctest: Fix bug
+	  in saving PBKDF2 salt on Python3
+
+	  The PBKDF2 salt was saved in the wrong way (b'base64encodeddata'
+	  instead of base64encodeddata) when using Python 3. This fixes
+	  that problem and tests that saving and loading of a file that
+	  uses PBKDF2 key derivation works.
+
+2017-09-23  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cd33833] pskc2csv.py, setup.cfg, tests/test_pskc2csv.doctest:
+	  Add tests for the pskc2csv script
+
+	  This makes minor changes to the pskc2csv script to make it more
+	  easily testable.
+
+2017-09-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6028b8e] pskc2csv.py: Support adding custom CSV file headers
+
+	  This allows adding an optional label to the --columns option that
+	  can be used to output a label different from the key property
+	  name in the CSV file header.
+
+2017-09-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [eef681b] pskc2csv.py: Add --secret-encoding option to pskc2csv
+
+	  This option can be used to configure the encoding of the secret
+	  in the CSV file (still hex by default).
+
+2017-09-20  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6f78dd6] pskc/__init__.py, pskc/crypto/aeskw.py,
+	  pskc/crypto/tripledeskw.py, pskc/exceptions.py, pskc/mac.py,
+	  pskc/parser.py, pskc/policy.py, pskc/serialiser.py, setup.cfg,
+	  tox.ini: Run flake8 from tox
+
+	  This also makes a few small code formatting changes to ensure
+	  that the flake8 tests pass.
+
+2017-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cc3acc2] tox.ini: Simplify Tox configuration
+
+2017-06-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0c00c80] pskc/__init__.py, pskc/encryption.py, pskc/parser.py,
+	  pskc/serialiser.py, pskc/xml.py, pskc2csv.py: Various minor code
+	  style improvements
+
+2017-06-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [510e6a5] pskc/encryption.py, pskc/parser.py: Normalise key
+	  derivation algorithms
+
+	  This makes KeyDerivation.algorithm and KeyDerivation.pbkdf2_prf
+	  properties automatically normalise assigned values.
+
+2017-06-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d72e6cc] pskc/xml.py: Switch to using non-deprecated method
+
+	  This uses ElementTree.iter() instead of ElementTree.getiterator()
+	  for going over all the child elements in the tree because the
+	  latter is deprecated.
+
+2017-06-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7b106ff] docs/usage.rst, pskc/key.py, tests/test_yubico.doctest:
+	  Provide Key.userid convenience property
+
+	  This provides a read-only userid property on Key objects that uses
+	  the key_userid or device_userid value, whichever one is defined.
+
+2017-06-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f0d2991] docs/conf.py, docs/encryption.rst, docs/exceptions.rst,
+	  docs/mac.rst: Document supported encryption and MAC algorithms
+
+	  This also includes a few other small documentation improvements.
+
+2017-06-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8b8848d] pskc/encryption.py, pskc/mac.py,
+	  tests/test_invalid.doctest, tests/test_mac.doctest: Refactor
+	  MAC lookups
+
+	  This switches to using the hashlib.new() function to be able to use
+	  all hashes that are available in Python (specifically RIPEMD160).
+
+	  This also adds a number of tests for HMACs using test vectors
+	  from RFC 2202, RFC 4231 and RFC 2857.
+
+2017-06-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e10f9c6] pskc/algorithms.py: Handle more algortihm URIs
+
+	  This adds a number of algorithm URIs defined in RFC 6931 and also
+	  simplifies the definition of the list of URIs. It also adds more
+	  aliases for algorithms.
+
+2017-01-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1fc1a03] README, docs/usage.rst, setup.py: Switch URLs to HTTPS
+
+2017-01-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8de25c2] tests/actividentity/test.pskcxml,
+	  tests/test_actividentity.doctest: Correct name of ActivIdentity
+	  test file
+
+2017-01-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5889df7] ChangeLog, NEWS, README, docs/conf.py, pskc/__init__.py,
+	  pskc2csv.py, setup.py: Get files ready for 0.5 release
+
 2017-01-15  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [29a183d] tests/test_feitian.doctest, tests/test_nagraid.doctest:
