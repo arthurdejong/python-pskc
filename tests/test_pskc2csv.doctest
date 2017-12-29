@@ -43,6 +43,23 @@ Traceback (most recent call last):
 SystemExit: 0
 
 
+We hack stdin to lie about being a TTY to ensure the password propmpt are
+always presented.
+
+>>> class TTYFile(object):
+...     def __init__(self, f):
+...         self.f = f
+...
+...     def isatty(self):
+...         return True
+...
+...     def __getattr__(self, attr):
+...          return getattr(self.f, attr)
+>>> sys.stdin = TTYFile(sys.stdin)
+>>> sys.stdin.isatty()
+True
+
+
 We can output a CSV file with some columns with the just default arguments.
 
 >>> sys.argv = shlex.split('pskc2csv tests/rfc6030/figure5.pskcxml')

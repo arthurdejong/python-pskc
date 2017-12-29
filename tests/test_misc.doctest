@@ -273,12 +273,14 @@ property.
 >>> pskc = PSKC()
 >>> key = pskc.add_key()
 >>> with warnings.catch_warnings(record=True) as w:
+...     warnings.simplefilter('always')
 ...     key.policy.pin_max_failed_attemtps = 10
 ...     assert len(w) == 1
 ...     assert issubclass(w[0].category, DeprecationWarning)
 >>> key.policy.pin_max_failed_attempts
 10
 >>> with warnings.catch_warnings(record=True) as w:
+...     warnings.simplefilter('always')
 ...     key.policy.pin_max_failed_attemtps
 ...     assert len(w) == 1
 ...     assert issubclass(w[0].category, DeprecationWarning)
