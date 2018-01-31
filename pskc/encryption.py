@@ -1,7 +1,7 @@
 # encryption.py - module for handling encrypted values
 # coding: utf-8
 #
-# Copyright (C) 2014-2017 Arthur de Jong
+# Copyright (C) 2014-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -403,3 +403,29 @@ class Encryption(object):
     def encrypt_value(self, plaintext):
         """Encrypt the provided value and return the cipher_value."""
         return encrypt(self.algorithm, self.key, plaintext, self.iv)
+
+    def remove_encryption(self):
+        """Decrypt all values and remove the encryption from the PSKC file."""
+        # decrypt all values and store decrypted values
+        for key in self.pskc.keys:
+            key.secret = key.secret
+            key.counter = key.counter
+            key.time_offset = key.time_offset
+            key.time_interval = key.time_interval
+            key.time_drift = key.time_drift
+        # remove MAC configuration
+        self.pskc.mac.algorithm = None
+        self.pskc.mac.key = None
+        # remove encryption configuration
+        self.id = None
+        self.algorithm = None
+        self.key_names = []
+        self.key = None
+        self.iv = None
+        self.fields = []
+        # remove key derivation configuration
+        self.derivation.algorithm = None
+        self.derivation.pbkdf2_salt = None
+        self.derivation.pbkdf2_iterations = None
+        self.derivation.pbkdf2_key_length = None
+        self.derivation.pbkdf2_prf = None

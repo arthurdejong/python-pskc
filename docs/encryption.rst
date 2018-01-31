@@ -149,6 +149,13 @@ The Encryption class
       By default 12000 iterations will be used and a random salt with the
       length of the to-be-generated encryption key will be used.
 
+   .. function:: remove_encryption()
+
+      Decrypt all data stored in the PSKC file and remove the encryption
+      configuration. This can be used to read and encrypted PSKC file,
+      decrypt the file, remove the encryption and output an unencrypted PSKC
+      file or to replace the encryption algorithm.
+
 
 .. _encryption-algorithms:
 

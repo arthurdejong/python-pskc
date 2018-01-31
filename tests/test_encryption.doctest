@@ -1,6 +1,6 @@
 test_encryption.doctest - test various encryption schemes
 
-Copyright (C) 2014-2017 Arthur de Jong
+Copyright (C) 2014-2018 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -328,3 +328,24 @@ All properties can also be manually specified.
 'PBKDF2 passphrase'
 >>> b2a_hex(pskc.encryption.key)
 'e8c5fecfb2a5cbb80ff791782ff5e125cc375bb6ba113071'
+
+
+We can also remove the encryption totally and end up with a PSKC structure
+that only contains decrypted values (note that the original encryption
+properties are lost in this case).
+
+>>> pskc = PSKC('tests/encryption/aes192-cbc.pskcxml')
+>>> pskc.encryption.algorithm
+'http://www.w3.org/2001/04/xmlenc#aes192-cbc'
+>>> pskc.encryption.key = a2b_hex('123456789012345678901234567890123456789012345678')
+>>> tostr(pskc.keys[0].secret)
+'12345678901234567890'
+>>> pskc.encryption.remove_encryption()
+>>> pskc.encryption.algorithm is None
+True
+>>> pskc.encryption.key is None
+True
+>>> pskc.mac.key is None
+True
+>>> tostr(pskc.keys[0].secret)
+'12345678901234567890'
