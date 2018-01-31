@@ -1,7 +1,7 @@
 # serialiser.py - PSKC file parsing functions
 # coding: utf-8
 #
-# Copyright (C) 2016-2017 Arthur de Jong
+# Copyright (C) 2016-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -47,8 +47,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_document(cls, pskc):
-        container = mk_elem('pskc:KeyContainer', Version=pskc.version,
-                            Id=pskc.id)
+        container = mk_elem('pskc:KeyContainer', Version='1.0', Id=pskc.id)
         cls.serialise_encryption(pskc.encryption, container)
         cls.serialise_mac(pskc.mac, container)
         for device in pskc.devices:
