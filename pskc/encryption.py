@@ -340,7 +340,7 @@ class Encryption(object):
             self.algorithm = 'aes128-cbc'
         # default to encrypting the secret only
         if not self.fields:
-            self.fields = ['secret', ]
+            self.fields = ['secret']
         # if we're using a CBC mode of encryption, add a MAC
         if self.algorithm.endswith('-cbc'):
             self.pskc.mac.setup()

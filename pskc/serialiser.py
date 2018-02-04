@@ -135,7 +135,7 @@ class PSKCSerialiser(object):
     @classmethod
     def serialise_key(cls, key, key_package):
         key_elm = mk_elem(key_package, 'pskc:Key', empty=True, Id=key.id,
-                          Algorithm=key.algorithm, )
+                          Algorithm=key.algorithm)
         mk_elem(key_elm, 'pskc:Issuer', key.issuer)
         if any((key.algorithm_suite, key.challenge_encoding,
                 key.response_encoding, key.response_length)):

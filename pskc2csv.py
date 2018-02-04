@@ -31,7 +31,6 @@ import sys
 from binascii import a2b_hex, b2a_hex
 
 import pskc
-from pskc.exceptions import DecryptionError
 
 
 version_string = '''
