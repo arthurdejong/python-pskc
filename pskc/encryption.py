@@ -402,7 +402,10 @@ class Encryption(object):
 
     def encrypt_value(self, plaintext):
         """Encrypt the provided value and return the cipher_value."""
-        return encrypt(self.algorithm, self.key, plaintext, self.iv)
+        cipher_value = encrypt(self.algorithm, self.key, plaintext, self.iv)
+        if self.iv:
+            cipher_value = cipher_value[len(self.iv):]
+        return cipher_value
 
     def remove_encryption(self):
         """Decrypt all values and remove the encryption from the PSKC file."""

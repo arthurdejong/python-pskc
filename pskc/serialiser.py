@@ -100,11 +100,14 @@ class PSKCSerialiser(object):
             key_value = EncryptedValue.create(mac.pskc, key_value)
         # construct encrypted MACKey
         algorithm = key_value.algorithm or mac.pskc.encryption.algorithm
+        cipher_value = key_value.cipher_value
+        if mac.pskc.encryption.iv:
+            cipher_value = mac.pskc.encryption.iv + cipher_value
         mac_key = mk_elem(mac_method, 'pskc:MACKey', empty=True)
         mk_elem(mac_key, 'xenc:EncryptionMethod', Algorithm=algorithm)
         cipher_data = mk_elem(mac_key, 'xenc:CipherData', empty=True)
         mk_elem(cipher_data, 'xenc:CipherValue',
-                base64.b64encode(key_value.cipher_value).decode())
+                base64.b64encode(cipher_value).decode())
 
     @classmethod
     def serialise_key_package(cls, device, container):
@@ -195,6 +198,9 @@ class PSKCSerialiser(object):
         else:
             # encrypted value
             algorithm = value.algorithm or pskc.encryption.algorithm
+            cipher_value = value.cipher_value
+            if pskc.encryption.iv:
+                cipher_value = pskc.encryption.iv + cipher_value
             encrypted_value = mk_elem(
                 element, 'pskc:EncryptedValue', empty=True)
             mk_elem(encrypted_value, 'xenc:EncryptionMethod',
@@ -202,7 +208,7 @@ class PSKCSerialiser(object):
             cipher_data = mk_elem(
                 encrypted_value, 'xenc:CipherData', empty=True)
             mk_elem(cipher_data, 'xenc:CipherValue',
-                    base64.b64encode(value.cipher_value).decode())
+                    base64.b64encode(cipher_value).decode())
             if value.mac_value:
                 mk_elem(element, 'pskc:ValueMAC',
                         base64.b64encode(value.mac_value).decode())
