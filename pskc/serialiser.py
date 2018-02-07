@@ -90,22 +90,21 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_mac(cls, mac, container):
-        if not mac.algorithm and not mac.key:
+        key_value = getattr(mac, '_key', None) or mac.pskc.encryption.key
+        if not mac.algorithm and not key_value:
             return
         mac_method = mk_elem(
             container, 'pskc:MACMethod', Algorithm=mac.algorithm, empty=True)
+        # encrypt the mac key if needed
+        if not hasattr(key_value, 'get_value'):
+            key_value = EncryptedValue.create(mac.pskc, key_value)
+        # construct encrypted MACKey
+        algorithm = key_value.algorithm or mac.pskc.encryption.algorithm
         mac_key = mk_elem(mac_method, 'pskc:MACKey', empty=True)
-        mk_elem(
-            mac_key, 'xenc:EncryptionMethod',
-            Algorithm=mac.pskc.encryption.algorithm)
+        mk_elem(mac_key, 'xenc:EncryptionMethod', Algorithm=algorithm)
         cipher_data = mk_elem(mac_key, 'xenc:CipherData', empty=True)
-        if mac.key_cipher_value:
-            mk_elem(cipher_data, 'xenc:CipherValue',
-                    base64.b64encode(mac.key_cipher_value).decode())
-        elif mac.key_plain_value:
-            mk_elem(cipher_data, 'xenc:CipherValue',
-                    base64.b64encode(mac.pskc.encryption.encrypt_value(
-                        mac.key_plain_value)).decode())
+        mk_elem(cipher_data, 'xenc:CipherValue',
+                base64.b64encode(key_value.cipher_value).decode())
 
     @classmethod
     def serialise_key_package(cls, device, container):
@@ -195,10 +194,11 @@ class PSKCSerialiser(object):
             mk_elem(element, 'pskc:PlainValue', value2text(value))
         else:
             # encrypted value
+            algorithm = value.algorithm or pskc.encryption.algorithm
             encrypted_value = mk_elem(
                 element, 'pskc:EncryptedValue', empty=True)
             mk_elem(encrypted_value, 'xenc:EncryptionMethod',
-                    Algorithm=value.algorithm)
+                    Algorithm=algorithm)
             cipher_data = mk_elem(
                 encrypted_value, 'xenc:CipherData', empty=True)
             mk_elem(cipher_data, 'xenc:CipherValue',

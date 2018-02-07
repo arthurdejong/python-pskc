@@ -1,7 +1,7 @@
 # mac.py - module for checking value signatures
 # coding: utf-8
 #
-# Copyright (C) 2014-2017 Arthur de Jong
+# Copyright (C) 2014-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -81,25 +81,22 @@ class MAC(object):
     def __init__(self, pskc):
         self.pskc = pskc
         self._algorithm = None
-        self.key_plain_value = None
-        self.key_cipher_value = None
-        self.key_algorithm = None
 
     @property
     def key(self):
         """Provide access to the MAC key binary value if available."""
-        if self.key_plain_value:
-            return self.key_plain_value
-        elif self.key_cipher_value:
-            return self.pskc.encryption.decrypt_value(
-                self.key_cipher_value, self.key_algorithm)
-        # fall back to encryption key
-        return self.pskc.encryption.key
+        value = getattr(self, '_key', None)
+        if hasattr(value, 'get_value'):
+            return value.get_value(self.pskc)
+        elif value:
+            return value
+        else:
+            # fall back to encryption key
+            return self.pskc.encryption.key
 
     @key.setter
     def key(self, value):
-        self.key_plain_value = value
-        self.key_cipher_value = None
+        self._key = value
 
     @property
     def algorithm(self):

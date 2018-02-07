@@ -157,8 +157,8 @@ class PSKCParser(object):
             mac_method.get('algorithm'))
         mac_key = find(mac_method, 'MACKey')
         if mac_key is not None:
-            mac.key_algorithm, mac.key_cipher_value = (
-                cls.parse_encrypted_value(mac_key))
+            algorithm, cipher_value = cls.parse_encrypted_value(mac_key)
+            mac.key = EncryptedValue(cipher_value, None, algorithm)
 
     @classmethod
     def parse_key_package(cls, device, key_package):
