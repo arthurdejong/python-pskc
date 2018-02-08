@@ -257,6 +257,98 @@ providing the encryption key.
 </pskc:KeyContainer>
 
 
+Read a legacy encrypted PSKC file and write it out as-is. This should convert
+the format to RFC 6030 format as best it can. Note that this does not include
+a MAC key (but does include a MAC algorithm because the MAC key is not
+specified and we assume to use the encryption key as MAC key).
+
+>>> pskc = PSKC('tests/draft-hoyer-keyprov-portable-symmetric-key-container-01/password-encrypted.pskcxml')
+>>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer ... Version="1.0">
+ <pskc:EncryptionKey>
+  <xenc11:DerivedKey>
+   <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
+    <xenc11:PBKDF2-params>
+     <Salt>
+      <Specified>y6TzckeLRQw=</Specified>
+     </Salt>
+     <IterationCount>999</IterationCount>
+     <KeyLength>16</KeyLength>
+    </xenc11:PBKDF2-params>
+   </xenc11:KeyDerivationMethod>
+  </xenc11:DerivedKey>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1"/>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>Token Manufacturer</pskc:Manufacturer>
+   <pskc:SerialNo>98765432187</pskc:SerialNo>
+   <pskc:ExpiryDate>2008-01-01T00:00:00</pskc:ExpiryDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="HOTP" Id="77654321870">
+   <pskc:Issuer>Credential Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="6"/>
+   </pskc:AlgorithmParameters>
+   <pskc:FriendlyName>MySecondToken</pskc:FriendlyName>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>F/CY93NYc/SvmxT3oB6PzG7p6zpG92/t</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>hN793ZE7GM6yCM6gz9OKNRzibhg=</pskc:ValueMAC>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>VVBYqRF1QSpetvIB2vBAzw==</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>6clqJvT9l0xIZtWSch2t6zr0IwU=</pskc:ValueMAC>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+If we decrypt the file the MAC key will be included in encrypted form.
+
+>>> pskc.encryption.derive_key('qwerty')
+>>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer ... Version="1.0">
+ <pskc:EncryptionKey>
+  <xenc11:DerivedKey>
+   <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
+    <xenc11:PBKDF2-params>
+     <Salt>
+      <Specified>y6TzckeLRQw=</Specified>
+     </Salt>
+     <IterationCount>999</IterationCount>
+     <KeyLength>16</KeyLength>
+    </xenc11:PBKDF2-params>
+   </xenc11:KeyDerivationMethod>
+  </xenc11:DerivedKey>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
 Set up an encrypted PSKC file and generate a pre-shared key for it.
 
 >>> pskc = PSKC()

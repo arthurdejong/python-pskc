@@ -95,6 +95,8 @@ class PSKCSerialiser(object):
             return
         mac_method = mk_elem(
             container, 'pskc:MACMethod', Algorithm=mac.algorithm, empty=True)
+        if not key_value:
+            return
         # encrypt the mac key if needed
         if not hasattr(key_value, 'get_value'):
             key_value = EncryptedValue.create(mac.pskc, key_value)
