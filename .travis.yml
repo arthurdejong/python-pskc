@@ -1,0 +1,23 @@
+language: python
+cache: pip
+sudo: false
+python:
+  - 2.7
+  - 3.4
+  - 3.5
+  - 3.6
+  - pypy
+env:
+  - FLAVOUR=signxml
+  - FLAVOUR=legacy
+  - FLAVOUR=legacy-defusedxml
+  - FLAVOUR=lxml
+  - FLAVOUR=lxml-defusedxml
+matrix:
+  include:
+  - python: 3.5
+    env: TOXENV=flake8
+  - python: 3.5
+    env: TOXENV=docs
+install: pip install tox
+script: tox -e "${TOXENV:-$(echo py${TRAVIS_PYTHON_VERSION}-${FLAVOUR} | tr -d . | sed -e 's/pypypy/pypy/')}"
