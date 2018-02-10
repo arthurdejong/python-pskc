@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# python-pksc documentation build configuration file, created by
+# python-pskc documentation build configuration file, created by
 # sphinx-quickstart
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -184,10 +184,12 @@ htmlhelp_basename = 'python-pskcdoc'
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('pskc2csv', 'pskc2csv', u'Convert a PSKC file to CSV',
-     [u'Arthur de Jong'], 1)
+     [u'Arthur de Jong'], 1),
+    ('pskc2pskc', 'pskc2pskc', u'Convert a PSKC file to standard format',
+     [u'Arthur de Jong'], 1),
 ]
 
 # If true, show URL addresses after external links.
 man_show_urls = True
 
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+#intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}

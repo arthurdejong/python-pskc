@@ -1,0 +1,371 @@
+test_pskc2pskc.doctest - tests for the pskc2pskc script
+
+Copyright (C) 2018 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex
+>>> import shlex
+>>> import sys
+>>> import tempfile
+
+>>> from pskc import PSKC
+>>> from pskc2pskc import main
+
+
+Sadly we cannot test --help and --version properly because argparse calls
+exit(0) which doctest does not like.
+
+>>> sys.argv = shlex.split('pskc2pskc --help')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+SystemExit: 0
+>>> sys.argv = shlex.split('pskc2pskc --version')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+SystemExit: 0
+
+
+We can convert the PSKC file and just dump it to stdout.
+
+>>> sys.argv = shlex.split('pskc2pskc tests/rfc6030/figure2.pskcxml')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Id="exampleID1" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="12345678">
+   <pskc:Issuer>Issuer-A</pskc:Issuer>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNA==</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can also save the output to a file.
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/rfc6030/figure2.pskcxml --output') + [f.name]
+>>> main()
+>>> with open(f.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Id="exampleID1" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="12345678">
+   <pskc:Issuer>Issuer-A</pskc:Issuer>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNA==</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can also re-write the file without decrypting the data at all.
+
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/encryption/aes128-cbc.pskcxml')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Version="1.0">
+ <pskc:EncryptionKey>
+  <ds:KeyName>Pre-shared-key</ds:KeyName>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#hmac-sha224">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>SVZJVklWSVZJVklWSVZJViZS3d+rzbWqD74OQPuyiwrD+XlDXK7ef602mwOebfTR</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+  <pskc:Key>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>AAECAwQFBgcICQoLDA0OD+cIHItlB3Wra1DUpxVvOx2lef1VmNPCMl8jwZqIUqGv</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>CjGsEXpmZYGMyejd8WJdLFRBWE9XGJLiigPObg==</pskc:ValueMAC>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+This should also work with legacy PSKC files that have a global encryption
+IV. The output file should be a clean PSKC 1.0 format with the IV embedded in
+the CipherValue. Note however that the MAC key is missing because it is equal
+to the encryption key so we cannot make en encrypted version.
+
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/actividentity/test.pskcxml')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Version="1.0">
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1"/>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>ActivIdentity</pskc:Manufacturer>
+   <pskc:SerialNo>0950380269</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="http://www.ietf.org/keyprov/pskc#hotp" Id="0950380269">
+   <pskc:Issuer>ActivIdentity</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>Xus0lsc+rJLi0nc/ANE0XtRwSU4Zs2AwlO2AqzC+jmSjLEUK4kr2aaKnjHwbovXS</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>SlinEB9YUzcR04MUZDF5dBLtK1c=</pskc:ValueMAC>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>837830147</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+   <pskc:Policy>
+    <pskc:KeyUsage>OTP</pskc:KeyUsage>
+   </pskc:Policy>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can also output a decrypted version of an encrypted PSKC file.
+
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml' +
+...     ' --passwd qwerty')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>Token Manufacturer</pskc:Manufacturer>
+   <pskc:SerialNo>98765432187</pskc:SerialNo>
+   <pskc:ExpiryDate>2008-01-01T00:00:00</pskc:ExpiryDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="HOTP" Id="77654321870">
+   <pskc:Issuer>Credential Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="6"/>
+   </pskc:AlgorithmParameters>
+   <pskc:FriendlyName>MySecondToken</pskc:FriendlyName>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>ZWcLvpFoXNHAG+lx3+Rw</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>100</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+The password can also be read from a file.
+
+>>> f = tempfile.NamedTemporaryFile()
+>>> with open(f.name, 'wt') as f2:  # open second file to keep tempfile
+...     x = f2.write('qwerty\n')
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml' +
+...     ' --passwd') + [f.name]
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+...
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>ZWcLvpFoXNHAG+lx3+Rw</pskc:PlainValue>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+But we get an error if the password is wrong.
+
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml' +
+...     ' --passwd wrongpassword')
+>>> main()  #doctest: +ELLIPSIS
+Traceback (most recent call last):
+    ...
+DecryptionError: ...
+
+
+We can also supply a secret (both on the command line and via a file).
+
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure6.pskcxml' +
+...     ' --secret 12345678901234567890123456789012')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer ... Version="1.0">
+ <pskc:KeyPackage>
+...
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure6.pskcxml' +
+...     ' --secret 12345678901234567890123456789012')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer ... Version="1.0">
+ <pskc:KeyPackage>
+...
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+>>> f = tempfile.NamedTemporaryFile()
+>>> with open(f.name, 'wb') as f2:  # open second file to keep tempfile
+...     x = f2.write(a2b_hex('12345678901234567890123456789012'))
+>>> sys.argv = shlex.split(
+...     'pskc2csv tests/rfc6030/figure6.pskcxml' +
+...     ' --secret') + [f.name]
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer ... Version="1.0">
+ <pskc:KeyPackage>
+...
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can also decrypt a file and configure a new passphrase.
+
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml' +
+...     ' --passwd qwerty --new-passwd moresecure')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" Version="1.0">
+ <pskc:EncryptionKey>
+  <xenc11:DerivedKey>
+   <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
+    <xenc11:PBKDF2-params>
+     <Salt>
+      <Specified>...</Specified>
+     </Salt>
+     <IterationCount>12000</IterationCount>
+     <KeyLength>16</KeyLength>
+    </xenc11:PBKDF2-params>
+   </xenc11:KeyDerivationMethod>
+  </xenc11:DerivedKey>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Alternatively we can switch from passphrase-based encryption to key-based
+encryption.
+
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml' +
+...     ' --passwd qwerty --new-secret 12345678901234567890123456789012')
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Version="1.0">
+ <pskc:EncryptionKey/>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+If we leave out the original password we get an error.
+
+>>> sys.argv = shlex.split(
+...     'pskc2pskc tests/draft-hoyer-keyprov-portable-symmetric-key-container-00/password-encrypted.pskcxml' +
+...     ' --new-passwd moresecure')
+>>> main()  #doctest: +ELLIPSIS
+Traceback (most recent call last):
+    ...
+AssertionError
