@@ -35,9 +35,11 @@ def my_b64encode(value):
 
 
 class PSKCSerialiser(object):
+    """Class for serialising a PSKC structure to PSKC 1.0 XML."""
 
     @classmethod
     def serialise_file(cls, pskc, output):
+        """Write the PSKC structure to the specified output file."""
         xml = tostring(cls.serialise_document(pskc))
         try:
             output.write(xml)
@@ -47,6 +49,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_document(cls, pskc):
+        """Convert the PSKC structure to an element tree structure."""
         container = mk_elem('pskc:KeyContainer', Version='1.0', Id=pskc.id)
         cls.serialise_encryption(pskc.encryption, container)
         cls.serialise_mac(pskc.mac, container)
@@ -56,6 +59,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_encryption(cls, encryption, container):
+        """Provide an XML element tree for the encryption information."""
         if all(x is None
                for x in (encryption.id, encryption.key_name, encryption.key,
                          encryption.derivation.algorithm)):
@@ -71,6 +75,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_key_derivation(cls, derivation, encryption_key, key_names):
+        """Provide an XML structure for the key derivation properties."""
         derived_key = mk_elem(encryption_key, 'xenc11:DerivedKey', empty=True)
         key_derivation = mk_elem(derived_key, 'xenc11:KeyDerivationMethod',
                                  Algorithm=derivation.algorithm)
@@ -90,6 +95,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_mac(cls, mac, container):
+        """Provide an XML structure for the encrypted MAC key."""
         key_value = getattr(mac, '_key', None) or mac.pskc.encryption.key
         if not mac.algorithm and not key_value:
             return
@@ -113,6 +119,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_key_package(cls, device, container):
+        """Provide an XML structure for key package."""
         key_package = mk_elem(container, 'pskc:KeyPackage', empty=True)
         if any(x is not None
                for x in (device.manufacturer, device.serial, device.model,
@@ -137,6 +144,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_key(cls, key, key_package):
+        """Provide an XML structure for the key information."""
         key_elm = mk_elem(key_package, 'pskc:Key', empty=True, Id=key.id,
                           Algorithm=key.algorithm)
         mk_elem(key_elm, 'pskc:Issuer', key.issuer)
@@ -172,6 +180,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_data(cls, key, field, key_elm, tag):
+        """Provide an XML structure for the key material."""
         value = getattr(key, '_%s' % field, None)
         pskc = key.device.pskc
         # skip empty values
@@ -217,6 +226,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_policy(cls, policy, key_elm):
+        """Provide an XML structure with the key policy information."""
         # check if any policy attribute is set
         if not policy.key_usage and all(x is None for x in (
                 policy.start_date, policy.expiry_date,
@@ -242,6 +252,7 @@ class PSKCSerialiser(object):
 
     @classmethod
     def serialise_signature(cls, signature, container):
+        """Provide an XML structure for embedded XML signature."""
         if not signature.key:
             return container
         # move the namespace to the root element and reformat before signing

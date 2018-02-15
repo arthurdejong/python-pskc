@@ -1,7 +1,7 @@
 # parser.py - PSKC file parsing functions
 # coding: utf-8
 #
-# Copyright (C) 2016-2017 Arthur de Jong
+# Copyright (C) 2016-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -52,11 +52,11 @@ def plain2int(value):
 
 
 class PSKCParser(object):
+    """Class to read various PSKC XML files into a PSKC structure."""
 
     @classmethod
     def parse_file(cls, pskc, filename):
-        """Parse the provided file and store information in the existing
-        PSKC instance."""
+        """Parse the provided file and store data in the PSKC instance."""
         try:
             tree = parse(filename)
         except Exception:
@@ -163,7 +163,7 @@ class PSKCParser(object):
     @classmethod
     def parse_key_package(cls, device, key_package):
         """Read key information from the provided <KeyPackage> tree."""
-
+        # find basic device information
         info = find(key_package, 'DeviceInfo', 'DeviceId')
         if info is not None:
             device.manufacturer = findtext(info, 'Manufacturer')
@@ -174,23 +174,23 @@ class PSKCParser(object):
             device.start_date = findtime(info, 'StartDate')
             device.expiry_date = findtime(info, 'ExpiryDate', 'Expiry')
             device.device_userid = findtext(info, 'UserId')
-
+        # find crypto module info
         device.crypto_module = findtext(key_package, 'CryptoModuleInfo/Id')
-
+        # find keys for device
         for key_elm in findall(key_package, 'Key', 'Secret'):
             cls.parse_key(device.add_key(), key_elm)
 
     @classmethod
     def parse_key(cls, key, key_elm):
         """Read key information from the provided <KeyPackage> tree."""
-
+        # get key basic information
         key.id = (
             key_elm.get('Id') or key_elm.get('KeyId') or
             key_elm.get('SecretId'))
         key.algorithm = (
             key_elm.get('Algorithm') or key_elm.get('KeyAlgorithm') or
             key_elm.get('SecretAlgorithm'))
-
+        # parse data section with possibly encrypted data
         data = find(key_elm, 'Data')
         if data is not None:
             cls.parse_data(key, 'secret', find(data, 'Secret'))
@@ -198,7 +198,7 @@ class PSKCParser(object):
             cls.parse_data(key, 'time_offset', find(data, 'Time'))
             cls.parse_data(key, 'time_interval', find(data, 'TimeInterval'))
             cls.parse_data(key, 'time_drift', find(data, 'TimeDrift'))
-
+        # parse legacy data elements with name attribute
         for data in findall(key_elm, 'Data'):
             name = data.get('Name')
             if name:
@@ -208,17 +208,16 @@ class PSKCParser(object):
                     time='time_offset',
                     time_interval='time_interval',
                 ).get(name.lower()), data)
-
+        # parse more basic key properties
         key.issuer = findtext(key_elm, 'Issuer')
         key.key_profile = findtext(key_elm, 'KeyProfileId')
         key.key_reference = findtext(key_elm, 'KeyReference')
         key.friendly_name = findtext(key_elm, 'FriendlyName')
         # TODO: support multi-language values of <FriendlyName>
         key.key_userid = findtext(key_elm, 'UserId')
-
         key.algorithm_suite = findtext(
             key_elm, 'AlgorithmParameters/Suite')
-
+        # parse challenge format
         challenge_format = find(
             key_elm,
             'AlgorithmParameters/ChallengeFormat', 'Usage/ChallengeFormat')
@@ -236,7 +235,7 @@ class PSKCParser(object):
             key.challenge_check = getbool(
                 challenge_format, 'CheckDigits', getbool(
                     challenge_format, 'CheckDigit'))
-
+        # parse response format
         response_format = find(
             key_elm,
             'AlgorithmParameters/ResponseFormat', 'Usage/ResponseFormat')
@@ -251,9 +250,9 @@ class PSKCParser(object):
             key.response_check = getbool(
                 response_format, 'CheckDigits', getbool(
                     response_format, 'CheckDigit'))
-
+        # parse key policy information
         cls.parse_policy(key.policy, find(key_elm, 'Policy'))
-
+        # parse key usage information
         usage = find(key_elm, 'Usage')
         if usage is not None:
             for att in ('OTP', 'CR', 'Integrity', 'Encrypt', 'Unlock'):
@@ -284,7 +283,8 @@ class PSKCParser(object):
 
         The element is expected to contain <PlainValue>, <EncryptedValue>
         and/or <ValueMAC> elements that contain information on the actual
-        value."""
+        value.
+        """
         if element is None:
             return
         pskc = key.device.pskc

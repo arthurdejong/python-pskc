@@ -54,8 +54,8 @@ def wrap(plaintext, key, iv=None, pad=None, algorithm=algorithms.AES):
 
     If pad is True, padding as described in RFC 5649 will always be used. If
     pad is False, padding is disabled. Other values automatically enable RFC
-    5649 padding when needed."""
-
+    5649 padding when needed.
+    """
     if iv is not None:
         pad = False
 
@@ -80,13 +80,13 @@ def wrap(plaintext, key, iv=None, pad=None, algorithm=algorithms.AES):
         # RFC 5649 shortcut
         return encryptor.update(iv + plaintext)
 
-    A = iv
-    R = [plaintext[i * 8:i * 8 + 8]
+    A = iv  # noqa: N806
+    R = [plaintext[i * 8:i * 8 + 8]  # noqa: N806
          for i in range(n)]
     for j in range(6):
         for i in range(n):
             A, R[i] = _split(encryptor.update(A + R[i]))
-            A = _strxor(A, struct.pack('>Q', n * j + i + 1))
+            A = _strxor(A, struct.pack('>Q', n * j + i + 1))  # noqa: N806
     return A + b''.join(R)
 
 
@@ -97,8 +97,8 @@ def unwrap(ciphertext, key, iv=None, pad=None, algorithm=algorithms.AES):
     RFC 5649 will be used, depending on the value of pad.
 
     If pad is False, unpadding as described in RFC 5649 will be disabled,
-    otherwise checking and removing the padding is automatically done."""
-
+    otherwise checking and removing the padding is automatically done.
+    """
     if iv is not None:
         pad = False
 
@@ -112,12 +112,12 @@ def unwrap(ciphertext, key, iv=None, pad=None, algorithm=algorithms.AES):
     if n == 1:
         A, plaintext = _split(decryptor.update(ciphertext))
     else:
-        A = ciphertext[:8]
-        R = [ciphertext[(i + 1) * 8:(i + 2) * 8]
+        A = ciphertext[:8]  # noqa: N806
+        R = [ciphertext[(i + 1) * 8:(i + 2) * 8]  # noqa: N806
              for i in range(n)]
         for j in reversed(range(6)):
             for i in reversed(range(n)):
-                A = _strxor(A, struct.pack('>Q', n * j + i + 1))
+                A = _strxor(A, struct.pack('>Q', n * j + i + 1))  # noqa: N806
                 A, R[i] = _split(decryptor.update(A + R[i]))
         plaintext = b''.join(R)
 

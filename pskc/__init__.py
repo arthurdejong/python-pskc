@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-"""Python module for handling PSKC files
+"""Python module for handling PSKC files.
 
 This Python library handles Portable Symmetric Key Container (PSKC) files as
 defined in RFC 6030. PSKC files are used to transport and provision symmetric
@@ -95,7 +95,8 @@ class PSKC(object):
         """Create a new device instance for the PSKC file.
 
         The device is initialised with properties from the provided keyword
-        arguments if any."""
+        arguments if any.
+        """
         from pskc.device import Device
         device = Device(self)
         self.devices.append(device)
@@ -110,7 +111,8 @@ class PSKC(object):
         """Create a new key instance for the PSKC file.
 
         The new key is initialised with properties from the provided keyword
-        arguments if any."""
+        arguments if any.
+        """
         device = self.add_device()
         key = device.add_key()
         # assign the kwargs as key properties

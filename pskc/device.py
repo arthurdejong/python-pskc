@@ -57,7 +57,8 @@ class Device(object):
         """Create a new key instance for the device.
 
         The new key is initialised with properties from the provided keyword
-        arguments if any."""
+        arguments if any.
+        """
         from pskc.key import Key
         key = Key(self)
         self.keys.append(key)

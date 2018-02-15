@@ -1,7 +1,7 @@
 # signature.py - module for handling signed XML files
 # coding: utf-8
 #
-# Copyright (C) 2017 Arthur de Jong
+# Copyright (C) 2017-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -88,8 +88,11 @@ class Signature(object):
 
     @property
     def is_signed(self):
-        """Test whether the PSKC file contains a signature (not whether the
-        signature is valid)."""
+        """Test whether the PSKC file contains a signature.
+
+        This method does not check whether the signature is valid but only if
+        one was present in the PSKC file.
+        """
         return bool(
             self.algorithm or self.canonicalization_method or
             self.digest_algorithm or self.issuer or self.certificate)
@@ -114,9 +117,11 @@ class Signature(object):
 
     def verify(self, certificate=None, ca_pem_file=None):
         """Check that the signature was made with the specified certificate.
+
         If no certificate is provided the signature is expected to contain a
         signature that is signed by the CA certificate (or the CA standard CA
-        certificates when ca_pem_file is absent)."""
+        certificates when ca_pem_file is absent).
+        """
         from pskc import PSKC
         from pskc.parser import PSKCParser
         signed_xml = verify_x509(self.tree, certificate, ca_pem_file)

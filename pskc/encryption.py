@@ -211,6 +211,7 @@ class KeyDerivation(object):
         self._pbkdf2_prf = normalise_algorithm(value)
 
     def derive_pbkdf2(self, password):
+        """Derive an encryption key from the provided password."""
         from hashlib import pbkdf2_hmac
         from pskc.exceptions import KeyDerivationError
         prf = 'sha1'
@@ -249,6 +250,7 @@ class KeyDerivation(object):
 
     def setup_pbkdf2(self, password, salt=None, salt_length=16,
                      key_length=None, iterations=None, prf=None):
+        """Configure PBKDF2 key derivation properties."""
         self.algorithm = 'pbkdf2'
         if salt is None:
             salt = os.urandom(salt_length)
