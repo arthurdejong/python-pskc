@@ -97,14 +97,10 @@ class PSKC(object):
         The device is initialised with properties from the provided keyword
         arguments if any.
         """
-        from pskc.device import Device
+        from pskc.device import Device, update_attributes
         device = Device(self)
         self.devices.append(device)
-        # assign the kwargs as key properties
-        for k, v in kwargs.items():
-            if not hasattr(device, k):
-                raise AttributeError()
-            setattr(device, k, v)
+        update_attributes(device, **kwargs)
         return device
 
     def add_key(self, **kwargs):
@@ -113,13 +109,10 @@ class PSKC(object):
         The new key is initialised with properties from the provided keyword
         arguments if any.
         """
+        from pskc.device import update_attributes
         device = self.add_device()
         key = device.add_key()
-        # assign the kwargs as key properties
-        for k, v in kwargs.items():
-            if not hasattr(key, k):
-                raise AttributeError()
-            setattr(key, k, v)
+        update_attributes(key, **kwargs)
         return key
 
     def write(self, filename):

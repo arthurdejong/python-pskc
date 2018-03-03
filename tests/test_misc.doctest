@@ -104,6 +104,20 @@ Setting secret, counter, etc. also works
 10
 
 
+We can set policy properties in two ways: policy.property or
+policy__property:
+
+>>> data = {
+...     'policy__start_date': datetime.datetime(2018, 3, 2, 10, 12, 16),
+...     'policy.expiry_date': datetime.datetime(2018, 3, 3, 16, 37, 21),
+... }
+>>> key = pskc.add_key(**data)
+>>> key.policy.start_date
+datetime.datetime(2018, 3, 2, 10, 12, 16)
+>>> key.policy.expiry_date
+datetime.datetime(2018, 3, 3, 16, 37, 21)
+
+
 Setting encryption key name and algorithm also works.
 
 >>> pskc.encryption.key_name = 'Test encryption key'

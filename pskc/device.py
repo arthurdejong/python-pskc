@@ -1,7 +1,7 @@
 # device.py - module for handling device info from pskc files
 # coding: utf-8
 #
-# Copyright (C) 2016 Arthur de Jong
+# Copyright (C) 2016-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,17 @@
 # 02110-1301 USA
 
 """Module that handles device information stored in PSKC files."""
+
+
+def update_attributes(obj, **kwargs):
+    """Update object with provided properties."""
+    for k, v in kwargs.items():
+        k = k.split('.') if '.' in k else k.split('__')
+        o = obj
+        for name in k[:-1]:
+            o = getattr(o, name)
+        getattr(o, k[-1])  # raise exception for non-existing properties
+        setattr(o, k[-1], v)
 
 
 class Device(object):
@@ -62,9 +73,5 @@ class Device(object):
         from pskc.key import Key
         key = Key(self)
         self.keys.append(key)
-        # assign the kwargs as key properties
-        for k, v in kwargs.items():
-            if not hasattr(key, k):
-                raise AttributeError()
-            setattr(key, k, v)
+        update_attributes(key, **kwargs)
         return key
