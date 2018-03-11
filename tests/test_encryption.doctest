@@ -271,7 +271,7 @@ reasonable defaults.
 >>> pskc.encryption.derivation.algorithm
 'http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2'
 >>> pskc.encryption.derivation.pbkdf2_iterations
-12000
+100000
 >>> len(pskc.encryption.derivation.pbkdf2_salt)
 16
 >>> pskc.encryption.derivation.pbkdf2_key_length

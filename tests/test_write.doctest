@@ -440,7 +440,7 @@ Use PBKDF2 to derive a key instead of using a pre-shared key.
      <Salt>
       <Specified>...</Specified>
      </Salt>
-     <IterationCount>12000</IterationCount>
+     <IterationCount>...</IterationCount>
      <KeyLength>16</KeyLength>
     </xenc11:PBKDF2-params>
    </xenc11:KeyDerivationMethod>
@@ -605,7 +605,7 @@ We can make the PKKDF2 salt have to be transmitted out-of-bounds:
   <xenc11:DerivedKey>
    <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
     <xenc11:PBKDF2-params>
-     <IterationCount>12000</IterationCount>
+     <IterationCount>...</IterationCount>
      <KeyLength>16</KeyLength>
     </xenc11:PBKDF2-params>
    </xenc11:KeyDerivationMethod>

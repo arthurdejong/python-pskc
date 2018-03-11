@@ -296,7 +296,7 @@ We can also decrypt a file and configure a new passphrase.
      <Salt>
       <Specified>...</Specified>
      </Salt>
-     <IterationCount>12000</IterationCount>
+     <IterationCount>...</IterationCount>
      <KeyLength>16</KeyLength>
     </xenc11:PBKDF2-params>
    </xenc11:KeyDerivationMethod>

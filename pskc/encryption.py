@@ -258,7 +258,7 @@ class KeyDerivation(object):
         if iterations:
             self.pbkdf2_iterations = iterations
         elif self.pbkdf2_iterations is None:
-            self.pbkdf2_iterations = 12 * 1000
+            self.pbkdf2_iterations = 100000
         if key_length:  # pragma: no branch (always specified)
             self.pbkdf2_key_length = key_length
         if prf:
