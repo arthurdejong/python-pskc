@@ -187,6 +187,8 @@ man_pages = [
      [u'Arthur de Jong'], 1),
     ('pskc2pskc', 'pskc2pskc', u'Convert a PSKC file to standard format',
      [u'Arthur de Jong'], 1),
+    ('csv2pskc', 'csv2pskc', u'Convert a CSV file to PSKC',
+     [u'Arthur de Jong'], 1),
 ]
 
 # If true, show URL addresses after external links.
