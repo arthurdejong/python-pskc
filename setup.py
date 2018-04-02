@@ -2,7 +2,7 @@
 
 # setup.py - python-pskc installation script
 #
-# Copyright (C) 2014-2017 Arthur de Jong
+# Copyright (C) 2014-2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -70,8 +70,14 @@ setup(
     packages=find_packages(),
     install_requires=['cryptography', 'python-dateutil'],
     extras_require={
-        'lxml':  ['lxml'],
-        'defuse':  ['defusedxml'],
-        'signature': ['signxml']
+        'lxml': ['lxml'],
+        'defuse': ['defusedxml'],
+        'signature': ['signxml'],
+    },
+    entry_points={
+        'console_scripts': [
+            'pskc2csv = pskc.scripts.pskc2csv:main',
+            'pskc2pskc = pskc.scripts.pskc2pskc:main',
+        ],
     },
 )

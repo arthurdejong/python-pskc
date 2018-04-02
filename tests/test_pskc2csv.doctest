@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 >>> import tempfile
 
 >>> from pskc import PSKC
->>> from pskc2csv import main
+>>> from pskc.scripts.pskc2csv import main
 
 
 Sadly we cannot test --help and --version properly because argparse calls

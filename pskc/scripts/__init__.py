@@ -1,9 +1,7 @@
-#!/usr/bin/env python
+# __init__.py - collection of command-line scripts
 # coding: utf-8
-
-# pskc2csv.py - script to convert a PSKC file to CSV
 #
-# Copyright (C) 2014-2018 Arthur de Jong
+# Copyright (C) 2018 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,8 +18,4 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-from pskc.scripts import pskc2csv
-
-
-if __name__ == '__main__':  # pragma: no cover
-    pskc2csv.main()
+"""Collection of command-line scripts."""
