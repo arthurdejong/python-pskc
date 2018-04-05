@@ -53,6 +53,9 @@ parser.add_argument(
     '-o', '--output', metavar='FILE',
     help='write PSKC to file instead of stdout')
 parser.add_argument(
+    '-c', '--columns', metavar='COL|COL:LABEL,..',
+    help='list of columns or label to column mapping to import')
+parser.add_argument(
     '-p', '--password', '--passwd', metavar='PASS/FILE',
     help='password to use for encrypting the PSKC file)')
 parser.add_argument(
@@ -103,14 +106,28 @@ def main():
     args = parser.parse_args()
     # open the CSV file
     csvfile = open_csvfile(open(args.input, 'r') if args.input else sys.stdin)
-    columns = next(csvfile)
+    # figure out the meaning of the columns
+    columns = [x.lower().replace(' ', '_') for x in next(csvfile)]
+    if args.columns:
+        if ':' in args.columns:
+            # --columns is a list of mappings
+            mapping = dict(
+                (label.lower().replace(' ', '_'), key.lower())
+                for label, key in (
+                    column.split(':')
+                    for column in args.columns.split(',')))
+            columns = [mapping.get(column, column) for column in columns]
+        else:
+            # --columns is a list of columns
+            columns = [x.lower() for x in args.columns.split(',')]
     # store rows in PSKC structure
     pskcfile = pskc.PSKC()
     for row in csvfile:
-        data = dict(
-            (key, from_column(key, value, args))
-            for key, value in zip(columns, row)
-            if value and key not in ('', '-'))
+        data = {}
+        for column, value in zip(columns, row):
+            for key in column.split('+'):
+                if value and key not in ('', '-'):
+                    data[key] = from_column(key, value, args)
         pskcfile.add_key(**data)
     # encrypt the file if needed
     if args.secret:

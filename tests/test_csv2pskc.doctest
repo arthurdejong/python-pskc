@@ -306,6 +306,92 @@ automatically pick up tab-separated files.
 </pskc:KeyContainer>
 
 
+We can use the --columns option to override using the first row to specify
+the key properties.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... nr,key,start date,info
+... 121232,6848464354638468468835346896846846846846,2017-04-01,something
+... 213422,9843138168168196616849849634548496832446,2017-02-12,else
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--columns', 'id+serial,secret,start_date,-']
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>121232</pskc:SerialNo>
+   <pskc:StartDate>2017-04-01T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="121232">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>aEhGQ1RjhGhGiDU0aJaEaEaEaEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>213422</pskc:SerialNo>
+   <pskc:StartDate>2017-02-12T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="213422">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>mEMTgWgWgZZhaEmEljRUhJaDJEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Alternatively, we can provide a mapping for column names found in the CSV
+file to key properties.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... nr,key,start date,info
+... 121232,6848464354638468468835346896846846846846,2017-04-01,something
+... 213422,9843138168168196616849849634548496832446,2017-02-12,else
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--columns', 'key:secret,nr:id+serial,info:-']
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>121232</pskc:SerialNo>
+   <pskc:StartDate>2017-04-01T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="121232">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>aEhGQ1RjhGhGiDU0aJaEaEaEaEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>213422</pskc:SerialNo>
+   <pskc:StartDate>2017-02-12T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="213422">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>mEMTgWgWgZZhaEmEljRUhJaDJEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
 We can encrypt the resulting PSKC file with a passphrase.
 
 >>> f = tempfile.NamedTemporaryFile('w+t')

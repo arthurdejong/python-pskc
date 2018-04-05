@@ -32,6 +32,25 @@ Options
    By default :program:`csv2pskc` writes a PSKC file to stdout. This option
    can be used to save to a file instead.
 
+.. option:: -c COL,COL,.., --columns COL,COL,..
+
+   Specify the meaning of the columns in the CSV file. By default the first
+   row of the CSV file is expected to list the names of the columns.
+
+   Any property of :class:`~pskc.key.Key` instances can be used as well as
+   :class:`~pskc.policy.Policy` properties via ``policy``. For example:
+   ``serial``, ``secret``, ``counter``, ``time_offset``, ``time_interval``,
+   ``interval``, ``time_drift``, ``issuer``, ``manufacturer``,
+   ``response_length``, ``policy.pin_min_length``.
+
+   This option can either specify a list of columns or a COL:KEY mapping
+   where COL refers to the value found in the first line of the CSV file and
+   KEY refers to a property as described above.
+
+   It is possible to map a single column in the CSV file to multiple PSKC
+   properties (e.g. use of ``id+serial`` sets both the ID and device serial
+   number to the value found in that column).
+
 .. option:: -p PASS/FILE, --password PASS/FILE, --passwd PASS/FILE
 
    Encrypt the PSKC file with the specified password. If the argument refers
