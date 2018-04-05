@@ -51,6 +51,14 @@ Options
    properties (e.g. use of ``id+serial`` sets both the ID and device serial
    number to the value found in that column).
 
+.. option:: -x COL=VALUE, --set COL=VALUE
+
+   Specify properties that are added to all keys in the generated PSKC file.
+   Accepted labels are the same as for the :option:`--columns` option.
+
+   This can be useful for setting the ``issuer``, ``manufacturer`` or
+   oter common properties globally.
+
 .. option:: -p PASS/FILE, --password PASS/FILE, --passwd PASS/FILE
 
    Encrypt the PSKC file with the specified password. If the argument refers

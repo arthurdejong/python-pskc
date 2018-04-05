@@ -56,6 +56,10 @@ parser.add_argument(
     '-c', '--columns', metavar='COL|COL:LABEL,..',
     help='list of columns or label to column mapping to import')
 parser.add_argument(
+    '-x', '--set', metavar='COL=VALUE', action='append',
+    type=lambda x: x.split('=', 1), dest='extra_columns',
+    help='add an extra value that is added to all key containers')
+parser.add_argument(
     '-p', '--password', '--passwd', metavar='PASS/FILE',
     help='password to use for encrypting the PSKC file)')
 parser.add_argument(
@@ -123,7 +127,7 @@ def main():
     # store rows in PSKC structure
     pskcfile = pskc.PSKC()
     for row in csvfile:
-        data = {}
+        data = dict(args.extra_columns or [])
         for column, value in zip(columns, row):
             for key in column.split('+'):
                 if value and key not in ('', '-'):
