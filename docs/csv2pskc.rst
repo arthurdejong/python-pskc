@@ -51,6 +51,14 @@ Options
    properties (e.g. use of ``id+serial`` sets both the ID and device serial
    number to the value found in that column).
 
+.. option:: --skip-rows N
+
+   By default the first row is treated as a header which contains labels.
+   This option can be used to either skip more row (the first row of the CSV file will
+   still be treated as a header) or to indicate that there is no header row.
+
+   In the latter case the :option:`--columns` option is required.
+
 .. option:: -x COL=VALUE, --set COL=VALUE
 
    Specify properties that are added to all keys in the generated PSKC file.

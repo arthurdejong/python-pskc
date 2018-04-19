@@ -56,6 +56,9 @@ parser.add_argument(
     '-c', '--columns', metavar='COL|COL:LABEL,..',
     help='list of columns or label to column mapping to import')
 parser.add_argument(
+    '--skip-rows', metavar='N', type=int, default=1,
+    help='the number of rows before rows with key information start')
+parser.add_argument(
     '-x', '--set', metavar='COL=VALUE', action='append',
     type=lambda x: x.split('=', 1), dest='extra_columns',
     help='add an extra value that is added to all key containers')
@@ -111,7 +114,11 @@ def main():
     # open the CSV file
     csvfile = open_csvfile(open(args.input, 'r') if args.input else sys.stdin)
     # figure out the meaning of the columns
-    columns = [x.lower().replace(' ', '_') for x in next(csvfile)]
+    columns = []
+    if args.skip_rows > 0:
+        columns = [x.lower().replace(' ', '_') for x in next(csvfile)]
+        for i in range(args.skip_rows - 1):
+            next(csvfile)
     if args.columns:
         if ':' in args.columns:
             # --columns is a list of mappings

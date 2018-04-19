@@ -439,6 +439,55 @@ to all keys in the PSKC file:
 </pskc:KeyContainer>
 
 
+The --skip-rows option can be used to either not use the first row to denote
+the key properties that are set (in which case the --columns option is
+mandatory) or skip more rows at the beginning of the file.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... 987654321,7c613e9c2194ff7da7f4770ab2ed712111fcbe95
+... 987654322,4be618e3459e936137994854bc3d2ebe46f3cce2
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--skip-rows=0', '--columns=id+serial,secret']
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+...
+  <pskc:Key Id="987654321">
+...
+     <pskc:PlainValue>fGE+nCGU/32n9HcKsu1xIRH8vpU=</pskc:PlainValue>
+...
+  <pskc:Key Id="987654322">
+...
+     <pskc:PlainValue>S+YY40Wek2E3mUhUvD0uvkbzzOI=</pskc:PlainValue>
+...
+</pskc:KeyContainer>
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... id+serial,secret
+... IGNORED LINE
+... 987654321,7c613e9c2194ff7da7f4770ab2ed712111fcbe95
+... 987654322,4be618e3459e936137994854bc3d2ebe46f3cce2
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--skip-rows=2']
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+...
+  <pskc:Key Id="987654321">
+...
+     <pskc:PlainValue>fGE+nCGU/32n9HcKsu1xIRH8vpU=</pskc:PlainValue>
+...
+  <pskc:Key Id="987654322">
+...
+     <pskc:PlainValue>S+YY40Wek2E3mUhUvD0uvkbzzOI=</pskc:PlainValue>
+...
+</pskc:KeyContainer>
+
+
 We can encrypt the resulting PSKC file with a passphrase.
 
 >>> f = tempfile.NamedTemporaryFile('w+t')
