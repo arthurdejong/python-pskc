@@ -1,0 +1,603 @@
+test_csv2pskc.doctest - tests for the csv2pskc script
+
+Copyright (C) 2018 Arthur de Jong
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA
+
+
+>>> from binascii import a2b_hex
+>>> import getpass
+>>> import shlex
+>>> import sys
+>>> import tempfile
+
+>>> from pskc import PSKC
+>>> from pskc.scripts.csv2pskc import main
+
+
+Sadly we cannot test --help and --version properly because argparse calls
+exit(0) which doctest does not like.
+
+>>> sys.argv = shlex.split('csv2pskc --help')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+SystemExit: 0
+>>> sys.argv = shlex.split('csv2pskc --version')
+>>> main()  # doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+    ...
+SystemExit: 0
+
+
+We can output a PSKC file with some simple data from a CSV file. The columns
+in the CSV file refer to names of PSKC properties.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... serial,secret,algorithm,response_length,time_interval
+... 987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+... 987654321,31323334,urn:ietf:params:xml:ns:keyprov:pskc:pin,4,
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name]
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>987654321</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp">
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>987654321</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:pin">
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Length="4"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNA==</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can also save the output to a file.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... serial,secret,algorithm,response_length,time_interval
+... 987654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,
+... 987654321,31323334,urn:ietf:params:xml:ns:keyprov:pskc:pin,4,
+... '''.lstrip())
+>>> f2 = tempfile.NamedTemporaryFile()
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--output', f2.name]
+>>> main()
+>>> with open(f2.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNA==</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+A bigger example.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... serial,secret,algorithm,response_length,response_encoding,manufacturer,issuer,policy.start_date,policy.expiry_date,id,counter
+... 654321,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,DECIMAL,TokenVendorAcme,Issuer,2006-05-01 00:00:00+00:00,2006-05-31 00:00:00+00:00,1,2
+... 123456,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,DECIMAL,TokenVendorAcme,Issuer,2006-05-01 00:00:00+00:00,2006-05-31 00:00:00+00:00,2,3
+... 9999999,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,DECIMAL,TokenVendorAcme,Issuer,2006-03-01 00:00:00+00:00,2006-03-31 00:00:00+00:00,3,42
+... 9999999,3132333435363738393031323334353637383930,urn:ietf:params:xml:ns:keyprov:pskc:hotp,8,DECIMAL,TokenVendorAcme,Issuer,2006-04-01 00:00:00+00:00,2006-04-30 00:00:00+00:00,4,12
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name]
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>TokenVendorAcme</pskc:Manufacturer>
+   <pskc:SerialNo>654321</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="1">
+   <pskc:Issuer>Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>2</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+   <pskc:Policy>
+    <pskc:StartDate>2006-05-01T00:00:00Z</pskc:StartDate>
+    <pskc:ExpiryDate>2006-05-31T00:00:00Z</pskc:ExpiryDate>
+   </pskc:Policy>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>TokenVendorAcme</pskc:Manufacturer>
+   <pskc:SerialNo>123456</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="2">
+   <pskc:Issuer>Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>3</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+   <pskc:Policy>
+    <pskc:StartDate>2006-05-01T00:00:00Z</pskc:StartDate>
+    <pskc:ExpiryDate>2006-05-31T00:00:00Z</pskc:ExpiryDate>
+   </pskc:Policy>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>TokenVendorAcme</pskc:Manufacturer>
+   <pskc:SerialNo>9999999</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="3">
+   <pskc:Issuer>Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>42</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+   <pskc:Policy>
+    <pskc:StartDate>2006-03-01T00:00:00Z</pskc:StartDate>
+    <pskc:ExpiryDate>2006-03-31T00:00:00Z</pskc:ExpiryDate>
+   </pskc:Policy>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>TokenVendorAcme</pskc:Manufacturer>
+   <pskc:SerialNo>9999999</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Algorithm="urn:ietf:params:xml:ns:keyprov:pskc:hotp" Id="4">
+   <pskc:Issuer>Issuer</pskc:Issuer>
+   <pskc:AlgorithmParameters>
+    <pskc:ResponseFormat Encoding="DECIMAL" Length="8"/>
+   </pskc:AlgorithmParameters>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>12</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+   <pskc:Policy>
+    <pskc:StartDate>2006-04-01T00:00:00Z</pskc:StartDate>
+    <pskc:ExpiryDate>2006-04-30T00:00:00Z</pskc:ExpiryDate>
+   </pskc:Policy>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+As long as it is in a file (does not work on stdin) the script should also
+automatically pick up tab-separated files.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... id\tsecret\tcounter
+... 654321\t3132333435363738393031323334353637383930\t2
+... 123456\t3132333435363738393031323334353637383930\t3
+... 9999999\t3132333435363738393031323334353637383930\t42
+... 9999999\t3132333435363738393031323334353637383930\t12
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name]
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:Key Id="654321">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>2</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:Key Id="123456">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>3</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:Key Id="9999999">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>42</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:Key Id="9999999">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=</pskc:PlainValue>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:PlainValue>12</pskc:PlainValue>
+    </pskc:Counter>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can use the --columns option to override using the first row to specify
+the key properties.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... nr,key,start date,info
+... 121232,6848464354638468468835346896846846846846,2017-04-01,something
+... 213422,9843138168168196616849849634548496832446,2017-02-12,else
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--columns', 'id+serial,secret,start_date,-']
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>121232</pskc:SerialNo>
+   <pskc:StartDate>2017-04-01T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="121232">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>aEhGQ1RjhGhGiDU0aJaEaEaEaEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>213422</pskc:SerialNo>
+   <pskc:StartDate>2017-02-12T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="213422">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>mEMTgWgWgZZhaEmEljRUhJaDJEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Alternatively, we can provide a mapping for column names found in the CSV
+file to key properties.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... nr,key,start date,info
+... 121232,6848464354638468468835346896846846846846,2017-04-01,something
+... 213422,9843138168168196616849849634548496832446,2017-02-12,else
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--columns', 'key:secret,nr:id+serial,info:-']
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>121232</pskc:SerialNo>
+   <pskc:StartDate>2017-04-01T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="121232">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>aEhGQ1RjhGhGiDU0aJaEaEaEaEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>213422</pskc:SerialNo>
+   <pskc:StartDate>2017-02-12T00:00:00</pskc:StartDate>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="213422">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>mEMTgWgWgZZhaEmEljRUhJaDJEY=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+We can also set global key properties with the --set option to apply values
+to all keys in the PSKC file:
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... id+serial,secret
+... 987654321,7c613e9c2194ff7da7f4770ab2ed712111fcbe95
+... 987654322,4be618e3459e936137994854bc3d2ebe46f3cce2
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = [
+...     'csv2pskc', f.name,
+...     '--set', 'manufacturer=TokenVendor', '--set', 'issuer=TokenIssuer']
+>>> main()  #doctest: +REPORT_UDIFF +NORMALIZE_WHITESPACE
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>TokenVendor</pskc:Manufacturer>
+   <pskc:SerialNo>987654321</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="987654321">
+   <pskc:Issuer>TokenIssuer</pskc:Issuer>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>fGE+nCGU/32n9HcKsu1xIRH8vpU=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:Manufacturer>TokenVendor</pskc:Manufacturer>
+   <pskc:SerialNo>987654322</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="987654322">
+   <pskc:Issuer>TokenIssuer</pskc:Issuer>
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:PlainValue>S+YY40Wek2E3mUhUvD0uvkbzzOI=</pskc:PlainValue>
+    </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+The --skip-rows option can be used to either not use the first row to denote
+the key properties that are set (in which case the --columns option is
+mandatory) or skip more rows at the beginning of the file.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... 987654321,7c613e9c2194ff7da7f4770ab2ed712111fcbe95
+... 987654322,4be618e3459e936137994854bc3d2ebe46f3cce2
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--skip-rows=0', '--columns=id+serial,secret']
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+...
+  <pskc:Key Id="987654321">
+...
+     <pskc:PlainValue>fGE+nCGU/32n9HcKsu1xIRH8vpU=</pskc:PlainValue>
+...
+  <pskc:Key Id="987654322">
+...
+     <pskc:PlainValue>S+YY40Wek2E3mUhUvD0uvkbzzOI=</pskc:PlainValue>
+...
+</pskc:KeyContainer>
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... id+serial,secret
+... IGNORED LINE
+... 987654321,7c613e9c2194ff7da7f4770ab2ed712111fcbe95
+... 987654322,4be618e3459e936137994854bc3d2ebe46f3cce2
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--skip-rows=2']
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
+...
+  <pskc:Key Id="987654321">
+...
+     <pskc:PlainValue>fGE+nCGU/32n9HcKsu1xIRH8vpU=</pskc:PlainValue>
+...
+  <pskc:Key Id="987654322">
+...
+     <pskc:PlainValue>S+YY40Wek2E3mUhUvD0uvkbzzOI=</pskc:PlainValue>
+...
+</pskc:KeyContainer>
+
+
+We can encrypt the resulting PSKC file with a passphrase.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... id,secret
+... 987654321,7c613e9c2194ff7da7f4770ab2ed712111fcbe95
+... 987654322,4be618e3459e936137994854bc3d2ebe46f3cce2
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--passwd', 'supersecure']
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" Version="1.0">
+ <pskc:EncryptionKey>
+  <xenc11:DerivedKey>
+   <xenc11:KeyDerivationMethod Algorithm="http://www.rsasecurity.com/rsalabs/pkcs/schemas/pkcs-5v2-0#pbkdf2">
+    <xenc11:PBKDF2-params>
+     <Salt>
+      <Specified>...</Specified>
+     </Salt>
+     <IterationCount>...</IterationCount>
+     <KeyLength>16</KeyLength>
+    </xenc11:PBKDF2-params>
+   </xenc11:KeyDerivationMethod>
+  </xenc11:DerivedKey>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Alternatively we can switch from passphrase-based encryption to key-based
+encryption.
+
+>>> f = tempfile.NamedTemporaryFile('w+t')
+>>> x = f.write('''
+... id,secret
+... 987654321,7c613e9c2194ff7da7f4770ab2ed712111fcbe95
+... 987654322,4be618e3459e936137994854bc3d2ebe46f3cce2
+... '''.lstrip())
+>>> f.flush()
+>>> sys.argv = ['csv2pskc', f.name, '--secret', '12345678901234567890123456789012']
+>>> main()  #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Version="1.0">
+ <pskc:EncryptionKey/>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+ <pskc:KeyPackage>
+...
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+...
+ </pskc:KeyPackage>
+</pskc:KeyContainer>

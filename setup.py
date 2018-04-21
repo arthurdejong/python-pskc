@@ -76,6 +76,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'csv2pskc = pskc.scripts.csv2pskc:main',
             'pskc2csv = pskc.scripts.pskc2csv:main',
             'pskc2pskc = pskc.scripts.pskc2pskc:main',
         ],
