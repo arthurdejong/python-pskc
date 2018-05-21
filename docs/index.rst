@@ -14,6 +14,7 @@ Contents
    signatures
    policy
    exceptions
+   scripts
    changes
 
 
