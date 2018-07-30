@@ -85,7 +85,7 @@ def wrap(plaintext, key, iv=None, pad=None, algorithm=algorithms.AES):
          for i in range(n)]
     for j in range(6):
         for i in range(n):
-            A, R[i] = _split(encryptor.update(A + R[i]))
+            A, R[i] = _split(encryptor.update(A + R[i]))  # noqa: N806
             A = _strxor(A, struct.pack('>Q', n * j + i + 1))  # noqa: N806
     return A + b''.join(R)
 
@@ -110,7 +110,7 @@ def unwrap(ciphertext, key, iv=None, pad=None, algorithm=algorithms.AES):
     n = len(ciphertext) // 8 - 1
 
     if n == 1:
-        A, plaintext = _split(decryptor.update(ciphertext))
+        A, plaintext = _split(decryptor.update(ciphertext))  # noqa: N806
     else:
         A = ciphertext[:8]  # noqa: N806
         R = [ciphertext[(i + 1) * 8:(i + 2) * 8]  # noqa: N806
@@ -118,7 +118,7 @@ def unwrap(ciphertext, key, iv=None, pad=None, algorithm=algorithms.AES):
         for j in reversed(range(6)):
             for i in reversed(range(n)):
                 A = _strxor(A, struct.pack('>Q', n * j + i + 1))  # noqa: N806
-                A, R[i] = _split(decryptor.update(A + R[i]))
+                A, R[i] = _split(decryptor.update(A + R[i]))  # noqa: N806
         plaintext = b''.join(R)
 
     if iv is None:
