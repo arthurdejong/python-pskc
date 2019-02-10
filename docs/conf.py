@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'python-pskc'
-copyright = u'2014-2017 Arthur de Jong'
+copyright = u'2014-2019 Arthur de Jong'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -172,7 +172,7 @@ html_show_sourcelink = False
 #html_file_suffix = None
 
 # Suffix for generated links to HTML files.
-html_link_suffix = ''
+#html_link_suffix = ''
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'python-pskcdoc'

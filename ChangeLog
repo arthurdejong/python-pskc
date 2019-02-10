@@ -1,3 +1,195 @@
+2019-02-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [21323a0] .travis.yml, setup.py: Add Python 3.7 in Travis and
+	  reduce build matrix
+
+	  This runs the signxml flavour on all Python versions and only
+	  runs all other flavours on Python 2.6 and 3.6.
+
+2019-02-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c2abbec] setup.cfg: Make the multi-line operator place explicit
+
+	  Recent versions of flake8 changed the defaults of the errors
+	  to ignore.
+
+2018-07-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5e93d32] pskc/crypto/aeskw.py: Ignore more flake8 messages
+
+2018-05-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f4b2559] docs/index.rst, docs/scripts.rst: Add links to script
+	  documentation
+
+2018-04-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [610f7cd] : Implement csv2pcks script
+
+2018-04-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7bbaac3] docs/csv2pskc.rst, pskc/scripts/csv2pskc.py,
+	  tests/test_csv2pskc.doctest: Add --skip-columns option
+
+	  This option can be used to skip a number of rows in the CSV file
+	  before the key data is read. If the number of rows to skip is 0,
+	  the column interpretation should be provided using the --columns
+	  option.
+
+2018-04-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [88002fc] docs/csv2pskc.rst, pskc/scripts/csv2pskc.py,
+	  tests/test_csv2pskc.doctest: Add --set option
+
+	  This option can be used to set key properties for all keys in
+	  the PSKC file.
+
+2018-04-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e91e498] docs/csv2pskc.rst, pskc/scripts/csv2pskc.py,
+	  tests/test_csv2pskc.doctest: Add --columns option
+
+	  This option can be used to override the list of columns as found
+	  in the first line of the CSV file or provide a mapping for values
+	  found in the first line to PSKC properties.
+
+2018-03-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c652eee] csv2pskc.py, docs/conf.py, docs/csv2pskc.rst,
+	  pskc/scripts/csv2pskc.py, setup.py, tests/test_csv2pskc.doctest:
+	  Add a csv2pskc script for CSV to PSKC conversion
+
+	  This script reads a CSV file and writes out a PSKC file with the
+	  key information from the CSV file. The CSV file is expected to
+	  have one row for each key and key property values in columns.
+
+2018-04-02  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ce96e69] pskc/scripts/__init__.py, pskc/scripts/pskc2csv.py,
+	  pskc/scripts/pskc2pskc.py, pskc/scripts/util.py, pskc2csv.py,
+	  pskc2pskc.py, setup.cfg, setup.py, tests/test_pskc2csv.doctest,
+	  tests/test_pskc2pskc.doctest, tox.ini: Ship the script as part
+	  of the pskc package
+
+	  This also installs pskc2csv and pskc2pskc console script entry
+	  points as part of the package installation.
+
+2018-03-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7a56eac] pskc/__init__.py, pskc/device.py,
+	  tests/test_misc.doctest: Support setting key sub-properties
+	  via add_key()
+
+2018-03-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e6f2dd4] pskc/encryption.py, tests/test_encryption.doctest,
+	  tests/test_pskc2pskc.doctest, tests/test_write.doctest: Increase
+	  default PBKDF2 iterations to 100000
+
+2018-02-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9026e1c] setup.cfg: Support building a universal wheel
+
+2018-02-15  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b3e7fe7] pskc/__init__.py, pskc/crypto/aeskw.py,
+	  pskc/device.py, pskc/encryption.py, pskc/key.py, pskc/parser.py,
+	  pskc/serialiser.py, pskc/signature.py, setup.cfg: Add and
+	  cleanup docstrings
+
+	  This adds docstrings to public methods and cleans up a few other
+	  docstrings to pass most flake8 docstring related tests.
+
+	  This also adds noqa statements in a few places so we can remove
+	  most entries from the global flake8 ignore list.
+
+2018-02-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [03ee35d] docs/conf.py, docs/pskc2pskc.rst, pskc2pskc.py,
+	  setup.cfg, tests/test_pskc2pskc.doctest: Add a pskc2pskc script
+	  for converting PSKC files
+
+	  This script reads a PSKC file in any supported format and writes
+	  out a RFC 6030 compliant version of the file, optionally with
+	  the encryption removed or (re-)encrypting the file with a new key.
+
+2018-02-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [924e1f3] pskc/serialiser.py, tests/test_write.doctest: Correctly
+	  write a PSKC file without a MAC key
+
+	  In some cases a PSKC file can be written with a MAC algorithm
+	  but without a MAC key. This is possible when the MAC key is not
+	  supplied (allowed in older PSKC versions) and a fallback to the
+	  encryption key is done. If we have not yet decrypted the file
+	  the MAC key is not yet available and so can't be included in
+	  the written file.
+
+2018-02-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [be2b49f] pskc/encryption.py, pskc/serialiser.py,
+	  tests/test_write.doctest: Correctly write a PSKC file with a
+	  global IV
+
+	  This ensures that the encryption IV, which should be per encrypted
+	  value is written out per encrypted value instead of globally. This
+	  is mostly useful for when reading an old format PSKC file and
+	  writing out a RFC 6030 compliant one.
+
+2018-02-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e60d7f3] pskc/mac.py, pskc/parser.py, pskc/serialiser.py:
+	  Also use EncryptedValue for MAC key
+
+	  This ensures that an encrypted MAC key is hanled in the same
+	  way as normal encrypted data values.
+
+	  This also ensures consistent fallback to the globally
+	  configured encryption algorithm if no value has been set in
+	  the EncryptedValue.
+
+2018-01-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8054c6e] pskc/serialiser.py: Always output a PSKC 1.0 format file
+
+	  This ignores the value of the version attribute in the PSKC
+	  object and always writes a PSKC 1.0 (RFC 6030) format file.
+
+2018-01-31  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [97faa13] docs/encryption.rst, pskc/encryption.py,
+	  tests/test_encryption.doctest, tests/test_write.doctest: Implement
+	  removing encryption
+
+	  This adds a function to decrypt all values and remove the
+	  encryption of an encrypted PSKC file.
+
+2018-02-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2698657] .travis.yml: Add a Travis configuration file
+
+2018-02-04  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [82fa3bd] pskc/encryption.py, pskc/serialiser.py, pskc2csv.py:
+	  Fix code style issues
+
+	  Fixes 1ff3237f, 84bfb8a6 and 20bf9c5
+
+2017-12-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2693495] tests/test_misc.doctest, tests/test_pskc2csv.doctest,
+	  tox.ini: Fixes to test suite
+
+	  This ensures that the tests also work without a TTY and work
+	  regardless of the PYTHONWARNINGS and TZ environment variables
+
+	  Fixes cd33833
+
+2017-12-29  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fe63c42] ChangeLog, MANIFEST.in, NEWS, pskc/__init__.py,
+	  setup.py: Get files ready for 1.0 release
+
 2017-12-29  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [2651e80] tests/test_write.doctest: Not all XML serialisers

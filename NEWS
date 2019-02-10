@@ -1,3 +1,18 @@
+changes from 1.0 to 1.1
+-----------------------
+
+* portability fixes for test suite
+* add a remove_encryption() function
+* always write a 1.0 PSKC version, even when another version was read
+* correctly write a PSKC file with a global IV
+* correctly write a PSKC file without a MAC key
+* add a pskc2pskc script for converting a legacy PSKC file to a RFC 6030
+  compliant version and for adding or removing encryption
+* add a csv2pskc script for generating a PSKC file from a CSV file
+* make all the scripts (pskc2csv, pskc2pskc and csv2pskc) entry points so
+  they are available on package installation
+
+
 changes from 0.5 to 1.0
 -----------------------
 
