@@ -7,17 +7,33 @@ python:
   - 3.5
   - 3.6
   - pypy
+  - pypy3
 env:
   - FLAVOUR=signxml
-  - FLAVOUR=legacy
-  - FLAVOUR=legacy-defusedxml
-  - FLAVOUR=lxml
-  - FLAVOUR=lxml-defusedxml
 matrix:
   include:
-  - python: 3.5
+  - python: 2.7
+    env: FLAVOUR=legacy
+  - python: 2.7
+    env: FLAVOUR=legacy-defusedxml
+  - python: 2.7
+    env: FLAVOUR=lxml
+  - python: 2.7
+    env: FLAVOUR=lxml-defusedxml
+  - python: 3.6
+    env: FLAVOUR=legacy
+  - python: 3.6
+    env: FLAVOUR=legacy-defusedxml
+  - python: 3.6
+    env: FLAVOUR=lxml
+  - python: 3.6
+    env: FLAVOUR=lxml-defusedxml
+  - python: 3.7
+    dist: xenial
+    env: FLAVOUR=signxml
+  - python: 3.6
     env: TOXENV=flake8
-  - python: 3.5
+  - python: 3.6
     env: TOXENV=docs
 install: pip install tox
 script: tox -e "${TOXENV:-$(echo py${TRAVIS_PYTHON_VERSION}-${FLAVOUR} | tr -d . | sed -e 's/pypypy/pypy/')}"
