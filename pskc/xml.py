@@ -1,7 +1,7 @@
 # xml.py - module for parsing and writing XML for PSKC files
 # coding: utf-8
 #
-# Copyright (C) 2014-2017 Arthur de Jong
+# Copyright (C) 2014-2019 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -198,6 +198,7 @@ def move_namespaces(element):
         nsmap = {}
         for e in element.iter():
             nsmap.update(e.nsmap)
+        nsmap = OrderedDict(sorted(nsmap.items()))
         # replace toplevel element with all namespaces
         e = Element(element.tag, attrib=element.attrib, nsmap=nsmap)
         for a in element:
