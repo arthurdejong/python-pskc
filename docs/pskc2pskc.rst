@@ -52,5 +52,5 @@ Options
 .. option:: --new-secret KEY/FILE
 
    Ensure that the output PSKC file is encrypted with the specified key
-   value. The key can be probded as a hex-encoded value or point to a file
+   value. The key can be provided as a hex-encoded value or point to a file
    that contains the binary value of the key.

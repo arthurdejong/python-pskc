@@ -65,7 +65,7 @@ Options
    Accepted labels are the same as for the :option:`--columns` option.
 
    This can be useful for setting the ``issuer``, ``manufacturer`` or
-   oter common properties globally.
+   other common properties globally.
 
 .. option:: -p PASS/FILE, --password PASS/FILE, --passwd PASS/FILE
 

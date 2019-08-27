@@ -33,7 +33,7 @@ The Signature class
    .. attribute:: is_signed
 
       A boolan value that indicates whether an XML signature is present in
-      the PSKC file. This propery does not indicate whether the signature
+      the PSKC file. This property does not indicate whether the signature
       is validated.
 
    .. attribute:: algorithm
