@@ -100,51 +100,6 @@ True
 True
 
 
-We can also sign a PSKC file without a embedding certificate. This should be
-practically the same as using a self-signed certificate.
-
->>> pskc = PSKC()
->>> key = pskc.add_key(id='456', manufacturer='Manufacturer')
->>> key.secret = a2b_hex('4e1790ba272406ba309c5a31')
->>> pskc.signature.sign(signing_key)
->>> f = tempfile.NamedTemporaryFile()
->>> pskc.write(f.name)
->>> with open(f.name, 'r') as r:
-...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF +NORMALIZE_WHITESPACE
-<?xml version="1.0" encoding="UTF-8"?>
-<pskc:KeyContainer xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:pskc="urn:ietf:params:xml:ns:keyprov:pskc" Version="1.0">
- ...
- <ds:Signature>
-  <ds:SignedInfo><ds:CanonicalizationMethod Algorithm="..."/><ds:SignatureMethod Algorithm="..."/><ds:Reference...><ds:DigestMethod Algorithm="..."/><ds:DigestValue>...</ds:DigestValue></ds:Reference></ds:SignedInfo>
-  <ds:SignatureValue>...</ds:SignatureValue>
-  <ds:KeyInfo>
-   <ds:KeyValue>
-    <ds:RSAKeyValue>
-     <ds:Modulus>...</ds:Modulus>
-     <ds:Exponent>...</ds:Exponent>
-    </ds:RSAKeyValue>
-   </ds:KeyValue>
-  </ds:KeyInfo>
- </ds:Signature>
-</pskc:KeyContainer>
-
-Read the file back in and verify the signature using the self-signed
-certificate.
-
->>> newpskc = PSKC(f.name)
->>> newpskc.signature.certificate is None
-True
->>> newpskc.signature.signed_pskc  # we need a certificate for verification
-Traceback (most recent call last):
-    ...
-InvalidInput: Expected a X.509 certificate based signature
->>> newpskc.signature.verify(self_signed_certificate)
-True
->>> newpskc = newpskc.signature.signed_pskc
->>> newpskc.keys[0].secret == pskc.keys[0].secret
-True
-
-
 We can also sign a PSKC file and include a certificate that can be validated
 using a CA certificate.
 
