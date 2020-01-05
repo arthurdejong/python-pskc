@@ -1,7 +1,7 @@
 # xml.py - module for parsing and writing XML for PSKC files
 # coding: utf-8
 #
-# Copyright (C) 2014-2019 Arthur de Jong
+# Copyright (C) 2014-2020 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@ This module provides some utility functions for parsing XML files.
 
 from __future__ import absolute_import
 
+import sys
 from collections import OrderedDict
 
 # try to find a usable ElementTree implementation
@@ -71,7 +72,7 @@ register_namespaces()
 
 def parse(source):
     """Parse the provided file and return an element tree."""
-    return xml_parse(source)
+    return xml_parse(sys.stdin if source == '-' else source)
 
 
 def remove_namespaces(tree):
