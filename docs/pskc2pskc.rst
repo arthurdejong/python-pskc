@@ -13,7 +13,7 @@ Description
 
 :program:`pskc2pskc` reads a PSKC file in any of the supported formats,
 optionally decrypts any encrypted information and outputs a PSKC file in the
-RFC6030 format, optionally encrypting the file.
+RFC 6030 format, optionally encrypting the file.
 
 Options
 -------

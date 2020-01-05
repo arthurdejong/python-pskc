@@ -53,7 +53,7 @@ class EncryptedValue(object):
         plaintext = pskc.encryption.decrypt_value(
             self.cipher_value, self.algorithm)
         # allow MAC over plaintext or cipertext
-        # (RFC6030 implies MAC over ciphertext but older draft used
+        # (RFC 6030 implies MAC over ciphertext but older draft used
         # MAC over plaintext)
         if self.mac_value and self.mac_value not in (
                 pskc.mac.generate_mac(self.cipher_value),
