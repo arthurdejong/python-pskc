@@ -33,4 +33,4 @@ matrix:
   - python: 3.6
     env: TOXENV=docs
 install: pip install tox
-script: tox -e "${TOXENV:-$(echo py${TRAVIS_PYTHON_VERSION}-${FLAVOUR} | tr -d . | sed -e 's/pypypy/pypy/')}"
+script: tox -e "${TOXENV:-$(echo py${TRAVIS_PYTHON_VERSION}-${FLAVOUR} | tr -d . | sed -e 's/pypypy/pypy/')}" --skip-missing-interpreters false
