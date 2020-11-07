@@ -1,16 +1,16 @@
 language: python
+os: linux
+dist: bionic
 cache: pip
-sudo: false
 python:
   - 2.7
   - 3.5
   - 3.6
   - 3.7
-  - pypy
   - pypy3
 env:
   - FLAVOUR=signxml
-matrix:
+jobs:
   include:
   - python: 2.7
     env: FLAVOUR=legacy
