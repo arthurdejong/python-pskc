@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  Based on figure 6 but with an unknown HMAC alorithm.
+  Based on figure 6 but with an unknown HMAC algorithm.
 -->
 
 <KeyContainer Version="1.0"

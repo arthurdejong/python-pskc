@@ -30,7 +30,7 @@
       </Data>
       <Policy>
         <KeyUsage>OTP</KeyUsage>
-        <!-- unknwon PINPolicy attribute -->
+        <!-- unknown PINPolicy attribute -->
         <PINPolicy MinLength="4" MaxLength="4"
           PINKeyId="123456781" PINEncoding="DECIMAL"
           PINUsageMode="Local" OnWeekDaysOnly="TRUE"/>

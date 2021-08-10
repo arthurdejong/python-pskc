@@ -18,10 +18,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
-"""Utility module that handles algorthm URIs."""
+"""Utility module that handles algorithm URIs."""
 
 
-# cannonical URIs of known algorithms
+# canonical URIs of known algorithms
 # Note that even if a URI is listed here it does not mean that
 # the algorithm is supported in python-pskc.
 _algorithms = dict((x.rsplit('#', 1)[-1], x) for x in [

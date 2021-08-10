@@ -52,7 +52,7 @@ class EncryptedValue(object):
         from pskc.exceptions import DecryptionError
         plaintext = pskc.encryption.decrypt_value(
             self.cipher_value, self.algorithm)
-        # allow MAC over plaintext or cipertext
+        # allow MAC over plaintext or ciphertext
         # (RFC 6030 implies MAC over ciphertext but older draft used
         # MAC over plaintext)
         if self.mac_value and self.mac_value not in (
