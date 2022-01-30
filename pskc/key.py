@@ -1,7 +1,7 @@
 # key.py - module for handling keys from pskc files
 # coding: utf-8
 #
-# Copyright (C) 2014-2018 Arthur de Jong
+# Copyright (C) 2014-2022 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ class EncryptedValue(object):
     def create(cls, pskc, value):
         """Construct an encryped value from a plaintext value."""
         # force conversion to bytestring on Python 3
-        if not isinstance(value, type(b'')):
+        if not isinstance(value, (type(b''), bytearray)):
             value = value.encode()  # pragma: no cover (Python 3 specific)
         cipher_value = pskc.encryption.encrypt_value(value)
         mac_value = None

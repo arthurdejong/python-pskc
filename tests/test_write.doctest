@@ -1,6 +1,6 @@
 test_write.doctest - tests for writing PSKC files
 
-Copyright (C) 2014-2018 Arthur de Jong
+Copyright (C) 2014-2022 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -689,6 +689,62 @@ specify this (and re-using an IV is a bad idea).
      </pskc:EncryptedValue>
      <pskc:ValueMAC>...</pskc:ValueMAC>
     </pskc:Secret>
+   </pskc:Data>
+  </pskc:Key>
+ </pskc:KeyPackage>
+</pskc:KeyContainer>
+
+
+Check that we can add secrets as bytearray values
+
+>>> pskc = PSKC()
+>>> key = pskc.add_key(
+...     id='1', serial='123456', secret=bytearray(b'1234'), counter=42)
+>>> pskc.encryption.setup_preshared_key(
+...     algorithm='aes128-cbc',
+...     key=bytearray(a2b_hex('12345678901234567890123456789012')),
+...     key_name='Pre-shared KEY', fields = ['secret', 'counter'])
+>>> f = tempfile.NamedTemporaryFile()
+>>> pskc.write(f.name)
+>>> with open(f.name, 'r') as r:
+...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<pskc:KeyContainer ... Version="1.0">
+ <pskc:EncryptionKey>
+  <ds:KeyName>Pre-shared KEY</ds:KeyName>
+ </pskc:EncryptionKey>
+ <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
+  <pskc:MACKey>
+   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+   <xenc:CipherData>
+    <xenc:CipherValue>...</xenc:CipherValue>
+   </xenc:CipherData>
+  </pskc:MACKey>
+ </pskc:MACMethod>
+ <pskc:KeyPackage>
+  <pskc:DeviceInfo>
+   <pskc:SerialNo>123456</pskc:SerialNo>
+  </pskc:DeviceInfo>
+  <pskc:Key Id="1">
+   <pskc:Data>
+    <pskc:Secret>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Secret>
+    <pskc:Counter>
+     <pskc:EncryptedValue>
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+      <xenc:CipherData>
+       <xenc:CipherValue>...</xenc:CipherValue>
+      </xenc:CipherData>
+     </pskc:EncryptedValue>
+     <pskc:ValueMAC>...</pskc:ValueMAC>
+    </pskc:Counter>
    </pskc:Data>
   </pskc:Key>
  </pskc:KeyPackage>
