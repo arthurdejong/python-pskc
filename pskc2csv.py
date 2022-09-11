@@ -20,6 +20,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
+"""Script to convert a PSKC file to CSV."""
+
 from pskc.scripts import pskc2csv
 
 
