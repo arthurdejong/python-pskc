@@ -1,3 +1,164 @@
+2022-09-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e95767e] .github/workflows/test.yml: Configure CodeQL code
+	  scanning
+
+2022-09-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8114316] .github/workflows/test.yml, setup.py, tox.ini: Add
+	  support for Python 3.10
+
+2022-09-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [7c6dfd8] .github/workflows/test.yml: Upgrade GitHub Actions
+
+	  Update checkout to v3 (no relevant changes) and setup-python to v4
+	  (changes the names for pypy versions).
+
+2022-09-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1d6e115] setup.cfg, tox.ini: Switch from nose to pytest
+
+	  Nose hasn't seen a release since 2015 and sadly doesn't work
+	  with Python 3.10.
+
+	  See https://github.com/nose-devs/nose/issues/1099
+
+2022-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [bb594fb] tox.ini: Support running tests with Python 2.7
+
+	  When using recent versions of virtualenv this ensures that
+	  older versions of pip and setuptools will be used inside the
+	  virtualenvs that are created by tox.
+
+2022-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [630012d] csv2pskc.py, pskc2csv.py, pskc2pskc.py, setup.cfg,
+	  setup.py, tox.ini: Also run flake8 on toplevel scripts
+
+2022-09-11  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c0733a4] tox.ini: Avoid version of signxml that doesn't work
+	  on Python <= 3.5
+
+2022-01-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b9e17d3] pskc/key.py, tests/test_write.doctest: Support bytearray
+	  for key values
+
+	  Related to https://github.com/arthurdejong/python-pskc/issues/5
+
+2022-01-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b543f2a] setup.py, tox.ini: Add support for Python 3.8 and 3.9
+
+2021-08-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5c02ecf] pskc/algorithms.py, pskc/key.py,
+	  tests/invalid/mac-algorithm.pskcxml, tests/misc/policy.pskcxml:
+	  Fix typos found by codespell
+
+2021-07-09  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [dce78b0] .github/workflows/test.yml, .travis.yml: Replace Travis
+	  with GitHub actions
+
+2021-01-13  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [39eaa71] setup.cfg: Ignore flake8 blind except Exception warning
+
+2020-11-07  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [0c035f2] .travis.yml: Drop Travis testing for pypy2
+
+	  Recent distributions no longer carry the older pypy2. This also
+	  updates to the config to use bionic instead of xenial.
+
+2020-01-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [1790ed9] tests/test_signature.doctest: Remove test for PSKC
+	  file without certificate
+
+	  Remove this test for now because signxml cannor currently validate
+	  this certificate in a backwards compatible way.
+
+	  See https://github.com/XML-Security/signxml/issues/143
+
+2020-01-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [54b3bb3] .travis.yml: Have Travis fail on missing Python
+	  interpreter
+
+2020-01-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [288a5e6] pskc/xml.py: Support reading from stdin if input is -
+
+	  This is needed for some XML parsing implementations.
+
+2020-01-05  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [96e2a8e] docs/pskc2pskc.rst, pskc/key.py: Be consistent in
+	  referencing RFC 6030
+
+2019-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [95f65ff] docs/csv2pskc.rst, docs/pskc2pskc.rst,
+	  docs/signatures.rst: Fix typos
+
+2019-08-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [543520a] tox.ini: Add pypy3 tests to tox
+
+2019-08-16  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [09979e3] .travis.yml, setup.py, tox.ini: Drop explicit support
+	  for Python 3.4
+
+	  Recent versions of lxml (since 4.4) no longer support Python
+	  3.4 so we no longer run tests for that version of Python.
+
+2019-08-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fca4ee1] .travis.yml: Use default dist for Python 3.7 build
+
+	  Travis now defaults to using xenial.
+
+2019-08-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [9acc216] pskc/xml.py: Force sorting of namespace definitions
+
+	  This ensures that namespace declarations in the generated XML
+	  files are ordered alphabetically when using lxml (mostly so our
+	  tests are reproducible).
+
+2019-08-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ddf3ab1] tox.ini: Drop pinning of pydocstyle now flake8-docstrings
+	  has been fixed
+
+	  Reverts e5ec0a1
+
+2019-07-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [86dccc4] tox.ini: Do not require Python 2 for building Sphinx docs
+
+	  This results in tox using Python 3, mostly to work around
+	  https://sourceforge.net/p/docutils/bugs/365/
+
+2019-07-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e5ec0a1] tox.ini: Avoid newer pydocstyle
+
+	  Do not install the latest pydocstyle because it currently breaks
+	  flake8-docstring. This pinning should be removed as soon as
+	  https://gitlab.com/pycqa/flake8-docstrings/issues/36 is resolved.
+
+2019-02-10  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [619ad62] ChangeLog, NEWS, README, docs/conf.py, pskc/__init__.py:
+	  Get files ready for 1.1 release
+
 2019-02-10  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [21323a0] .travis.yml, setup.py: Add Python 3.7 in Travis and

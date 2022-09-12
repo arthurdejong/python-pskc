@@ -1,3 +1,15 @@
+changes from 1.1 to 1.2
+-----------------------
+
+* sort namespace declarations alphabetically in generated XML
+* accept keys as bytearray values
+* spelling fixes in documentation
+* command-line utilities now support using - as stdin
+* test and build environment improvements
+* drop support for Python 3.4
+* add support for Python 3.8 - 3.10 (was already working out-of-the-box)
+
+
 changes from 1.0 to 1.1
 -----------------------
 
