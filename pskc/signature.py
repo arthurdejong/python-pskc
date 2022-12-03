@@ -38,7 +38,8 @@ def sign_x509(xml, key, certificate, algorithm=None, digest_algorithm=None,
     digest_algorithm = digest_algorithm or 'sha256'
     canonicalization_method = (
         canonicalization_method or
-        signxml.XMLSignatureProcessor.default_c14n_algorithm)
+        getattr(signxml.XMLSignatureProcessor, 'default_c14n_algorithm', None) or
+        'http://www.w3.org/2006/12/xml-c14n11')
     return signxml.XMLSigner(
         method=signxml.methods.enveloped,
         signature_algorithm=algorithm.rsplit('#', 1)[-1].lower(),
