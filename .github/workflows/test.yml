@@ -10,7 +10,7 @@ on:
 
 jobs:
   base:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [2.7, 3.8]
+        python-version: [2.7, 3.9]
         flavour: [legacy, legacy-defusedxml, lxml, lxml-defusedxml]
     steps:
       - uses: actions/checkout@v3
