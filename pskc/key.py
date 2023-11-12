@@ -37,7 +37,7 @@ class EncryptedValue(object):
 
     @classmethod
     def create(cls, pskc, value):
-        """Construct an encryped value from a plaintext value."""
+        """Construct an encrypted value from a plaintext value."""
         # force conversion to bytestring on Python 3
         if not isinstance(value, (type(b''), bytearray)):
             value = value.encode()  # pragma: no cover (Python 3 specific)
@@ -67,7 +67,7 @@ class EncryptedIntegerValue(EncryptedValue):
 
     @classmethod
     def create(cls, pskc, value):
-        """Construct an encryped value from a plaintext value."""
+        """Construct an encrypted value from a plaintext value."""
         value = '%x' % value
         n = len(value)
         value = binascii.unhexlify(value.zfill(n + (n & 1)))

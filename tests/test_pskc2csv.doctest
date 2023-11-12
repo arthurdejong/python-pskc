@@ -43,7 +43,7 @@ Traceback (most recent call last):
 SystemExit: 0
 
 
-We hack stdin to lie about being a TTY to ensure the password propmpt are
+We hack stdin to lie about being a TTY to ensure the password prompt is
 always presented.
 
 >>> class TTYFile(object):
