@@ -1,7 +1,7 @@
 # encryption.py - module for handling encrypted values
 # coding: utf-8
 #
-# Copyright (C) 2014-2018 Arthur de Jong
+# Copyright (C) 2014-2024 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -226,9 +226,9 @@ class KeyDerivation(object):
         if not all((password, self.pbkdf2_salt, self.pbkdf2_key_length,
                     self.pbkdf2_iterations)):
             raise KeyDerivationError('Incomplete PBKDF2 configuration')
-        # force conversion to bytestring on Python 3
+        # force conversion to bytestring
         if not isinstance(password, type(b'')):
-            password = password.encode()  # pragma: no cover (Py3 specific)
+            password = password.encode()
         try:
             return pbkdf2_hmac(
                 prf, password, self.pbkdf2_salt, self.pbkdf2_iterations,

@@ -1,7 +1,7 @@
 # aeskw.py - implementation of AES key wrapping
 # coding: utf-8
 #
-# Copyright (C) 2014-2017 Arthur de Jong
+# Copyright (C) 2014-2024 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,10 +31,7 @@ from pskc.exceptions import DecryptionError, EncryptionError
 
 def _strxor(a, b):
     """Return a XOR b."""
-    if isinstance(b'', str):  # pragma: no cover (Python 2 specific)
-        return b''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(a, b))
-    else:  # pragma: no cover (Python 3 specific)
-        return bytes(x ^ y for (x, y) in zip(a, b))
+    return bytes(x ^ y for (x, y) in zip(a, b))
 
 
 def _split(value):

@@ -1,7 +1,7 @@
 # serialiser.py - PSKC file parsing functions
 # coding: utf-8
 #
-# Copyright (C) 2016-2018 Arthur de Jong
+# Copyright (C) 2016-2024 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,7 @@ from pskc.xml import find, mk_elem, move_namespaces, reformat, tostring
 def my_b64encode(value):
     """Wrap around b64encode to handle types correctly."""
     if not isinstance(value, type(b'')):
-        value = value.encode()  # pragma: no cover (Python 3 specific)
+        value = value.encode()
     return base64.b64encode(value).decode()
 
 
@@ -43,8 +43,8 @@ class PSKCSerialiser(object):
         xml = tostring(cls.serialise_document(pskc))
         try:
             output.write(xml)
-        except TypeError:  # pragma: no cover (Python 3 specific)
-            # fall back to writing as string for Python 3
+        except TypeError:
+            # fall back to writing as string
             output.write(xml.decode('utf-8'))
 
     @classmethod
