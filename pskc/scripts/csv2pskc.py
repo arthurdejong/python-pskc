@@ -117,7 +117,7 @@ def main():
     columns = []
     if args.skip_rows > 0:
         columns = [x.lower().replace(' ', '_') for x in next(csvfile)]
-        for i in range(args.skip_rows - 1):
+        for _ in range(args.skip_rows - 1):
             next(csvfile)
     if args.columns:
         if ':' in args.columns:

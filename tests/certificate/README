@@ -6,7 +6,8 @@ The CA key and certificate were generated with:
 openssl req \
   -x509 -newkey rsa:2048 -nodes \
   -keyout ca-key.pem -out ca-certificate.pem \
-  -days 3650 -subj '/C=NL/O=python-pskc/CN=Test CA'
+  -days 3650 -subj '/C=NL/O=python-pskc/CN=Test CA' \
+  -addext 'keyUsage = critical, cRLSign, digitalSignature, keyCertSign'
 
 The key used for signing the PSKC files and corresponding self-signed
 certificate were generated with:
@@ -21,9 +22,11 @@ The certificate signed by the CA key was generated with:
 openssl req \
   -new \
   -key key.pem -out request.pem \
-  -subj '/C=NL/O=python-pskc/CN=Test signing'
+  -subj '/C=NL/O=python-pskc/CN=Test signing' \
+  -addext 'subjectAltName = email:test-signing@example.com'
 
 openssl x509 \
   -req \
   -in request.pem -CA ca-certificate.pem -CAkey ca-key.pem -out certificate.pem \
-  -days 3650 -set_serial 42
+  -days 3650 -set_serial 42 \
+  -copy_extensions copy
