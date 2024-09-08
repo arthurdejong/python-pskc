@@ -1,6 +1,6 @@
 test_misc.doctest - miscellaneous tests
 
-Copyright (C) 2014-2017 Arthur de Jong
+Copyright (C) 2014-2024 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -207,21 +207,18 @@ datetime.datetime(2026, 5, 31, 0, 0, tzinfo=tzutc())
 ['OTP']
 >>> key.policy.unknown_policy_elements
 False
->>> key.policy.may_use()
-True
 >>> key.policy.may_use('OTP', datetime.datetime(2005, 4, 3, 0, 0, 0))
 False
 >>> key.policy.may_use('OTP', now)
 True
 >>> key.policy.may_use('OTP', datetime.datetime(2028, 12, 31, 0, 0, 0))
 False
->>> key.policy.start_date = datetime.datetime.now() + \
-...     datetime.timedelta(seconds=10)
->>> key.policy.may_use('OTP')
+>>> key.policy.start_date = datetime.datetime.now() + datetime.timedelta(seconds=10)
+>>> key.policy.expiry_date = datetime.datetime.now() + datetime.timedelta(days=1)
+>>> key.policy.may_use()
 False
->>> key.policy.start_date = datetime.datetime.now(dateutil.tz.tzlocal()) - \
-...     datetime.timedelta(seconds=10)
->>> key.policy.may_use('OTP')
+>>> key.policy.start_date = datetime.datetime.now() - datetime.timedelta(seconds=10)
+>>> key.policy.may_use()
 True
 >>> key = pskc.keys[1]
 >>> key.policy.key_usage
