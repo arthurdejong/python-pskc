@@ -1,7 +1,7 @@
 # __init__.py - main module
 # coding: utf-8
 #
-# Copyright (C) 2014-2022 Arthur de Jong
+# Copyright (C) 2014-2024 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ __all__ = ['PSKC', '__version__']
 
 
 # the version number of the library
-__version__ = '1.2'
+__version__ = '1.3'
 
 
 class PSKC(object):

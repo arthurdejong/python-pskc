@@ -1,3 +1,133 @@
+2024-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d790ba4] tests/test_misc.doctest: Remove tests reliance on
+	  current time
+
+	  This ensures that the tests that compare the current time to
+	  expiry times should either set an explicity current time or use
+	  values relative to the current time.
+
+2024-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c002d92] setup.cfg, tests/test_write.doctest, tox.ini: Have
+	  tests fail on missing coverage
+
+	  This also only prints missed coverage on the terminal after
+	  the tests.
+
+	  Fixes 1d6e115 (removed requirement) and e99f7c8 (reduced coverage
+	  below 100%)
+
+2024-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c3f744d] tox.ini: Stop testing pypy (not 3)
+
+2024-08-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ea5db6b] pskc/scripts/csv2pskc.py,
+	  tests/certificate/README, tests/certificate/ca-certificate.pem,
+	  tests/certificate/ca-key.pem, tests/certificate/certificate.pem,
+	  tests/certificate/key.pem, tests/certificate/request.pem,
+	  tests/certificate/ss-certificate.pem, tox.ini: Replace test
+	  certificates
+
+	  The cryptography library now requires certificates to be in X509v3
+	  format and also requires certain X509v3 extensions to be present.
+
+2024-07-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [e99f7c8] .github/workflows/test.yml, pskc/crypto/aeskw.py,
+	  pskc/encryption.py, pskc/key.py, pskc/serialiser.py, setup.py,
+	  tox.ini: Drop Python 2 support
+
+	  It is getting more and more annoying to support Python 2 due to
+	  difficulty in testing.
+
+2024-05-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5cbd43f] .github/workflows/test.yml, setup.py, tox.ini: Drop
+	  support for Python 3.5
+
+	  We don't have an easy way to test with Python 3.5 any more.
+
+2023-11-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4257500] .github/workflows/test.yml, setup.cfg, tox.ini:
+	  Configure testing with codespell
+
+2023-11-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [348781b] pskc/key.py, tests/test_pskc2csv.doctest: Fix typos
+	  (thanks codespell)
+
+2023-11-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [8f01efd] .github/workflows/test.yml, setup.py, tox.ini: Add
+	  support for Python 3.12
+
+2023-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cce7e02] docs/conf.py, setup.cfg, tox.ini: Ensure flake8 is
+	  run on all Python files
+
+	  This also fixes code style fixes in the Sphinx configuration file.
+
+2023-06-27  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [fa32f6b] .github/workflows/test.yml: Run Python 2.7 tests in
+	  a container for GitHub Actions
+
+	  See https://github.com/actions/setup-python/issues/672
+
+2023-03-19  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b95f075] .github/workflows/test.yml, setup.py, tox.ini: Add
+	  support for Python 3.11
+
+	  This also simplifies the GitHub actions file a bit and updates
+	  the PyPy versions to test.
+
+2022-12-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [d4a8f09] .github/workflows/test.yml: Run most GitHub tests on
+	  older Ubuntu
+
+	  The ubuntu-latest image now points to ubuntu-22.04 instead of
+	  ubuntu-20.04 before and there are some issues regarding that
+	  new image that remain to be worked out.
+
+	  This also switches the default Python 3 implementation to
+	  Python 3.9.
+
+2022-12-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [5690a2b] tox.ini: Support running tests with PyPy 2.7
+
+	  This also applies the fix from bb594fb from Python 2.7 to PyPy.
+
+2022-12-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [acc6d78] pskc/signature.py: Support newer versions of signxml
+
+	  Version 3.0.0 of signxml dropped the default_c14n_algorithm
+	  property from XMLSignatureProcessor.
+
+2022-12-03  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [99422c0] tox.ini: Avoid newer flake8
+
+	  The new 6.0.0 contains a number of backwards incompatible changes
+	  for which plugins need to be updated and configuration needs to
+	  be updated.
+
+	  Sadly the maintainer no longer accepts contributions or discussion
+	  See https://github.com/PyCQA/flake8/issues/1760
+
+2022-09-12  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f2f0fb5] ChangeLog, NEWS, README, pskc/__init__.py: Get files
+	  ready for 1.2 release
+
 2022-09-12  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [e95767e] .github/workflows/test.yml: Configure CodeQL code
