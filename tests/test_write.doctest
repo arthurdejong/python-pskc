@@ -1,6 +1,6 @@
 test_write.doctest - tests for writing PSKC files
 
-Copyright (C) 2014-2022 Arthur de Jong
+Copyright (C) 2014-2024 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -318,7 +318,7 @@ specified and we assume to use the encryption key as MAC key).
 
 If we decrypt the file the MAC key will be included in encrypted form.
 
->>> pskc.encryption.derive_key('qwerty')
+>>> pskc.encryption.derive_key(b'qwerty')
 >>> pskc.write(sys.stdout)  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer ... Version="1.0">
