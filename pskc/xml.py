@@ -32,10 +32,6 @@ from collections import OrderedDict
 try:  # pragma: no cover (different implementations)
     from lxml.etree import parse as xml_parse, tostring as xml_tostring
     from lxml.etree import register_namespace, Element, SubElement
-    try:
-        from defusedxml.lxml import parse as xml_parse  # noqa: F811
-    except ImportError:
-        pass
 except ImportError:  # pragma: no cover (different implementations)
     from xml.etree.ElementTree import (
         parse as xml_parse, tostring as xml_tostring)
