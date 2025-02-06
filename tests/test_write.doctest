@@ -659,7 +659,7 @@ set on one key end up being applied to both keys.
 
 If we specify a global IV it will be used for all encrypted values but will
 be not be written as a global IV in the PSKC file because RFC 6030 does not
-specify this (and re-using an IV is a bad idea).
+specify this (and reusing an IV is a bad idea).
 
 >>> pskc = PSKC()
 >>> key = pskc.add_key(secret='1234')

@@ -24,7 +24,7 @@ import warnings
 
 
 def _make_aware(d):
-    """Make tge specified datetime timezone aware."""
+    """Make the specified datetime timezone aware."""
     import dateutil.tz
     if not d.tzinfo:
         return d.replace(tzinfo=dateutil.tz.tzlocal())

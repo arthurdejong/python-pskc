@@ -217,7 +217,7 @@ True
 
 
 This tests a PSKC file that uses asymmetric encryption as seen in figure 8 of
-RFC 6030. Note thet python-pskc does not yet support asymmetric encryption so
+RFC 6030. Note that python-pskc does not yet support asymmetric encryption so
 this test is really limited.
 
 >>> pskc = PSKC('tests/rfc6030/figure8.pskcxml')
