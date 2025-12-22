@@ -1,7 +1,7 @@
 # encryption.py - module for handling encrypted values
 # coding: utf-8
 #
-# Copyright (C) 2014-2024 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -303,7 +303,10 @@ class Encryption(object):
 
     @key_name.setter
     def key_name(self, value):
-        self.key_names = [value]
+        if value:
+            self.key_names = [value]
+        else:
+            self.key_names = []
 
     @property
     def algorithm(self):

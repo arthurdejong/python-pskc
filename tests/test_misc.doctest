@@ -1,6 +1,6 @@
 test_misc.doctest - miscellaneous tests
 
-Copyright (C) 2014-2024 Arthur de Jong
+Copyright (C) 2014-2025 Arthur de Jong
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -123,6 +123,12 @@ Setting encryption key name and algorithm also works.
 >>> pskc.encryption.key_name = 'Test encryption key'
 >>> pskc.encryption.key_names
 ['Test encryption key']
+>>> pskc.encryption.key_names = ['Foo', 'Bar']
+>>> pskc.encryption.key_name
+'Foo'
+>>> pskc.encryption.key_name = None
+>>> pskc.encryption.key_names
+[]
 >>> pskc.encryption.algorithm is None
 True
 >>> pskc.encryption.algorithm = 'aes128-cbc'
