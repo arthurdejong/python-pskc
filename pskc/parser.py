@@ -1,7 +1,7 @@
 # parser.py - PSKC file parsing functions
 # coding: utf-8
 #
-# Copyright (C) 2016-2018 Arthur de Jong
+# Copyright (C) 2016-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -387,9 +387,9 @@ class PSKCParser(object):
         certificate = findbin(
             signature_elm, 'KeyInfo/X509Data/X509Certificate')
         if certificate:
-            certificate = base64.b64encode(certificate)
-            signature.certificate = b'\n'.join(
-                [b'-----BEGIN CERTIFICATE-----'] +
+            certificate = base64.b64encode(certificate).decode('ascii')
+            signature.certificate = '\n'.join(
+                ['-----BEGIN CERTIFICATE-----'] +
                 [certificate[i:i + 64]
                  for i in range(0, len(certificate), 64)] +
-                [b'-----END CERTIFICATE-----'])
+                ['-----END CERTIFICATE-----'])
