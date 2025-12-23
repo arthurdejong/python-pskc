@@ -1,7 +1,7 @@
 # device.py - module for handling device info from pskc files
 # coding: utf-8
 #
-# Copyright (C) 2016-2018 Arthur de Jong
+# Copyright (C) 2016-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,19 +20,28 @@
 
 """Module that handles device information stored in PSKC files."""
 
+from __future__ import annotations
 
-def update_attributes(obj, **kwargs):
+import datetime
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    from pskc import PSKC
+    from pskc.key import Key
+
+
+def update_attributes(obj: Key | Device, **kwargs: Any) -> None:
     """Update object with provided properties."""
     for k, v in kwargs.items():
-        k = k.split('.') if '.' in k else k.split('__')
+        parts = k.split('.') if '.' in k else k.split('__')
         o = obj
-        for name in k[:-1]:
+        for name in parts[:-1]:
             o = getattr(o, name)
-        getattr(o, k[-1])  # raise exception for non-existing properties
-        setattr(o, k[-1], v)
+        getattr(o, parts[-1])  # raise exception for non-existing properties
+        setattr(o, parts[-1], v)
 
 
-class Device(object):
+class Device:
     """Representation of a single key from a PSKC file.
 
     Instances of this class provide the following properties:
@@ -48,23 +57,23 @@ class Device(object):
       crypto_module: id of module to which keys are provisioned within device
     """
 
-    def __init__(self, pskc):
+    def __init__(self, pskc: PSKC) -> None:
 
         self.pskc = pskc
 
-        self.manufacturer = None
-        self.serial = None
-        self.model = None
-        self.issue_no = None
-        self.device_binding = None
-        self.start_date = None
-        self.expiry_date = None
-        self.device_userid = None
-        self.crypto_module = None
+        self.manufacturer: str | None = None
+        self.serial: str | None = None
+        self.model: str | None = None
+        self.issue_no: str | int | None = None
+        self.device_binding: str | None = None
+        self.start_date: datetime.datetime | None = None
+        self.expiry_date: datetime.datetime | None = None
+        self.device_userid: str | None = None
+        self.crypto_module: str | None = None
 
-        self.keys = []
+        self.keys: list[Key] = []
 
-    def add_key(self, **kwargs):
+    def add_key(self, **kwargs: str | bytes | int | datetime.datetime | None) -> Key:
         """Create a new key instance for the device.
 
         The new key is initialised with properties from the provided keyword

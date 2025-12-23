@@ -77,6 +77,7 @@ setup(
         'defuse': ['defusedxml'],
         'signature': ['signxml'],
     },
+    package_data={'': ['py.typed']},
     entry_points={
         'console_scripts': [
             'csv2pskc = pskc.scripts.csv2pskc:main',

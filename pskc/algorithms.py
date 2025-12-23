@@ -1,7 +1,7 @@
 # algorithms.py - module for handling algorithm URIs
 # coding: utf-8
 #
-# Copyright (C) 2016-2017 Arthur de Jong
+# Copyright (C) 2016-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 # 02110-1301 USA
 
 """Utility module that handles algorithm URIs."""
+
+from __future__ import annotations
 
 
 # canonical URIs of known algorithms
@@ -89,7 +91,7 @@ _algorithm_aliases = {
 }
 
 
-def normalise_algorithm(algorithm):
+def normalise_algorithm(algorithm: str | None) -> str | None:
     """Return the canonical URI for the provided algorithm."""
     if not algorithm or algorithm.lower() == 'none':
         return None

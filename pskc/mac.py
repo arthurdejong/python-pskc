@@ -1,7 +1,7 @@
 # mac.py - module for checking value signatures
 # coding: utf-8
 #
-# Copyright (C) 2014-2018 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -28,17 +28,21 @@ The MAC key is generated specifically for each PSKC file and encrypted
 with the PSKC encryption key.
 """
 
+from __future__ import annotations
 
+import hashlib
 import os
 import re
+
+from pskc import PSKC
+from pskc.key import EncryptedValue
 
 
 _hmac_url_re = re.compile(r'^(.*#)?hmac-(?P<hash>[a-z0-9-]+)$')
 
 
-def _get_hash_obj(algorithm, *args):
+def _get_hash_obj(algorithm: str | None, *args: bytes) -> hashlib._Hash:
     """Return an instantiated hash object."""
-    import hashlib
     from pskc.algorithms import normalise_algorithm
     from pskc.exceptions import DecryptionError
     match = _hmac_url_re.search(normalise_algorithm(algorithm) or '')
@@ -50,15 +54,16 @@ def _get_hash_obj(algorithm, *args):
     raise DecryptionError('Unsupported MAC algorithm: %r' % algorithm)
 
 
-def mac(algorithm, key, value):
+def mac(algorithm: str | None, key: bytes | None, value: bytes) -> bytes:
     """Generate the MAC value over the specified value."""
     import hmac
+    assert key
     return hmac.new(
         key, value,
         lambda *args: _get_hash_obj(algorithm, *args)).digest()
 
 
-def mac_key_length(algorithm):
+def mac_key_length(algorithm: str | None) -> int:
     """Recommended minimal key length in bytes for the set algorithm."""
     # https://tools.ietf.org/html/rfc2104#section-3
     # an HMAC key should be at least as long as the hash output length
@@ -69,7 +74,7 @@ def mac_key_length(algorithm):
         return 16  # fallback value
 
 
-class MAC(object):
+class MAC:
     """Class describing the MAC algorithm to use and how to get the key.
 
     Instances of this class provide the following attributes:
@@ -78,15 +83,15 @@ class MAC(object):
       key: the binary value of the MAC key if it can be decrypted
     """
 
-    def __init__(self, pskc):
+    def __init__(self, pskc: PSKC) -> None:
         self.pskc = pskc
-        self._algorithm = None
+        self._algorithm: str | None = None
 
     @property
-    def key(self):
+    def key(self) -> bytes | None:
         """Provide access to the MAC key binary value if available."""
-        value = getattr(self, '_key', None)
-        if hasattr(value, 'get_value'):
+        value: bytes | EncryptedValue | None = getattr(self, '_key', None)
+        if isinstance(value, EncryptedValue):
             return value.get_value(self.pskc)
         elif value:
             return value
@@ -95,30 +100,31 @@ class MAC(object):
             return self.pskc.encryption.key
 
     @key.setter
-    def key(self, value):
+    def key(self, value: bytes | EncryptedValue | None) -> None:
         self._key = value
 
     @property
-    def algorithm(self):
+    def algorithm(self) -> str | None:
         """Provide the MAC algorithm used."""
         if self._algorithm:
             return self._algorithm
+        return None
 
     @algorithm.setter
-    def algorithm(self, value):
+    def algorithm(self, value: str | None) -> None:
         from pskc.algorithms import normalise_algorithm
         self._algorithm = normalise_algorithm(value)
 
     @property
-    def algorithm_key_length(self):
+    def algorithm_key_length(self) -> int:
         """Recommended minimal key length in bytes for the set algorithm."""
         return mac_key_length(self.algorithm)
 
-    def generate_mac(self, value):
+    def generate_mac(self, value: bytes) -> bytes:
         """Generate the MAC over the specified value."""
         return mac(self.algorithm, self.key, value)
 
-    def setup(self, key=None, algorithm=None):
+    def setup(self, key: bytes | None = None, algorithm: str | None = None) -> None:
         """Configure an encrypted MAC key.
 
         The following arguments may be supplied:

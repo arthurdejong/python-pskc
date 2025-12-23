@@ -20,19 +20,34 @@
 
 """Module for parsing PSKC files."""
 
+from __future__ import annotations
 
 import array
 import base64
 import copy
+from typing import Any, IO, TYPE_CHECKING, cast
 
+from pskc.encryption import Encryption, KeyDerivation
 from pskc.exceptions import ParseError
 from pskc.key import EncryptedIntegerValue, EncryptedValue
+from pskc.mac import MAC
 from pskc.xml import (
     find, findall, findbin, findint, findtext, findtime, getbool, getint,
     parse, remove_namespaces)
 
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    from os import PathLike
 
-def plain2int(value):
+    from lxml.etree import _Element
+
+    from pskc import PSKC
+    from pskc.device import Device
+    from pskc.key import Key
+    from pskc.policy import Policy
+    from pskc.signature import Signature
+
+
+def plain2int(value: int | str | bytes) -> int:
     """Convert a plain text value to an int."""
     # try normal integer string parsing
     try:
@@ -40,7 +55,7 @@ def plain2int(value):
     except ValueError:
         pass
     # fall back to base64 decoding
-    value = base64.b64decode(value)
+    value = base64.b64decode(cast(bytes, value))
     # try to handle value as ASCII representation
     if value.isdigit():
         return int(value)
@@ -51,11 +66,15 @@ def plain2int(value):
     return result
 
 
-class PSKCParser(object):
+class PSKCParser:
     """Class to read various PSKC XML files into a PSKC structure."""
 
     @classmethod
-    def parse_file(cls, pskc, filename):
+    def parse_file(
+        cls,
+        pskc: PSKC,
+        filename: str | bytes | PathLike[str] | PathLike[bytes] | IO[str] | IO[bytes],
+    ) -> None:
         """Parse the provided file and store data in the PSKC instance."""
         try:
             tree = parse(filename)
@@ -66,7 +85,7 @@ class PSKCParser(object):
         cls.parse_document(pskc, tree.getroot())
 
     @classmethod
-    def parse_document(cls, pskc, container):
+    def parse_document(cls, pskc: PSKC, container: _Element) -> None:
         """Read information from the provided <KeyContainer> tree."""
         remove_namespaces(container)
         if container.tag not in ('KeyContainer', 'SecretContainer'):
@@ -97,7 +116,7 @@ class PSKCParser(object):
         cls.parse_signature(pskc.signature, find(container, 'Signature'))
 
     @classmethod
-    def parse_encryption(cls, encryption, key_info):
+    def parse_encryption(cls, encryption: Encryption, key_info: _Element | None) -> None:
         """Read encryption information from the <EncryptionKey> XML tree."""
         if key_info is None:
             return
@@ -109,7 +128,7 @@ class PSKCParser(object):
         for name in findall(key_info,
                             'KeyName', 'DerivedKey/MasterKeyName',
                             'DerivedKey/CarriedKeyName'):
-            encryption.key_names.append(findtext(name, '.'))
+            encryption.key_names.append(findtext(name, '.'))  # type: ignore[arg-type]
         encryption.iv = findbin(key_info, 'IV') or encryption.iv
         cls.parse_key_derivation(encryption.derivation, find(
             key_info, 'DerivedKey/KeyDerivationMethod'))
@@ -128,7 +147,7 @@ class PSKCParser(object):
                 encryption.algorithm_key_lengths[0])
 
     @classmethod
-    def parse_key_derivation(cls, derivation, key_derivation):
+    def parse_key_derivation(cls, derivation: KeyDerivation, key_derivation: _Element | None) -> None:
         """Read derivation parameters from a <KeyDerivationMethod> element."""
         if key_derivation is None:
             return
@@ -148,7 +167,7 @@ class PSKCParser(object):
                 derivation.pbkdf2_prf = prf.get('Algorithm')
 
     @classmethod
-    def parse_mac_method(cls, mac, mac_method):
+    def parse_mac_method(cls, mac: MAC, mac_method: _Element | None) -> None:
         """Read MAC information from the <MACMethod> XML tree."""
         if mac_method is None:
             return
@@ -161,7 +180,7 @@ class PSKCParser(object):
             mac.key = EncryptedValue(cipher_value, None, algorithm)
 
     @classmethod
-    def parse_key_package(cls, device, key_package):
+    def parse_key_package(cls, device: Device, key_package: _Element) -> None:
         """Read key information from the provided <KeyPackage> tree."""
         # find basic device information
         info = find(key_package, 'DeviceInfo', 'DeviceId')
@@ -181,7 +200,7 @@ class PSKCParser(object):
             cls.parse_key(device.add_key(), key_elm)
 
     @classmethod
-    def parse_key(cls, key, key_elm):
+    def parse_key(cls, key: Key, key_elm: _Element) -> None:
         """Read key information from the provided <KeyPackage> tree."""
         # get key basic information
         key.id = (
@@ -202,7 +221,7 @@ class PSKCParser(object):
         for data in findall(key_elm, 'Data'):
             name = data.get('Name')
             if name:
-                cls.parse_data(key, dict(
+                cls.parse_data(key, dict(  # type: ignore[arg-type]
                     secret='secret',
                     counter='counter',
                     time='time_offset',
@@ -264,10 +283,10 @@ class PSKCParser(object):
             findtime(key_elm, 'ExpiryDate') or key.policy.expiry_date)
 
     @classmethod
-    def parse_encrypted_value(cls, encrypted_value):
+    def parse_encrypted_value(cls, encrypted_value: _Element) -> tuple[str | None, bytes]:
         """Read encryption value from <EncryptedValue> element."""
         algorithm = None
-        cipher_value = findbin(encrypted_value, 'CipherData/CipherValue')
+        cipher_value: bytes = findbin(encrypted_value, 'CipherData/CipherValue')  # type: ignore[assignment]
         encryption_method = find(encrypted_value, 'EncryptionMethod')
         if encryption_method is not None:
             algorithm = encryption_method.attrib.get('Algorithm')
@@ -278,7 +297,7 @@ class PSKCParser(object):
         return (algorithm, cipher_value)
 
     @classmethod
-    def parse_data(cls, key, field, element):
+    def parse_data(cls, key: Key, field: str, element: _Element | None) -> None:
         """Read information from the provided element.
 
         The element is expected to contain <PlainValue>, <EncryptedValue>
@@ -288,12 +307,12 @@ class PSKCParser(object):
         if element is None:
             return
         pskc = key.device.pskc
-        plain_value = None
+        plain_value: int | str | bytes | None = None
         cipher_value = None
         algorithm = None
         # get the plain2value function and encryption storage
         if field == 'secret':
-            plain2value = base64.b64decode
+            plain2value: Any = base64.b64decode
             encrypted_value_cls = EncryptedValue
         else:
             plain2value = plain2int
@@ -324,10 +343,10 @@ class PSKCParser(object):
             setattr(key, field, plain_value)
         elif cipher_value:
             setattr(key, field,
-                    encrypted_value_cls(cipher_value, mac_value, algorithm))
+                    encrypted_value_cls(cipher_value, mac_value, cast(str, algorithm)))
 
     @classmethod
-    def parse_policy(cls, policy, policy_elm):
+    def parse_policy(cls, policy: Policy, policy_elm: _Element | None) -> None:
         """Read key policy information from the provided <Policy> tree."""
         if policy_elm is None:
             return
@@ -337,7 +356,7 @@ class PSKCParser(object):
         policy.number_of_transactions = findint(
             policy_elm, 'NumberOfTransactions')
         for key_usage in findall(policy_elm, 'KeyUsage'):
-            policy.key_usage.append(findtext(key_usage, '.'))
+            policy.key_usage.append(findtext(key_usage, '.'))  # type: ignore[arg-type]
 
         pin_policy_elm = find(policy_elm, 'PINPolicy')
         if pin_policy_elm is not None:
@@ -367,7 +386,7 @@ class PSKCParser(object):
                 policy.unknown_policy_elements = True
 
     @classmethod
-    def parse_signature(cls, signature, signature_elm):
+    def parse_signature(cls, signature: Signature, signature_elm: _Element | None) -> None:
         """Read signature information from the <Signature> element."""
         if signature_elm is None:
             return
@@ -387,9 +406,9 @@ class PSKCParser(object):
         certificate = findbin(
             signature_elm, 'KeyInfo/X509Data/X509Certificate')
         if certificate:
-            certificate = base64.b64encode(certificate).decode('ascii')
+            certificate_str = base64.b64encode(certificate).decode('ascii')
             signature.certificate = '\n'.join(
                 ['-----BEGIN CERTIFICATE-----'] +
-                [certificate[i:i + 64]
-                 for i in range(0, len(certificate), 64)] +
+                [certificate_str[i:i + 64]
+                 for i in range(0, len(certificate_str), 64)] +
                 ['-----END CERTIFICATE-----'])

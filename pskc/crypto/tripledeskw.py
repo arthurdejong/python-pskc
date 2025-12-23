@@ -1,7 +1,7 @@
 # tripledeskw.py - implementation of Triple DES key wrapping
 # coding: utf-8
 #
-# Copyright (C) 2014-2017 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,8 @@
 
 """Implement Triple DES key wrapping as described in RFC 3217."""
 
+from __future__ import annotations
+
 import binascii
 import hashlib
 import os
@@ -30,7 +32,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from pskc.exceptions import DecryptionError, EncryptionError
 
 
-def _cms_hash(value):
+def _cms_hash(value: bytes) -> bytes:
     """Return the key hash algorithm described in RFC 3217 section 2."""
     return hashlib.sha1(value).digest()[:8]
 
@@ -38,7 +40,7 @@ def _cms_hash(value):
 RFC3217_IV = binascii.a2b_hex('4adda22c79e82105')
 
 
-def wrap(plaintext, key, iv=None):
+def wrap(plaintext: bytes, key: bytes, iv: bytes | None = None) -> bytes:
     """Wrap one key (typically a Triple DES key) with another Triple DES key.
 
     This uses the algorithm from RFC 3217 to encrypt the plaintext (the key
@@ -60,7 +62,7 @@ def wrap(plaintext, key, iv=None):
     return encryptor.update(tmp[::-1]) + encryptor.finalize()
 
 
-def unwrap(ciphertext, key):
+def unwrap(ciphertext: bytes, key: bytes) -> bytes:
     """Unwrap a key (typically Triple DES key ) with another Triple DES key.
 
     This uses the algorithm from RFC 3217 to decrypt the ciphertext (the

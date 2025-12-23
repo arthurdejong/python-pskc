@@ -1,7 +1,7 @@
 # exceptions.py - collection of pskc exceptions
 # coding: utf-8
 #
-# Copyright (C) 2014 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 # 02110-1301 USA
 
 """Collection of exceptions."""
+
+from __future__ import annotations
 
 
 class PSKCError(Exception):

@@ -26,12 +26,20 @@ algorithms and decryption.
 The encryption key can be derived using the KeyDerivation class.
 """
 
+from __future__ import annotations
 
 import os
 import re
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Type
+
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    from cryptography.hazmat.primitives.ciphers import BlockCipherAlgorithm
+
+    from pskc import PSKC
 
 
-def algorithm_key_lengths(algorithm):
+def algorithm_key_lengths(algorithm: str | None) -> Sequence[int]:
     """Return the possible key lengths for the configured algorithm."""
     from pskc.exceptions import DecryptionError
     if algorithm is None:
@@ -59,19 +67,24 @@ def algorithm_key_lengths(algorithm):
         raise DecryptionError('Unsupported algorithm: %r' % algorithm)
 
 
-def _decrypt_cbc(algorithm, key, ciphertext, iv=None):
+def _decrypt_cbc(
+    algorithm: Type[BlockCipherAlgorithm],
+    key: bytes,
+    ciphertext: bytes,
+    iv: bytes | None = None,
+) -> bytes:
     """Decrypt the ciphertext and return the plaintext value."""
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives import padding
     from cryptography.hazmat.primitives.ciphers import Cipher, modes
     from pskc.exceptions import DecryptionError
     if not iv:
-        iv = ciphertext[:algorithm.block_size // 8]
-        ciphertext = ciphertext[algorithm.block_size // 8:]
+        iv = ciphertext[:algorithm.block_size // 8]  # type: ignore[operator]
+        ciphertext = ciphertext[algorithm.block_size // 8:]  # type: ignore[operator]
     cipher = Cipher(
-        algorithm(key), modes.CBC(iv), backend=default_backend())
+        algorithm(key), modes.CBC(iv), backend=default_backend())  # type: ignore[call-arg]
     decryptor = cipher.decryptor()
-    unpadder = padding.PKCS7(algorithm.block_size).unpadder()
+    unpadder = padding.PKCS7(algorithm.block_size).unpadder()  # type: ignore[arg-type]
     try:
         return unpadder.update(
             decryptor.update(ciphertext) +
@@ -80,7 +93,7 @@ def _decrypt_cbc(algorithm, key, ciphertext, iv=None):
         raise DecryptionError('Invalid padding')
 
 
-def decrypt(algorithm, key, ciphertext, iv=None):
+def decrypt(algorithm: str | None, key: bytes | None, ciphertext: bytes, iv: bytes | None = None) -> bytes:
     """Decrypt the ciphertext and return the plaintext value."""
     from cryptography.hazmat.primitives.ciphers import algorithms
     from pskc.exceptions import DecryptionError
@@ -99,11 +112,11 @@ def decrypt(algorithm, key, ciphertext, iv=None):
     elif algorithm.endswith('#kw-aes128') or \
             algorithm.endswith('#kw-aes192') or \
             algorithm.endswith('#kw-aes256'):
-        from pskc.crypto.aeskw import unwrap
-        return unwrap(ciphertext, key)
+        from pskc.crypto.aeskw import unwrap as easkw_unwrap
+        return easkw_unwrap(ciphertext, key)
     elif algorithm.endswith('#kw-tripledes'):
-        from pskc.crypto.tripledeskw import unwrap
-        return unwrap(ciphertext, key)
+        from pskc.crypto.tripledeskw import unwrap as tripledeskw_unwrap
+        return tripledeskw_unwrap(ciphertext, key)
     elif (algorithm.endswith('#camellia128-cbc') or
             algorithm.endswith('#camellia192-cbc') or
             algorithm.endswith('#camellia256-cbc')):
@@ -111,28 +124,29 @@ def decrypt(algorithm, key, ciphertext, iv=None):
     elif (algorithm.endswith('#kw-camellia128') or  # pragma: no branch
             algorithm.endswith('#kw-camellia192') or
             algorithm.endswith('#kw-camellia256')):
-        from pskc.crypto.aeskw import unwrap
-        return unwrap(ciphertext, key, algorithm=algorithms.Camellia)
+        from pskc.crypto.aeskw import unwrap as easkw_unwrap
+        return easkw_unwrap(ciphertext, key, algorithm=algorithms.Camellia)
     # no fallthrough because algorithm_key_lengths() fails with unknown algo
+    assert False  # pragma: no cover (only for mypy)  # noqa: B011
 
 
-def _encrypt_cbc(algorithm, key, plaintext, iv=None):
+def _encrypt_cbc(algorithm: Type[BlockCipherAlgorithm], key: bytes, plaintext: bytes, iv: bytes | None = None) -> bytes:
     """Encrypt the provided value with the key using the algorithm."""
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives import padding
     from cryptography.hazmat.primitives.ciphers import Cipher, modes
-    iv = iv or os.urandom(algorithm.block_size // 8)
+    iv = iv or os.urandom(algorithm.block_size // 8)  # type: ignore[operator]
     cipher = Cipher(
-        algorithm(key), modes.CBC(iv), backend=default_backend())
+        algorithm(key), modes.CBC(iv), backend=default_backend())  # type: ignore[call-arg]
     encryptor = cipher.encryptor()
-    padder = padding.PKCS7(algorithm.block_size).padder()
+    padder = padding.PKCS7(algorithm.block_size).padder()  # type: ignore[arg-type]
     return (
         iv + encryptor.update(
             padder.update(plaintext) + padder.finalize()) +
         encryptor.finalize())
 
 
-def encrypt(algorithm, key, plaintext, iv=None):
+def encrypt(algorithm: str | None, key: bytes | None, plaintext: bytes, iv: bytes | None = None) -> bytes:
     """Encrypt the provided value with the key using the algorithm."""
     from cryptography.hazmat.primitives.ciphers import algorithms
     from pskc.exceptions import EncryptionError
@@ -151,11 +165,11 @@ def encrypt(algorithm, key, plaintext, iv=None):
     elif algorithm.endswith('#kw-aes128') or \
             algorithm.endswith('#kw-aes192') or \
             algorithm.endswith('#kw-aes256'):
-        from pskc.crypto.aeskw import wrap
-        return wrap(plaintext, key)
+        from pskc.crypto.aeskw import wrap as aeskw_wrap
+        return aeskw_wrap(plaintext, key)
     elif algorithm.endswith('#kw-tripledes'):
-        from pskc.crypto.tripledeskw import wrap
-        return wrap(plaintext, key)
+        from pskc.crypto.tripledeskw import wrap as tripledeskw_wrap
+        return tripledeskw_wrap(plaintext, key)
     elif (algorithm.endswith('#camellia128-cbc') or
             algorithm.endswith('#camellia192-cbc') or
             algorithm.endswith('#camellia256-cbc')):
@@ -163,12 +177,13 @@ def encrypt(algorithm, key, plaintext, iv=None):
     elif (algorithm.endswith('#kw-camellia128') or  # pragma: no branch
             algorithm.endswith('#kw-camellia192') or
             algorithm.endswith('#kw-camellia256')):
-        from pskc.crypto.aeskw import wrap
-        return wrap(plaintext, key, algorithm=algorithms.Camellia)
+        from pskc.crypto.aeskw import wrap as aeskw_wrap
+        return aeskw_wrap(plaintext, key, algorithm=algorithms.Camellia)
     # no fallthrough because algorithm_key_lengths() fails with unknown algo
+    assert False  # pragma: no cover (only for mypy)  # noqa: B011
 
 
-class KeyDerivation(object):
+class KeyDerivation:
     """Handle key derivation.
 
     The algorithm property contains the key derivation algorithm to use. For
@@ -180,37 +195,39 @@ class KeyDerivation(object):
       pbkdf2_prf: name of pseudorandom function used
     """
 
-    def __init__(self):
-        self._algorithm = None
+    def __init__(self) -> None:
+        self._algorithm: str | None = None
         # PBKDF2 properties
-        self.pbkdf2_salt = None
-        self.pbkdf2_iterations = None
-        self.pbkdf2_key_length = None
-        self._pbkdf2_prf = None
+        self.pbkdf2_salt: bytes | None = None
+        self.pbkdf2_iterations: int | None = None
+        self.pbkdf2_key_length: int | None = None
+        self._pbkdf2_prf: str | None = None
 
     @property
-    def algorithm(self):
+    def algorithm(self) -> str | None:
         """Provide the key derivation algorithm used."""
         if self._algorithm:
             return self._algorithm
+        return None
 
     @algorithm.setter
-    def algorithm(self, value):
+    def algorithm(self, value: str | None) -> None:
         from pskc.algorithms import normalise_algorithm
         self._algorithm = normalise_algorithm(value)
 
     @property
-    def pbkdf2_prf(self):
+    def pbkdf2_prf(self) -> str | None:
         """Provide the PBKDF2 pseudorandom function used."""
         if self._pbkdf2_prf:
             return self._pbkdf2_prf
+        return None
 
     @pbkdf2_prf.setter
-    def pbkdf2_prf(self, value):
+    def pbkdf2_prf(self, value: str | None) -> None:
         from pskc.algorithms import normalise_algorithm
         self._pbkdf2_prf = normalise_algorithm(value)
 
-    def derive_pbkdf2(self, password):
+    def derive_pbkdf2(self, password: str | bytes | bytearray) -> bytes:
         """Derive an encryption key from the provided password."""
         from hashlib import pbkdf2_hmac
         from pskc.exceptions import KeyDerivationError
@@ -228,16 +245,16 @@ class KeyDerivation(object):
             raise KeyDerivationError('Incomplete PBKDF2 configuration')
         # force conversion to bytestring
         if not isinstance(password, type(b'')):
-            password = password.encode()
+            password = password.encode()  # type: ignore[union-attr]
         try:
             return pbkdf2_hmac(
-                prf, password, self.pbkdf2_salt, self.pbkdf2_iterations,
+                prf, password, self.pbkdf2_salt, self.pbkdf2_iterations,  # type: ignore[arg-type]
                 self.pbkdf2_key_length)
         except ValueError:
             raise KeyDerivationError(
                 'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
 
-    def derive(self, password):
+    def derive(self, password: str | bytes | bytearray) -> bytes:
         """Derive a key from the password."""
         from pskc.exceptions import KeyDerivationError
         if self.algorithm is None:
@@ -248,8 +265,15 @@ class KeyDerivation(object):
             raise KeyDerivationError(
                 'Unsupported algorithm: %r' % self.algorithm)
 
-    def setup_pbkdf2(self, password, salt=None, salt_length=16,
-                     key_length=None, iterations=None, prf=None):
+    def setup_pbkdf2(
+        self,
+        password: str | bytes | bytearray,
+        salt: bytes | None = None,
+        salt_length: int = 16,
+        key_length: int | None = None,
+        iterations: int | None = None,
+        prf: str | None = None,
+    ) -> bytes:
         """Configure PBKDF2 key derivation properties."""
         self.algorithm = 'pbkdf2'
         if salt is None:
@@ -266,7 +290,7 @@ class KeyDerivation(object):
         return self.derive_pbkdf2(password)
 
 
-class Encryption(object):
+class Encryption:
     """Class for handling encryption keys that are used in the PSKC file.
 
     Encryption generally uses a symmetric key that is used to encrypt some
@@ -285,42 +309,44 @@ class Encryption(object):
     derive_key() method.
     """
 
-    def __init__(self, pskc):
+    def __init__(self, pskc: PSKC) -> None:
         self.pskc = pskc
-        self.id = None
-        self._algorithm = None
-        self.key_names = []
-        self.key = None
-        self.iv = None
+        self.id: str | None = None
+        self._algorithm: str | None = None
+        self.key_names: list[str] = []
+        self.key: bytes | None = None
+        self.iv: bytes | None = None
         self.derivation = KeyDerivation()
-        self.fields = []
+        self.fields: list[str] = []
 
     @property
-    def key_name(self):
+    def key_name(self) -> str | None:
         """Provide the name of the (first) key."""
         if self.key_names:
             return self.key_names[0]
+        return None
 
     @key_name.setter
-    def key_name(self, value):
+    def key_name(self, value: str | None) -> None:
         if value:
             self.key_names = [value]
         else:
             self.key_names = []
 
     @property
-    def algorithm(self):
+    def algorithm(self) -> str | None:
         """Provide the encryption algorithm used."""
         if self._algorithm:
             return self._algorithm
+        return None
 
     @algorithm.setter
-    def algorithm(self, value):
+    def algorithm(self, value: str | None) -> None:
         from pskc.algorithms import normalise_algorithm
         self._algorithm = normalise_algorithm(value)
 
     @property
-    def is_encrypted(self):
+    def is_encrypted(self) -> bool:
         """Test whether the PSKC file requires a decryption key."""
         from pskc.exceptions import DecryptionError
         try:
@@ -331,15 +357,29 @@ class Encryption(object):
             return True
         return False
 
-    def derive_key(self, password):
+    def derive_key(self, password: str | bytes | bytearray) -> None:
         """Derive a key from the password."""
         self.key = self.derivation.derive(password)
 
-    def _setup_encryption(self, kwargs):
-        for k in ('id', 'algorithm', 'key_name', 'key_names', 'fields'):
-            v = kwargs.pop(k, None)
-            if v is not None:
-                setattr(self, k, v)
+    def _setup_encryption(
+        self,
+        *,
+        id: str | None = None,
+        algorithm: str | None = None,
+        key_name: str | None = None,
+        key_names: list[str] | None = None,
+        fields: list[str] | None = None,
+    ) -> None:
+        if id is not None:
+            self.id = id
+        if algorithm is not None:
+            self.algorithm = algorithm
+        if key_name is not None:
+            self.key_name = key_name
+        if key_names is not None:
+            self.key_names = key_names
+        if fields is not None:
+            self.fields = fields
         # default encryption to AES128-CBC
         if not self.algorithm:
             self.algorithm = 'aes128-cbc'
@@ -350,7 +390,17 @@ class Encryption(object):
         if self.algorithm.endswith('-cbc'):
             self.pskc.mac.setup()
 
-    def setup_preshared_key(self, **kwargs):
+    def setup_preshared_key(
+        self,
+        *,
+        key: bytes | None = None,
+        id: str | None = None,
+        algorithm: str | None = None,
+        key_length: int | None = None,
+        key_name: str | None = None,
+        key_names: list[str] | None = None,
+        fields: list[str] | None = None,
+    ) -> None:
         """Configure pre-shared key encryption when writing the file.
 
         The following arguments may be supplied:
@@ -365,22 +415,42 @@ class Encryption(object):
         None of the arguments are required, reasonable defaults will be
         chosen for missing arguments.
         """
-        self._setup_encryption(kwargs)
-        self.key = kwargs.pop('key', self.key)
-        if not self.key:
-            self.key = os.urandom(
-                kwargs.pop('key_length', self.algorithm_key_lengths[-1]))
+        self._setup_encryption(
+            id=id,
+            algorithm=algorithm,
+            key_name=key_name,
+            key_names=key_names,
+            fields=fields,
+        )
+        if not key:
+            key_length = key_length or self.algorithm_key_lengths[-1]
+            key = os.urandom(key_length)
+        self.key = key
 
-    def setup_pbkdf2(self, password, **kwargs):
+    def setup_pbkdf2(
+        self,
+        password: str | bytes | bytearray,
+        *,
+        id: str | None = None,
+        algorithm: str | None = None,
+        key_name: str | None = None,
+        key_names: list[str] | None = None,
+        key_length: int | None = None,
+        fields: list[str] | None = None,
+        salt: bytes | None = None,
+        salt_length: int = 16,
+        iterations: int | None = None,
+        prf: str | None = None,
+    ) -> None:
         """Configure password-based PSKC encryption when writing the file.
 
         The following arguments may be supplied:
           password: the password to use (required)
           id: encryption key identifier
           algorithm: encryption algorithm
-          key_length: encryption key length in bytes
           key_name: a name for the key
           key_names: a number of names for the key
+          key_length: encryption key length in bytes
           fields: a list of fields to encrypt
           salt: PBKDF2 salt
           salt_length: used when generating random salt
@@ -390,29 +460,40 @@ class Encryption(object):
         Only password is required, for the other arguments reasonable
         defaults will be chosen.
         """
-        self._setup_encryption(kwargs)
-        # pass a key length to PBKDF2
-        kwargs.setdefault('key_length', self.algorithm_key_lengths[-1])
-        self.key = self.derivation.setup_pbkdf2(password, **kwargs)
+        self._setup_encryption(
+            id=id,
+            algorithm=algorithm,
+            key_name=key_name,
+            key_names=key_names,
+            fields=fields,
+        )
+        self.key = self.derivation.setup_pbkdf2(
+            password,
+            salt=salt,
+            salt_length=salt_length,
+            key_length=key_length or self.algorithm_key_lengths[-1],
+            iterations=iterations,
+            prf=prf,
+        )
 
     @property
-    def algorithm_key_lengths(self):
+    def algorithm_key_lengths(self) -> Sequence[int]:
         """Provide the possible key lengths for the configured algorithm."""
         return algorithm_key_lengths(self.algorithm)
 
-    def decrypt_value(self, cipher_value, algorithm=None):
+    def decrypt_value(self, cipher_value: bytes, algorithm: str | None = None) -> bytes:
         """Decrypt the cipher_value and return the plaintext value."""
         return decrypt(
             algorithm or self.algorithm, self.key, cipher_value, self.iv)
 
-    def encrypt_value(self, plaintext):
+    def encrypt_value(self, plaintext: bytes) -> bytes:
         """Encrypt the provided value and return the cipher_value."""
         cipher_value = encrypt(self.algorithm, self.key, plaintext, self.iv)
         if self.iv:
             cipher_value = cipher_value[len(self.iv):]
         return cipher_value
 
-    def remove_encryption(self):
+    def remove_encryption(self) -> None:
         """Decrypt all values and remove the encryption from the PSKC file."""
         # decrypt all values and store decrypted values
         for key in self.pskc.keys:

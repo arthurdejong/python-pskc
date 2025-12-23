@@ -1,6 +1,6 @@
 # csv2pskc.py - script to convert a CSV file to PSKC
 #
-# Copyright (C) 2018 Arthur de Jong
+# Copyright (C) 2018-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,15 @@
 
 """Script to convert a CSV file to PSKC."""
 
+from __future__ import annotations
+
 import argparse
 import base64
 import csv
+import datetime
 import sys
 from binascii import a2b_hex
+from typing import Any, Iterator, TextIO
 
 import dateutil.parser
 
@@ -79,21 +83,21 @@ parser.add_argument(
     default='hex')
 
 
-def from_column(key, value, args):
+def from_column(key: str, value: str, secret_encoding: str) -> bytes | str | datetime.datetime:
     """Convert a key value read from a CSV file in a format for PSKC."""
     # decode encoded secret
     if key == 'secret':
-        return encodings[args.secret_encoding](value)
+        return encodings[secret_encoding](value)  # type: ignore[no-any-return,operator]
     # convert dates to timestamps
     if key.endswith('_date'):
         return dateutil.parser.parse(value)
     return value
 
 
-def open_csvfile(inputfile):
+def open_csvfile(inputfile: TextIO) -> Iterator[Any]:
     """Open the CSV file, trying to detect the dialect."""
     # Guess dialect if possible and open the CSV file
-    dialect = 'excel'
+    dialect: str | type[csv.Dialect] = 'excel'
     try:
         # seek before read to skip sniffing on non-seekable files
         inputfile.seek(0)
@@ -107,7 +111,7 @@ def open_csvfile(inputfile):
     return csv.reader(inputfile, dialect)
 
 
-def main():
+def main() -> None:
     """Convert a CSV file to PSKC."""
     # parse command-line arguments
     args = parser.parse_args()
@@ -138,7 +142,7 @@ def main():
         for column, value in zip(columns, row):
             for key in column.split('+'):
                 if value and key not in ('', '-'):
-                    data[key] = from_column(key, value, args)
+                    data[key] = from_column(key, value, args.secret_encoding)
         pskcfile.add_key(**data)
     # encrypt the file if needed
     if args.secret:

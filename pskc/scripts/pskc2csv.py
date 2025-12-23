@@ -1,6 +1,6 @@
 # pskc2csv.py - script to convert a PSKC file to CSV
 #
-# Copyright (C) 2014-2018 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 
 """Script to convert a PSKC file to CSV."""
 
+from __future__ import annotations
+
 import argparse
 import base64
 import csv
@@ -28,6 +30,7 @@ import sys
 from binascii import b2a_hex
 
 import pskc
+from pskc.key import Key
 from pskc.scripts.util import (
     OutputFile, VersionAction, get_key, get_password)
 
@@ -74,16 +77,16 @@ parser.add_argument(
     default='hex')
 
 
-def get_column(key, column, encoding):
+def get_column(key: Key, column: str, secret_encoding: str) -> str:
     """Return a string value for the given column."""
     value = operator.attrgetter(column)(key)
     if column == 'secret':
         # Python 3 compatible construct for outputting a string
-        return str(encodings[encoding](value).decode())
-    return value
+        return str(encodings[secret_encoding](value).decode())  # type: ignore[operator]
+    return value  # type: ignore[no-any-return]
 
 
-def main():
+def main() -> None:
     """Convert a PSKC file to CSV."""
     # parse command-line arguments
     args = parser.parse_args()

@@ -1,7 +1,7 @@
 # policy.py - module for handling PSKC policy information
 # coding: utf-8
 #
-# Copyright (C) 2014-2017 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,17 @@
 
 """Module that provides PSKC key policy information."""
 
+from __future__ import annotations
+
+import datetime
 import warnings
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    from pskc.key import Key
 
 
-def _make_aware(d):
+def _make_aware(d: datetime.datetime) -> datetime.datetime:
     """Make the specified datetime timezone aware."""
     import dateutil.tz
     if not d.tzinfo:
@@ -31,7 +38,7 @@ def _make_aware(d):
     return d
 
 
-class Policy(object):
+class Policy:
     """Representation of a policy that describes key and pin usage.
 
     Instances of this class provide attributes that describe limits that
@@ -101,23 +108,23 @@ class Policy(object):
     # The PIN is used in the algorithm computation.
     PIN_USE_ALGORITHMIC = 'Algorithmic'
 
-    def __init__(self, key=None):
+    def __init__(self, key: Key | None = None) -> None:
         """Create a new policy, optionally linked to the key and parsed."""
         self.key = key
-        self.start_date = None
-        self.expiry_date = None
-        self.number_of_transactions = None
-        self.key_usage = []
-        self.pin_key_id = None
-        self.pin_usage = None
-        self.pin_max_failed_attempts = None
-        self.pin_min_length = None
-        self.pin_max_length = None
-        self.pin_encoding = None
+        self.start_date: datetime.datetime | None = None
+        self.expiry_date: datetime.datetime | None = None
+        self.number_of_transactions: int | None = None
+        self.key_usage: list[str] = []
+        self.pin_key_id: str | None = None
+        self.pin_usage: str | None = None
+        self.pin_max_failed_attempts: int | None = None
+        self.pin_min_length: int | None = None
+        self.pin_max_length: int | None = None
+        self.pin_encoding: str | None = None
         self.unknown_policy_elements = False
 
     @property
-    def pin_max_failed_attemtps(self):
+    def pin_max_failed_attemtps(self) -> int | None:
         """Provide access to deprecated name."""
         warnings.warn(
             'The pin_max_failed_attemtps property has been renamed to '
@@ -125,13 +132,13 @@ class Policy(object):
         return self.pin_max_failed_attempts
 
     @pin_max_failed_attemtps.setter
-    def pin_max_failed_attemtps(self, value):
+    def pin_max_failed_attemtps(self, value: int | None) -> None:
         warnings.warn(
             'The pin_max_failed_attemtps property has been renamed to '
             'pin_max_failed_attempts.', DeprecationWarning, stacklevel=2)
         self.pin_max_failed_attempts = value
 
-    def may_use(self, usage=None, now=None):
+    def may_use(self, usage: str | None = None, now: datetime.datetime | None = None) -> bool:
         """Check whether the key may be used for the provided purpose."""
         import datetime
         import dateutil.tz
@@ -152,16 +159,18 @@ class Policy(object):
         return True
 
     @property
-    def pin_key(self):
+    def pin_key(self) -> Key | None:
         """Provide the PSKC Key that holds the PIN (if any)."""
         if self.pin_key_id and self.key and self.key.device.pskc:
             for key in self.key.device.pskc.keys:
                 if key.id == self.pin_key_id:
                     return key
+        return None
 
     @property
-    def pin(self):
+    def pin(self) -> str | None:
         """Provide the PIN value referenced by PINKeyId if any."""
         key = self.pin_key
-        if key:
+        if key and key.secret:
             return str(key.secret.decode())
+        return None

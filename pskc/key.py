@@ -1,7 +1,7 @@
 # key.py - module for handling keys from pskc files
 # coding: utf-8
 #
-# Copyright (C) 2014-2024 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,38 +20,45 @@
 
 """Module that handles keys stored in PSKC files."""
 
+from __future__ import annotations
+
 
 import array
 import binascii
+from typing import Any, TYPE_CHECKING, cast
 
 from pskc.policy import Policy
 
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    from pskc import PSKC
+    from pskc.device import Device
 
-class EncryptedValue(object):
+
+class EncryptedValue:
     """A container for an encrypted value."""
 
-    def __init__(self, cipher_value, mac_value, algorithm):
+    def __init__(self, cipher_value: bytes, mac_value: bytes | None, algorithm: str | None) -> None:
         self.cipher_value = cipher_value
         self.mac_value = mac_value
         self.algorithm = algorithm
 
     @classmethod
-    def create(cls, pskc, value):
+    def create(cls, pskc: PSKC, value: bytes | bytearray | str) -> EncryptedValue:
         """Construct an encrypted value from a plaintext value."""
         # force conversion to bytestring
-        if not isinstance(value, (type(b''), bytearray)):
+        if not isinstance(value, (bytes, bytearray)):
             value = value.encode()
-        cipher_value = pskc.encryption.encrypt_value(value)
+        cipher_value = pskc.encryption.encrypt_value(cast(bytes, value))
         mac_value = None
         if pskc.mac.algorithm:
             mac_value = pskc.mac.generate_mac(cipher_value)
+        assert pskc.encryption.algorithm
         return cls(cipher_value, mac_value, pskc.encryption.algorithm)
 
-    def get_value(self, pskc):
+    def get_value(self, pskc: PSKC) -> bytes:
         """Provide the decrypted value."""
         from pskc.exceptions import DecryptionError
-        plaintext = pskc.encryption.decrypt_value(
-            self.cipher_value, self.algorithm)
+        plaintext = pskc.encryption.decrypt_value(self.cipher_value, self.algorithm)
         # allow MAC over plaintext or ciphertext
         # (RFC 6030 implies MAC over ciphertext but older draft used
         # MAC over plaintext)
@@ -66,14 +73,14 @@ class EncryptedIntegerValue(EncryptedValue):
     """Class representing an encrypted integer value."""
 
     @classmethod
-    def create(cls, pskc, value):
+    def create(cls, pskc: PSKC, value: int) -> EncryptedValue:  # type: ignore[override]
         """Construct an encrypted value from a plaintext value."""
-        value = '%x' % value
-        n = len(value)
-        value = binascii.unhexlify(value.zfill(n + (n & 1)))
-        return super(EncryptedIntegerValue, cls).create(pskc, value)
+        str_value = '%x' % value
+        n = len(str_value)
+        bytes_value = binascii.unhexlify(str_value.zfill(n + (n & 1)))
+        return super(EncryptedIntegerValue, cls).create(pskc, bytes_value)
 
-    def get_value(self, pskc):
+    def get_value(self, pskc: PSKC) -> int:  # type: ignore[override]
         """Provide the decrypted integer value."""
         value = super(EncryptedIntegerValue, self).get_value(pskc)
         # try to handle value as ASCII representation
@@ -86,38 +93,38 @@ class EncryptedIntegerValue(EncryptedValue):
         return result
 
 
-class DataTypeProperty(object):
+class DataTypeProperty:
     """A data descriptor that delegates actions to DataType instances."""
 
-    def __init__(self, name, doc):
+    def __init__(self, name: str, doc: str) -> None:
         self.name = name
         self.__doc__ = doc
 
-    def __get__(self, obj, objtype):
+    def __get__(self, obj: Key, objtype: type | None) -> Any:
         value = getattr(obj, '_' + self.name, None)
-        if hasattr(value, 'get_value'):
+        if isinstance(value, EncryptedValue):
             return value.get_value(obj.device.pskc)
         else:
             return value
 
-    def __set__(self, obj, val):
+    def __set__(self, obj: Key, val: Any) -> None:
         setattr(obj, '_' + self.name, val)
 
 
-class DeviceProperty(object):
+class DeviceProperty:
     """A data descriptor that delegates actions to the Device instance."""
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         self.name = name
 
-    def __get__(self, obj, objtype):
+    def __get__(self, obj: Key, objtype: type | None) -> Any:
         return getattr(obj.device, self.name)
 
-    def __set__(self, obj, val):
+    def __set__(self, obj: Key, val: Any) -> None:
         setattr(obj.device, self.name, val)
 
 
-class Key(object):
+class Key:
     """Representation of a single key from a PSKC file.
 
     Instances of this class provide the following properties:
@@ -149,42 +156,42 @@ class Key(object):
     crypto_module properties of the Device class.
     """
 
-    def __init__(self, device):
+    def __init__(self, device: Device) -> None:
 
         self.device = device
 
-        self.id = None
-        self.algorithm = None
+        self.id: str | None = None
+        self.algorithm: str | None = None
 
-        self.issuer = None
-        self.key_profile = None
-        self.key_reference = None
-        self.friendly_name = None
-        self.key_userid = None
+        self.issuer: str | None = None
+        self.key_profile: str | None = None
+        self.key_reference: str | None = None
+        self.friendly_name: str | None = None
+        self.key_userid: str | None = None
 
-        self.algorithm_suite = None
+        self.algorithm_suite: str | None = None
 
-        self.challenge_encoding = None
-        self.challenge_min_length = None
-        self.challenge_max_length = None
-        self.challenge_check = None
+        self.challenge_encoding: str | None = None
+        self.challenge_min_length: int | None = None
+        self.challenge_max_length: int | None = None
+        self.challenge_check: bool | None = None
 
-        self.response_encoding = None
-        self.response_length = None
-        self.response_check = None
+        self.response_encoding: str | None = None
+        self.response_length: int | None = None
+        self.response_check: bool | None = None
 
         self.policy = Policy(self)
 
-    secret = DataTypeProperty(
+    secret: bytes | None = DataTypeProperty(  # type: ignore[assignment]
         'secret', 'The secret key itself.')
-    counter = DataTypeProperty(
+    counter: int | None = DataTypeProperty(  # type: ignore[assignment]
         'counter', 'An event counter for event-based OTP.')
-    time_offset = DataTypeProperty(
+    time_offset: int | None = DataTypeProperty(  # type: ignore[assignment]
         'time_offset',
         'A time offset for time-based OTP (number of intervals).')
-    time_interval = DataTypeProperty(
+    time_interval: int | None = DataTypeProperty(  # type: ignore[assignment]
         'time_interval', 'A time interval in seconds.')
-    time_drift = DataTypeProperty(
+    time_drift: int | None = DataTypeProperty(  # type: ignore[assignment]
         'time_drift', 'Device clock drift value (number of time intervals).')
 
     manufacturer = DeviceProperty('manufacturer')
@@ -197,14 +204,15 @@ class Key(object):
     device_userid = DeviceProperty('device_userid')
     crypto_module = DeviceProperty('crypto_module')
 
-    def check(self):
+    def check(self) -> bool:
         """Check if all MACs in the message are valid."""
         if all(x is not False for x in (
                 self.secret, self.counter, self.time_offset,
                 self.time_interval, self.time_drift)):
             return True
+        assert False  # pragma: no cover (only for mypy)  # noqa: B011
 
     @property
-    def userid(self):
+    def userid(self) -> str:
         """User identifier (either the key or device userid)."""
         return self.key_userid or self.device_userid

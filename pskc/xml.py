@@ -1,7 +1,7 @@
 # xml.py - module for parsing and writing XML for PSKC files
 # coding: utf-8
 #
-# Copyright (C) 2014-2020 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,21 +23,30 @@
 This module provides some utility functions for parsing XML files.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, annotations
 
+import datetime
 import sys
 from collections import OrderedDict
+from typing import IO, TYPE_CHECKING, cast
+
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    from collections.abc import Generator
+    from os import PathLike
+
+    from lxml.etree import _Element, _ElementTree
+
 
 # try to find a usable ElementTree implementation
 try:  # pragma: no cover (different implementations)
     from lxml.etree import parse as xml_parse, tostring as xml_tostring
     from lxml.etree import register_namespace, Element, SubElement
 except ImportError:  # pragma: no cover (different implementations)
-    from xml.etree.ElementTree import (
+    from xml.etree.ElementTree import (  # type: ignore[no-redef]
         parse as xml_parse, tostring as xml_tostring)
-    from xml.etree.ElementTree import register_namespace, Element, SubElement
+    from xml.etree.ElementTree import register_namespace, Element, SubElement  # type: ignore[no-redef,assignment]
     try:
-        from defusedxml.ElementTree import parse as xml_parse  # noqa: F811
+        from defusedxml.ElementTree import parse as xml_parse  # type: ignore[no-redef]  # noqa: F811
     except ImportError:
         pass
 
@@ -57,7 +66,7 @@ namespaces = dict(
 )
 
 
-def register_namespaces():
+def register_namespaces() -> None:
     """Register the namespaces so the correct short names will be used."""
     for ns, namespace in namespaces.items():
         register_namespace(ns, namespace)
@@ -66,12 +75,14 @@ def register_namespaces():
 register_namespaces()
 
 
-def parse(source):
+def parse(
+    source: str | bytes | PathLike[str] | PathLike[bytes] | IO[str] | IO[bytes],
+) -> _ElementTree[_Element]:
     """Parse the provided file and return an element tree."""
     return xml_parse(sys.stdin if source == '-' else source)
 
 
-def remove_namespaces(tree):
+def remove_namespaces(tree: _Element | _ElementTree[_Element]) -> None:
     """Remove namespaces from all elements in the tree."""
     import re
     for elem in tree.iter():
@@ -79,59 +90,65 @@ def remove_namespaces(tree):
             elem.tag = re.sub(r'^\{[^}]*\}', '', elem.tag)
 
 
-def findall(tree, *matches):
+def findall(tree: _Element | _ElementTree[_Element], *matches: str) -> Generator[_Element]:
     """Find the child elements."""
     for match in matches:
         for element in tree.findall(match, namespaces=namespaces):
             yield element
 
 
-def find(tree, *matches):
+def find(tree: _Element | _ElementTree[_Element], *matches: str) -> _Element | None:
     """Find a child element that matches any of the patterns (or None)."""
     try:
         return next(findall(tree, *matches))
     except StopIteration:
         pass
+    return None
 
 
-def findtext(tree, *matches):
+def findtext(tree: _Element | _ElementTree[_Element], *matches: str) -> str | None:
     """Get the text value of an element (or None)."""
     element = find(tree, *matches)
-    if element is not None:
+    if element is not None and element.text:
         return element.text.strip()
+    return None
 
 
-def findint(tree, *matches):
+def findint(tree: _Element | _ElementTree[_Element], *matches: str) -> int | None:
     """Return an element value as an int (or None)."""
     value = findtext(tree, *matches)
     if value:
         return int(value)
+    return None
 
 
-def findtime(tree, *matches):
+def findtime(tree: _Element | _ElementTree[_Element], *matches: str) -> datetime.datetime | None:
     """Return an element value as a datetime (or None)."""
     value = findtext(tree, *matches)
     if value:
         import dateutil.parser
         return dateutil.parser.parse(value)
+    return None
 
 
-def findbin(tree, *matches):
+def findbin(tree: _Element | _ElementTree[_Element], *matches: str) -> bytes | None:
     """Return the binary element value base64 decoded."""
     value = findtext(tree, *matches)
     if value:
         import base64
         return base64.b64decode(value)
+    return None
 
 
-def getint(tree, attribute):
+def getint(tree: _Element, attribute: str) -> int | None:
     """Return an attribute value as an integer (or None)."""
     value = tree.get(attribute)
     if value:
         return int(value)
+    return None
 
 
-def getbool(tree, attribute, default=None):
+def getbool(tree: _Element, attribute: str, default: bool | None = None) -> bool | None:
     """Return an attribute value as a boolean (or None)."""
     value = tree.get(attribute)
     if value:
@@ -145,7 +162,7 @@ def getbool(tree, attribute, default=None):
     return default
 
 
-def _format(value):
+def _format(value: datetime.datetime | bool | int | str) -> str:
     import datetime
     if isinstance(value, datetime.datetime):
         value = value.isoformat()
@@ -159,25 +176,30 @@ def _format(value):
     return str(value)
 
 
-def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
+def mk_elem(
+    parent: _Element | str | None,
+    tag: str | None = None,
+    text: str | int | bool | datetime.datetime | None = None,
+    empty: bool = False,
+    **kwargs: str | int | bool | datetime.datetime | None,
+) -> _Element | None:
     """Add element as a child of parent."""
     # special-case the top-level element
     if tag is None:
-        tag = parent
+        tag = cast(str, parent)
         parent = None
         empty = True
     # don't create empty elements
-    if not empty and text is None and \
-       all(x is None for x in kwargs.values()):
-        return
+    if not empty and text is None and all(x is None for x in kwargs.values()):
+        return None
     # replace namespace identifier with URL
     if ':' in tag:
         ns, name = tag.split(':', 1)
         tag = '{%s}%s' % (namespaces[ns], name)
     if parent is None:
-        element = Element(tag, OrderedDict())
+        element: _Element = Element(tag, OrderedDict())
     else:
-        element = SubElement(parent, tag, OrderedDict())
+        element = SubElement(parent, tag, OrderedDict())  # type: ignore[assignment,type-var]
     # set text of element
     if text is not None:
         element.text = _format(text)
@@ -188,7 +210,7 @@ def mk_elem(parent, tag=None, text=None, empty=False, **kwargs):
     return element
 
 
-def move_namespaces(element):
+def move_namespaces(element: _Element) -> _Element:
     """Move the namespace declarations to the toplevel element."""
     if hasattr(element, 'nsmap'):  # pragma: no cover (only on lxml)
         # get all used namespaces
@@ -204,9 +226,9 @@ def move_namespaces(element):
     return element
 
 
-def reformat(element, indent=''):
+def reformat(element: _Element, indent: str = '') -> None:
     """Reformat the XML tree to have nice wrapping and indenting."""
-    tag = element.tag.split('}')[-1]
+    tag = cast(str, element.tag).split('}')[-1]
     # re-order attributes by alphabet
     attrib = sorted(element.attrib.items())
     element.attrib.clear()
@@ -216,7 +238,7 @@ def reformat(element, indent=''):
         if element.text:
             element.text = element.text.strip()
         if tag in ('X509Certificate', 'SignatureValue'):
-            element.text = ''.join(x for x in element.text if not x.isspace())
+            element.text = ''.join(x for x in element.text if not x.isspace())  # type: ignore[union-attr]
     elif tag != 'SignedInfo':
         # indent children
         element.text = '\n ' + indent
@@ -227,7 +249,7 @@ def reformat(element, indent=''):
     element.tail = '\n' + indent
 
 
-def tostring(element):
+def tostring(element: _Element) -> bytes:
     """Return a serialised XML document for the element tree."""
     element = move_namespaces(element)
     reformat(element)

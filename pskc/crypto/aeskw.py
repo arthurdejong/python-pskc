@@ -1,7 +1,7 @@
 # aeskw.py - implementation of AES key wrapping
 # coding: utf-8
 #
-# Copyright (C) 2014-2024 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,21 +20,29 @@
 
 """Implement key wrapping as described in RFC 3394 and RFC 5649."""
 
+from __future__ import annotations
+
 import binascii
 import struct
+from typing import TYPE_CHECKING
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from pskc.exceptions import DecryptionError, EncryptionError
 
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    from typing import Type
 
-def _strxor(a, b):
+    from cryptography.hazmat.primitives.ciphers import BlockCipherAlgorithm
+
+
+def _strxor(a: bytes, b: bytes) -> bytes:
     """Return a XOR b."""
     return bytes(x ^ y for (x, y) in zip(a, b))
 
 
-def _split(value):
+def _split(value: bytes) -> tuple[bytes, bytes]:
     return value[:8], value[8:]
 
 
@@ -42,7 +50,13 @@ RFC3394_IV = binascii.a2b_hex('a6a6a6a6a6a6a6a6')
 RFC5649_IV = binascii.a2b_hex('a65959a6')
 
 
-def wrap(plaintext, key, iv=None, pad=None, algorithm=algorithms.AES):
+def wrap(
+    plaintext: bytes,
+    key: bytes,
+    iv: bytes | None = None,
+    pad: bool | None = None,
+    algorithm: Type[BlockCipherAlgorithm] = algorithms.AES,
+) -> bytes:
     """Apply the AES key wrap algorithm to the plaintext.
 
     The iv can specify an initial value, otherwise the value from RFC 3394 or
@@ -69,7 +83,7 @@ def wrap(plaintext, key, iv=None, pad=None, algorithm=algorithms.AES):
         else:
             iv = RFC3394_IV
 
-    cipher = Cipher(algorithm(key), modes.ECB(), default_backend())
+    cipher = Cipher(algorithm(key), modes.ECB(), default_backend())  # type: ignore[call-arg]
     encryptor = cipher.encryptor()
     n = len(plaintext) // 8
 
@@ -87,7 +101,13 @@ def wrap(plaintext, key, iv=None, pad=None, algorithm=algorithms.AES):
     return A + b''.join(R)
 
 
-def unwrap(ciphertext, key, iv=None, pad=None, algorithm=algorithms.AES):
+def unwrap(
+    ciphertext: bytes,
+    key: bytes,
+    iv: bytes | None = None,
+    pad: bool | None = None,
+    algorithm: Type[BlockCipherAlgorithm] = algorithms.AES,
+) -> bytes:
     """Apply the AES key unwrap algorithm to the ciphertext.
 
     The iv can specify an initial value, otherwise the value from RFC 3394 or
@@ -102,7 +122,7 @@ def unwrap(ciphertext, key, iv=None, pad=None, algorithm=algorithms.AES):
     if len(ciphertext) % 8 != 0 or (pad is False and len(ciphertext) < 24):
         raise DecryptionError('Ciphertext length wrong')
 
-    cipher = Cipher(algorithm(key), modes.ECB(), default_backend())
+    cipher = Cipher(algorithm(key), modes.ECB(), default_backend())  # type: ignore[call-arg]
     decryptor = cipher.decryptor()
     n = len(ciphertext) // 8 - 1
 

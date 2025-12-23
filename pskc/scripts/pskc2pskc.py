@@ -1,6 +1,6 @@
 # pskc2pskc.py - script to convert a PSKC file to another PSKC file
 #
-# Copyright (C) 2018 Arthur de Jong
+# Copyright (C) 2018-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,8 @@
 # 02110-1301 USA
 
 """Script to convert a PSKC file to another PSKC file."""
+
+from __future__ import annotations
 
 import argparse
 
@@ -60,7 +62,7 @@ parser.add_argument(
     help='hex encoded encryption key or a file containing the binary key')
 
 
-def main():
+def main() -> None:
     """Convert a PSKC file to another PSKC file."""
     # parse command-line arguments
     args = parser.parse_args()

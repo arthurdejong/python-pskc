@@ -356,15 +356,17 @@ Set up an encrypted PSKC file and generate a pre-shared key for it.
 ...     id='1', serial='123456', secret=b'1234', counter=42)
 >>> pskc.encryption.setup_preshared_key(
 ...     algorithm='aes128-cbc',
+...     id='Foo',
 ...     key=a2b_hex('12345678901234567890123456789012'),
-...     key_name='Pre-shared KEY', fields = ['secret', 'counter'])
+...     key_name='Pre-shared KEY',
+...     fields=['secret', 'counter'])
 >>> f = tempfile.NamedTemporaryFile()
 >>> pskc.write(f.name)
 >>> with open(f.name, 'r') as r:
 ...     x = sys.stdout.write(r.read())  #doctest: +ELLIPSIS +REPORT_UDIFF
 <?xml version="1.0" encoding="UTF-8"?>
 <pskc:KeyContainer ... Version="1.0">
- <pskc:EncryptionKey>
+ <pskc:EncryptionKey Id="Foo">
   <ds:KeyName>Pre-shared KEY</ds:KeyName>
  </pskc:EncryptionKey>
  <pskc:MACMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1">
@@ -703,7 +705,8 @@ Check that we can add secrets as bytearray values
 >>> pskc.encryption.setup_preshared_key(
 ...     algorithm='aes128-cbc',
 ...     key=bytearray(a2b_hex('12345678901234567890123456789012')),
-...     key_name='Pre-shared KEY', fields = ['secret', 'counter'])
+...     key_names=['Pre-shared KEY'],
+...     fields=['secret', 'counter'])
 >>> f = tempfile.NamedTemporaryFile()
 >>> pskc.write(f.name)
 >>> with open(f.name, 'r') as r:

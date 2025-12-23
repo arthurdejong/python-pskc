@@ -1,7 +1,7 @@
 # __init__.py - general crypto utility functions
 # coding: utf-8
 #
-# Copyright (C) 2017 Arthur de Jong
+# Copyright (C) 2017-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,3 +19,5 @@
 # 02110-1301 USA
 
 """Implement crypto utility functions."""
+
+from __future__ import annotations

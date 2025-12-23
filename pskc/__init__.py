@@ -1,7 +1,7 @@
 # __init__.py - main module
 # coding: utf-8
 #
-# Copyright (C) 2014-2024 Arthur de Jong
+# Copyright (C) 2014-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -49,15 +49,25 @@ The following generates an encrypted PSKC file:
 The module should be able to handle most common PSKC files.
 """
 
+from __future__ import annotations
+
 
 __all__ = ['PSKC', '__version__']
 
+from typing import IO, Sequence, TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover (only for mypy)
+    import datetime
+    from os import PathLike
+
+    from pskc.device import Device
+    from pskc.key import Key
 
 # the version number of the library
 __version__ = '1.3'
 
 
-class PSKC(object):
+class PSKC:
     """Wrapper module for parsing a PSKC file.
 
     Instances of this class provide the following attributes:
@@ -70,16 +80,20 @@ class PSKC(object):
       keys: list of keys (Key instances)
     """
 
-    def __init__(self, filename=None):
+    def __init__(
+        self,
+        filename: str | bytes | PathLike[str] | PathLike[bytes] | IO[str] | IO[bytes] | None = None,
+    ) -> None:
         from pskc.encryption import Encryption
         from pskc.signature import Signature
+        from pskc.device import Device
         from pskc.mac import MAC
-        self.version = None
-        self.id = None
+        self.version: str | None = None
+        self.id: str | None = None
         self.encryption = Encryption(self)
         self.signature = Signature(self)
         self.mac = MAC(self)
-        self.devices = []
+        self.devices: list[Device] = []
         if filename is not None:
             from pskc.parser import PSKCParser
             PSKCParser.parse_file(self, filename)
@@ -87,11 +101,11 @@ class PSKC(object):
             self.version = '1.0'
 
     @property
-    def keys(self):
+    def keys(self) -> Sequence[Key]:
         """Provide a list of keys."""
         return tuple(key for device in self.devices for key in device.keys)
 
-    def add_device(self, **kwargs):
+    def add_device(self, **kwargs: str | int | datetime.datetime | None) -> Device:
         """Create a new device instance for the PSKC file.
 
         The device is initialised with properties from the provided keyword
@@ -103,7 +117,7 @@ class PSKC(object):
         update_attributes(device, **kwargs)
         return device
 
-    def add_key(self, **kwargs):
+    def add_key(self, **kwargs: str | bytes | int | datetime.datetime | None) -> Key:
         """Create a new key instance for the PSKC file.
 
         The new key is initialised with properties from the provided keyword
@@ -115,11 +129,11 @@ class PSKC(object):
         update_attributes(key, **kwargs)
         return key
 
-    def write(self, filename):
+    def write(self, filename: str | bytes | PathLike[str] | PathLike[bytes] | IO[str] | IO[bytes]) -> None:
         """Write the PSKC file to the provided file."""
         from pskc.serialiser import PSKCSerialiser
         if hasattr(filename, 'write'):
-            PSKCSerialiser.serialise_file(self, filename)
+            PSKCSerialiser.serialise_file(self, filename)  # type: ignore [arg-type]
         else:
             with open(filename, 'wb') as output:
                 self.write(output)

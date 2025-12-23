@@ -1,7 +1,7 @@
 # __init__.py - collection of command-line scripts
 # coding: utf-8
 #
-# Copyright (C) 2018 Arthur de Jong
+# Copyright (C) 2018-2025 Arthur de Jong
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,3 +19,5 @@
 # 02110-1301 USA
 
 """Collection of command-line scripts."""
+
+from __future__ import annotations
