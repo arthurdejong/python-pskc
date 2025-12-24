@@ -205,7 +205,12 @@ class Key:
     crypto_module = DeviceProperty('crypto_module')
 
     def check(self) -> bool:
-        """Check if all MACs in the message are valid."""
+        """Check if all MACs in the message are valid.
+
+        This will return `None` if there is no MAC to be checked. It will return
+        True if all the MACs match. If any MAC fails a
+        `DecryptionError` exception is raised.
+        """
         if all(x is not False for x in (
                 self.secret, self.counter, self.time_offset,
                 self.time_interval, self.time_drift)):

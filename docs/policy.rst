@@ -19,72 +19,75 @@ The Policy class
 
 .. class:: Policy
 
-   .. attribute:: start_date
+   .. autoattribute:: start_date
 
       :class:`datetime.datetime` value that indicates that the key must not
       be used before this date.
 
-   .. attribute:: expiry_date
+   .. autoattribute:: expiry_date
 
       :class:`datetime.datetime` value that indicates that the key must not
       be used after this date. Systems should not rely upon the device to
       enforce key usage date restrictions, as some devices do not have an
       internal clock.
 
-   .. attribute:: number_of_transactions
+   .. autoattribute:: number_of_transactions
 
       The value indicates the maximum number of times a key carried within
       the PSKC document may be used by an application after having received
       it.
 
-   .. attribute:: key_usage
+   .. autoattribute:: key_usage
 
       A list of `valid usage scenarios
       <https://www.iana.org/assignments/pskc/#key-usage>`__ for the
       key that the recipient should check against the intended usage of the
       key. Also see :func:`may_use` and :ref:`key-use-constants` below.
 
-   .. attribute:: pin_key_id
+   .. autoattribute:: pin_key_id
 
       The unique `id` of the key within the PSKC file that contains the value
       of the PIN that protects this key.
 
    .. attribute:: pin_key
+      :type: Key | None
 
       Instance of the :class:`~pskc.key.Key` (if any) that contains the value
       of the PIN referenced by :attr:`pin_key_id`.
 
    .. attribute:: pin
+      :type: str | None
 
       PIN value referenced by :attr:`pin_key_id` (if any). The value is
       transparently decrypted if possible.
 
-   .. attribute:: pin_usage
+   .. autoattribute:: pin_usage
 
       Describe how the PIN is used during the usage of the key. See
       :ref:`pin-use-constants` below.
 
-   .. attribute:: pin_max_failed_attempts
+   .. autoattribute:: pin_max_failed_attempts
 
       The maximum number of times the PIN may be entered wrongly before it
       MUST NOT be possible to use the key any more.
 
-   .. attribute:: pin_min_length
+   .. autoattribute:: pin_min_length
 
       The minimum length of a PIN that can be set to protect the associated
       key.
 
-   .. attribute:: pin_max_length
+   .. autoattribute:: pin_max_length
 
       The maximum length of a PIN that can be set to protect this key.
 
-   .. attribute:: pin_encoding
+   .. autoattribute:: pin_encoding
 
       The encoding of the PIN which is one of ``DECIMAL``, ``HEXADECIMAL``,
       ``ALPHANUMERIC``, ``BASE64``, or ``BINARY`` (see
       :attr:`~pskc.key.Key.challenge_encoding`).
 
    .. attribute:: unknown_policy_elements
+      :type: bool
 
       Boolean that is set to ``True`` if the PSKC policy information contains
       unknown or unsupported definitions or values. A conforming
@@ -92,11 +95,7 @@ The Policy class
       value is ``True`` to ensure that the lack of understanding of certain
       extensions does not lead to unintended key usage.
 
-   .. function:: may_use(usage=None, now=None)
-
-      Check whether the key may be used for the provided purpose. The key
-      :attr:`start_date` and :attr:`expiry_date` are also checked. The `now`
-      argument can be used to specify another point in time to check against.
+   .. automethod:: may_use
 
 .. _key-use-constants:
 

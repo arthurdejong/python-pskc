@@ -306,7 +306,7 @@ class Encryption:
       fields: a list of Key fields that will be encrypted on writing
 
     The key can either be assigned to the key property or derived using the
-    derive_key() method.
+    `derive_key()` method.
     """
 
     def __init__(self, pskc: PSKC) -> None:
@@ -358,7 +358,14 @@ class Encryption:
         return False
 
     def derive_key(self, password: str | bytes | bytearray) -> None:
-        """Derive a key from the password."""
+        """Derive a key from the password.
+
+        The supplied password, together with the information embedded in the PSKC
+        file (generally algorithm, salt, etc.) is used to create a decryption key.
+
+        This function may raise a :exc:`~pskc.exceptions.KeyDerivationError`
+        exception if key derivation fails.
+        """
         self.key = self.derivation.derive(password)
 
     def _setup_encryption(
@@ -403,17 +410,27 @@ class Encryption:
     ) -> None:
         """Configure pre-shared key encryption when writing the file.
 
-        The following arguments may be supplied:
-          key: the encryption key to use
-          id: encryption key identifier
-          algorithm: encryption algorithm
-          key_length: encryption key length in bytes
-          key_name: a name for the key
-          key_names: a number of names for the key
-          fields: a list of fields to encrypt
+        :param key: the encryption key to use
+        :param id: encryption key identifier
+        :param algorithm: encryption algorithm
+        :param key_length: encryption key length in bytes
+        :param key_name: a name for the key
+        :param key_names: a number of names for the key
+        :param fields: a list of fields to encrypt
 
-        None of the arguments are required, reasonable defaults will be
-        chosen for missing arguments.
+        This is a utility function to easily set up encryption. Encryption can
+        also be set up by manually by setting the correct
+        :class:`~pskc.encryption.Encryption` properties.
+
+        This method will generate a key if required and set the passed values.
+        By default AES128-CBC encryption will be configured and unless a key is
+        specified one of the correct length will be generated. If the algorithm
+        does not provide integrity checks (e.g. CBC-mode algorithms) integrity
+        checking in the PSKC file will be set up using
+        :func:`~pskc.mac.MAC.setup()`.
+
+        By default only the :attr:`~pskc.key.Key.secret` property will be
+        encrypted when writing the file.
         """
         self._setup_encryption(
             id=id,
@@ -444,21 +461,23 @@ class Encryption:
     ) -> None:
         """Configure password-based PSKC encryption when writing the file.
 
-        The following arguments may be supplied:
-          password: the password to use (required)
-          id: encryption key identifier
-          algorithm: encryption algorithm
-          key_name: a name for the key
-          key_names: a number of names for the key
-          key_length: encryption key length in bytes
-          fields: a list of fields to encrypt
-          salt: PBKDF2 salt
-          salt_length: used when generating random salt
-          iterations: number of PBKDF2 iterations
-          prf: PBKDF2 pseudorandom function
+        :param password: the password to use (required)
+        :param id: encryption key identifier
+        :param algorithm: encryption algorithm
+        :param key_length: encryption key length in bytes
+        :param key_name: a name for the key
+        :param key_names: a number of names for the key
+        :param fields: a list of fields to encrypt
+        :param salt: PBKDF2 salt
+        :param salt_length: used when generating random salt
+        :param iterations: number of PBKDF2 iterations
+        :param prf: PBKDF2 pseudorandom function
 
-        Only password is required, for the other arguments reasonable
-        defaults will be chosen.
+        Defaults for the above parameters are similar to those for
+        :func:`setup_preshared_key()` but the password parameter is required.
+
+        By default 12000 iterations will be used and a random salt with the
+        length of the to-be-generated encryption key will be used.
         """
         self._setup_encryption(
             id=id,
@@ -494,7 +513,12 @@ class Encryption:
         return cipher_value
 
     def remove_encryption(self) -> None:
-        """Decrypt all values and remove the encryption from the PSKC file."""
+        """Decrypt all values and remove the encryption from the PSKC file.
+
+        This can be used to read and encrypted PSKC file, decrypt the file,
+        remove the encryption and output an unencrypted PSKC file or to replace
+        the encryption algorithm.
+        """
         # decrypt all values and store decrypted values
         for key in self.pskc.keys:
             key.secret = key.secret

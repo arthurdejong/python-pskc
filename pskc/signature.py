@@ -66,14 +66,31 @@ def sign_x509(
 def verify_x509(tree: _Element, certificate: str | None = None, ca_pem_file: str | None = None) -> _Element:
     """Verify signature in PSKC data against a trusted X.509 certificate.
 
-    If a certificate is supplied it is used to validate the signature,
-    otherwise any embedded certificate is used and validated against a
-    certificate in ca_pem_file if it specified and otherwise the operating
-    system CA certificates.
+    :param certificate: a PEM encoded certificate that is used for verification
+    :param ca_pem_file: the name of a file that contains a CA certificate
+
+    The signature can be verified in three ways:
+
+    * The signature has an embedded certificate that is signed by a CA that is
+      configured in the system CA store. In this case neither `certificate` or
+      `ca_pem_file` need to be specified
+    * The signature was made  and a certificate was transmitted out-of-band.
+      In this case the `certificate` argument needs to be present.
+    * The signature has a certificate that is signed by a specific CA who's
+      certificate was transmitted out-of-band. In this case the `ca_pem_file`
+      is used to point to a CA certificate file (but a certificate needs to be
+      embedded inside the PSKC file).
+
+    This function will raise an exception when the validation fails.
+
+    After calling this function a verified version of the PSKC file will
+    be present in the :attr:`signed_pskc` attribute.
     """
     from signxml import XMLVerifier  # type: ignore[attr-defined]
-    return XMLVerifier().verify(
-        tree, x509_cert=certificate, ca_pem_file=ca_pem_file).signed_xml  # type: ignore[union-attr,return-value]
+    return XMLVerifier().verify(  # type: ignore[union-attr,return-value]
+        tree, x509_cert=certificate,
+        ca_pem_file=ca_pem_file,
+    ).signed_xml
 
 
 class Signature:
@@ -133,11 +150,26 @@ class Signature:
         return self._signed_pskc
 
     def verify(self, certificate: str | None = None, ca_pem_file: str | None = None) -> bool:
-        """Check that the signature was made with the specified certificate.
+        """Verify signature in PSKC data against a trusted X.509 certificate.
 
-        If no certificate is provided the signature is expected to contain a
-        signature that is signed by the CA certificate (or the CA standard CA
-        certificates when ca_pem_file is absent).
+        The signature can be verified in three ways:
+
+        * The signature has an embedded certificate that is signed by a CA that is
+          configured in the system CA store. In this case neither `certificate` or
+          `ca_pem_file` need to be specified
+        * The signature was made  and a certificate was transmitted out-of-band.
+          In this case the `certificate` argument needs to be present.
+        * The signature has a certificate that is signed by a specific CA who's
+          certificate was transmitted out-of-band. In this case the `ca_pem_file`
+          is used to point to a CA certificate file (but a certificate needs to be
+          embedded inside the PSKC file).
+
+        This function will raise an exception when the validation fails. The `certificate`
+        is expected to be passed as a PEM encoded string. The `ca_pem_file` should point to a CA
+        certificate store (PEM encoded file).
+
+        After calling this function a verified version of the PSKC file will
+        be present in the :attr:`signed_pskc` attribute.
         """
         from pskc import PSKC
         from pskc.parser import PSKCParser
@@ -149,7 +181,14 @@ class Signature:
         return True
 
     def sign(self, key: bytes, certificate: str | None = None) -> None:
-        """Add an XML signature to the file."""
+        """Add an XML signature to the file.
+
+        Set up a key and optionally a certificate that will be used to create an
+        embedded XML signature when writing the file.
+
+        This is a utility function that is used to configure the properties
+        needed to create a signed PSKC file.
+        """
         self.key = key
         self.certificate = certificate
 

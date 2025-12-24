@@ -27,6 +27,7 @@ The MAC class
 .. class:: MAC
 
    .. attribute:: algorithm
+      :type: str | None
 
       A URI of the MAC algorithm used for message authentication. See the
       section :ref:`mac-algorithms` below for a list of algorithm URIs.
@@ -37,25 +38,14 @@ The MAC class
       ``http://www.w3.org/2001/04/xmldsig-more#hmac-sha256``.
 
    .. attribute:: key
+      :type: bytes | None
 
       For HMAC checking, this contains the binary value of the MAC key. The
       MAC key is generated specifically for each PSKC file and encrypted with
       the PSKC encryption key, so the PSKC file should be decrypted first
       (see :doc:`encryption`).
 
-   .. function:: setup(...)
-
-      Configure an encrypted MAC key for creating a new PSKC file.
-
-      :param str algorithm: encryption algorithm
-      :param bytes key: the encryption key to use
-
-      None of the arguments are required. By default HMAC-SHA1 will be used
-      as a MAC algorithm. If no key is configured a random key will be
-      generated with the length of the output of the configured hash.
-
-      This function will automatically be called when the configured
-      encryption algorithm requires a message authentication code.
+   .. automethod:: setup
 
 
 .. _mac-algorithms:

@@ -78,6 +78,10 @@ class Device:
 
         The new key is initialised with properties from the provided keyword
         arguments if any.
+
+        The arguments may be any valid attribute of :class:`~pskc.key.Key` or
+        be of the special form `policy.attribute` or `policy__attribute` to set
+        any attribute of :class:`~pskc.policy.Policy`.
         """
         from pskc.key import Key
         key = Key(self)

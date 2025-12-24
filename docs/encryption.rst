@@ -46,11 +46,12 @@ The Encryption class
 
 .. class:: Encryption
 
-   .. attribute:: id
+   .. autoattribute:: id
 
       Optional identifier of the encryption key.
 
    .. attribute:: algorithm
+      :type: str | None
 
       A URI of the encryption algorithm used. See the section
       :ref:`encryption-algorithms` below for a list of algorithms URIs.
@@ -62,22 +63,24 @@ The Encryption class
 
 
    .. attribute:: is_encrypted
+      :type: bool
 
       An indicator of whether the PSKC file requires an additional pre-shared
       key or passphrase to decrypt the contents of the file. Will be ``True``
       if a key or passphrase is needed, ``False`` otherwise.
 
-   .. attribute:: key_names
+   .. autoattribute:: key_names
 
       List of names provided for the encryption key.
 
    .. attribute:: key_name
+      :type: str | None
 
       Since usually only one name is defined for a key but the schema allows
       for multiple names, this is a shortcut for accessing the first value of
       :attr:`key_names`. It will return ``None`` if no name is available.
 
-   .. attribute:: key
+   .. autoattribute:: key
 
       The binary value of the encryption key. In the case of pre-shared keys
       this value should be set before trying to access encrypted information
@@ -86,75 +89,20 @@ The Encryption class
       When using key derivation the secret key is available in this attribute
       after calling :func:`derive_key`.
 
-   .. function:: derive_key(password)
+   .. automethod:: derive_key
 
-      Derive a key from the supplied password and information in the PSKC
-      file (generally algorithm, salt, etc.).
-
-      This function may raise a :exc:`~pskc.exceptions.KeyDerivationError`
-      exception if key derivation fails for some reason.
-
-   .. attribute:: fields
+   .. autoattribute:: fields
 
       A list of :class:`~pskc.key.Key` instance field names that will be
       encrypted when the PSKC file is written. List values can contain
       ``secret``, ``counter``, ``time_offset``, ``time_interval`` and
       ``time_drift``.
 
-   .. function:: setup_preshared_key(...)
+   .. automethod:: setup_preshared_key
 
-      Configure pre-shared key encryption when writing the file.
+   .. automethod:: setup_pbkdf2
 
-      :param bytes key: the encryption key to use
-      :param str id: encryption key identifier
-      :param str algorithm: encryption algorithm
-      :param int key_length: encryption key length in bytes
-      :param str key_name: a name for the key
-      :param list key_names: a number of names for the key
-      :param list fields: a list of fields to encrypt
-
-      This is a utility function to easily set up encryption. Encryption can
-      also be set up by manually by setting the
-      :class:`~pskc.encryption.Encryption` properties.
-
-      This method will generate a key if required and set the passed values.
-      By default AES128-CBC encryption will be configured and unless a key is
-      specified one of the correct length will be generated. If the algorithm
-      does not provide integrity checks (e.g. CBC-mode algorithms) integrity
-      checking in the PSKC file will be set up using
-      :func:`~pskc.mac.MAC.setup()`.
-
-      By default only the :attr:`~pskc.key.Key.secret` property will be
-      encrypted when writing the file.
-
-   .. function:: setup_pbkdf2(...)
-
-      Configure password-based PSKC encryption when writing the file.
-
-      :param str password: the password to use (required)
-      :param str id: encryption key identifier
-      :param str algorithm: encryption algorithm
-      :param int key_length: encryption key length in bytes
-      :param str key_name: a name for the key
-      :param list key_names: a number of names for the key
-      :param list fields: a list of fields to encrypt
-      :param bytes salt: PBKDF2 salt
-      :param int salt_length: used when generating random salt
-      :param int iterations: number of PBKDF2 iterations
-      :param function prf: PBKDF2 pseudorandom function
-
-      Defaults for the above parameters are similar to those for
-      :func:`setup_preshared_key()` but the password parameter is required.
-
-      By default 12000 iterations will be used and a random salt with the
-      length of the to-be-generated encryption key will be used.
-
-   .. function:: remove_encryption()
-
-      Decrypt all data stored in the PSKC file and remove the encryption
-      configuration. This can be used to read and encrypted PSKC file,
-      decrypt the file, remove the encryption and output an unencrypted PSKC
-      file or to replace the encryption algorithm.
+   .. automethod:: remove_encryption
 
 
 .. _encryption-algorithms:

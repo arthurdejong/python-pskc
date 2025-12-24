@@ -139,7 +139,11 @@ class Policy:
         self.pin_max_failed_attempts = value
 
     def may_use(self, usage: str | None = None, now: datetime.datetime | None = None) -> bool:
-        """Check whether the key may be used for the provided purpose."""
+        """Check whether the key may be used for the provided purpose.
+
+        The key :attr:`start_date` and :attr:`expiry_date` are also checked. The `now`
+        argument can be used to specify another point in time to check against.
+        """
         import datetime
         import dateutil.tz
         if self.unknown_policy_elements:

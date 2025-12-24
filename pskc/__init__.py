@@ -122,6 +122,10 @@ class PSKC:
 
         The new key is initialised with properties from the provided keyword
         arguments if any.
+
+        The arguments may be any valid attribute of :class:`~pskc.key.Key` or
+        :class:`~pskc.device.Device` or be of the special form `policy.attribute`
+        or `policy__attribute` to set any attribute of :class:`~pskc.policy.Policy`.
         """
         from pskc.device import update_attributes
         device = self.add_device()
@@ -130,7 +134,10 @@ class PSKC:
         return key
 
     def write(self, filename: str | bytes | PathLike[str] | PathLike[bytes] | IO[str] | IO[bytes]) -> None:
-        """Write the PSKC file to the provided file."""
+        """Write the PSKC file to the provided file.
+
+        The `filename` argument can be either the name of a file or a file-like object.
+        """
         from pskc.serialiser import PSKCSerialiser
         if hasattr(filename, 'write'):
             PSKCSerialiser.serialise_file(self, filename)  # type: ignore [arg-type]

@@ -127,12 +127,12 @@ class MAC:
     def setup(self, key: bytes | None = None, algorithm: str | None = None) -> None:
         """Configure an encrypted MAC key.
 
-        The following arguments may be supplied:
-          key: the MAC key to use
-          algorithm: MAC algorithm
+        None of the arguments are required. By default HMAC-SHA1 will be used
+        as a MAC algorithm. If no key is configured a random key will be
+        generated with the length of the output of the configured hash.
 
-        None of the arguments are required, reasonable defaults will be
-        chosen for missing arguments.
+        This function will automatically be called when the configured
+        encryption algorithm requires a message authentication code.
         """
         if key:
             self.key = key
