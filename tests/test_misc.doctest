@@ -64,10 +64,10 @@ True
 We can also put device-specific properties in a device:
 
 >>> pskc = PSKC()
->>> device = pskc.add_device(manufacturer='Tokens INC.')
+>>> device = pskc.add_device(manufacturer='Tokens INC.', serial='456')
 >>> len(pskc.keys)
 0
->>> key = device.add_key(id='123', serial='456')
+>>> key = device.add_key(id='123')
 >>> len(pskc.keys)
 1
 >>> key.id
