@@ -64,7 +64,7 @@ if TYPE_CHECKING:  # pragma: no cover (only for mypy)
     from pskc.key import Key
 
 # the version number of the library
-__version__ = '1.3'
+__version__ = '1.4'
 
 
 class PSKC:

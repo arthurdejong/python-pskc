@@ -1,3 +1,115 @@
+2025-12-30  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [c4911d6] .github/workflows/test.yml, setup.py, tox.ini: Add
+	  support for Python 3.14
+
+2025-12-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f10acff] docs/encryption.rst, docs/exceptions.rst, docs/mac.rst,
+	  docs/policy.rst, docs/signatures.rst, docs/usage.rst,
+	  pskc/__init__.py, pskc/device.py, pskc/encryption.py,
+	  pskc/exceptions.py, pskc/key.py, pskc/mac.py, pskc/policy.py,
+	  pskc/signature.py, tox.ini: Include type information in
+	  documentation
+
+	  This also includes a few other cleanups moving some documentation
+	  to docstrings.
+
+2025-12-24  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [02c35e7] .github/workflows/test.yml, pskc/__init__.py,
+	  pskc/algorithms.py, pskc/crypto/__init__.py, pskc/crypto/aeskw.py,
+	  pskc/crypto/tripledeskw.py, pskc/device.py, pskc/encryption.py,
+	  pskc/exceptions.py, pskc/key.py, pskc/mac.py, pskc/parser.py,
+	  pskc/policy.py, pskc/py.typed, pskc/scripts/__init__.py,
+	  pskc/scripts/csv2pskc.py, pskc/scripts/pskc2csv.py,
+	  pskc/scripts/pskc2pskc.py, pskc/scripts/util.py,
+	  pskc/serialiser.py, pskc/signature.py, pskc/xml.py, setup.cfg,
+	  setup.py, tests/test_write.doctest, tox.ini: Introduce type hints
+
+	  This ensures that the module includes type hints for everything
+	  and also runs mypy from tox.
+
+	  This minimises the number of functional changes but a few
+	  functions go from using `kwargs` to explicity named argumnets.
+
+2025-12-25  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [b6b593c] tests/test_misc.doctest, tests/test_write.doctest:
+	  Fix the tests to set the serial on the device
+
+	  The serial is a property of the device, not the key.
+
+2025-12-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [6cec258] pskc/encryption.py, tests/test_misc.doctest: Allow
+	  emptying key list by asigning empty key name
+
+2025-12-22  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [4e19e9c] pskc/parser.py, tests/test_signature.doctest: Change
+	  PSKC.signature.certificate from bytes to str
+
+	  This better matches the types used by the signxml module.
+
+2025-12-17  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [df5f2c3] .github/workflows/test.yml: Run flake8 with Python 3.13
+
+	  Python version 3.14 no longer works.
+
+2025-04-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [91610fa] .github/workflows/test.yml, setup.py, tox.ini: Add
+	  support for Python 3.13
+
+2025-04-21  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [056f5ab] .github/workflows/test.yml, setup.py, tox.ini: Drop
+	  support for Python 3.6 and 3.7
+
+	  Sadly GitHub has dropped the ability to run tests with these
+	  versions of Python.
+
+2025-02-06  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [cfaae11] pskc/policy.py, tests/test_rfc6030.doctest,
+	  tests/test_write.doctest: Spelling fixes (thanks codespell)
+
+2025-01-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [ab5bea9] .github/workflows/test.yml, tox.ini: Stop running
+	  lxml-defusedxml combination tests
+
+	  Fixes 2c50b12
+
+2024-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [2c50b12] pskc/xml.py, tox.ini: No longer use defusedxml with lxml
+
+	  The lxml parser uses libxml2 which guards against the
+	  vulnerabilities defusedxml protects against when using libxml2
+	  2.6 (released 2008) or newer. The lxml support in defusedxml
+	  has been deprecated since release 0.6.0 and is planned to be
+	  removed in 0.8.0.
+
+	  See
+	  https://github.com/tiran/defusedxml/commit/d1260ab35e53dbb16417f4f6736ab2981f13ddab
+	  See https://github.com/tiran/defusedxml/issues/38
+
+2025-01-01  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [78a25b3] .github/workflows/test.yml: Test with PyPy 3.10 to
+	  replace PyPy 3.8
+
+	  This is needed because the cryptography library has dropped
+	  support for PyPy versions older than 3.9.
+
+2024-09-08  Arthur de Jong <arthur@arthurdejong.org>
+
+	* [f5872f9] ChangeLog, NEWS, README, docs/conf.py, pskc/__init__.py:
+	  Get files ready for 1.3 release
+
 2024-09-08  Arthur de Jong <arthur@arthurdejong.org>
 
 	* [d790ba4] tests/test_misc.doctest: Remove tests reliance on
