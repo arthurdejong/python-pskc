@@ -87,7 +87,7 @@ def from_column(key: str, value: str, secret_encoding: str) -> bytes | str | dat
     """Convert a key value read from a CSV file in a format for PSKC."""
     # decode encoded secret
     if key == 'secret':
-        return encodings[secret_encoding](value)  # type: ignore[no-any-return,operator]
+        return encodings[secret_encoding](value)
     # convert dates to timestamps
     if key.endswith('_date'):
         return dateutil.parser.parse(value)
