@@ -349,8 +349,9 @@ class Encryption:
         from pskc.exceptions import DecryptionError
         try:
             for key in self.pskc.keys:
-                key.secret, key.counter, key.time_offset
-                key.time_interval, key.time_drift
+                # Evaluate all the attributes which should trigger an exception
+                # of decryption is required
+                key.secret, key.counter, key.time_offset, key.time_interval, key.time_drift  # noqa: B018
         except DecryptionError:
             return True
         return False
