@@ -76,8 +76,8 @@ class PSKCParser:
         """Parse the provided file and store data in the PSKC instance."""
         try:
             tree = parse(filename)
-        except Exception:
-            raise ParseError('Error parsing XML')
+        except Exception as exc:
+            raise ParseError('Error parsing XML') from exc
         # save a clean copy of the tree for signature checking
         pskc.signature.tree = copy.deepcopy(tree)
         cls.parse_document(pskc, tree.getroot())

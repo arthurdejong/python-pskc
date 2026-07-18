@@ -87,8 +87,8 @@ def _decrypt_cbc(
         return unpadder.update(
             decryptor.update(ciphertext) +
             decryptor.finalize()) + unpadder.finalize()
-    except ValueError:
-        raise DecryptionError('Invalid padding')
+    except ValueError as exc:
+        raise DecryptionError('Invalid padding') from exc
 
 
 def decrypt(algorithm: str | None, key: bytes | None, ciphertext: bytes, iv: bytes | None = None) -> bytes:
@@ -248,9 +248,9 @@ class KeyDerivation:
             return pbkdf2_hmac(
                 prf, password, self.pbkdf2_salt, self.pbkdf2_iterations,  # type: ignore[arg-type]
                 self.pbkdf2_key_length)
-        except ValueError:
+        except ValueError as exc:
             raise KeyDerivationError(
-                'Pseudorandom function unsupported: %r' % self.pbkdf2_prf)
+                'Pseudorandom function unsupported: %r' % self.pbkdf2_prf) from exc
 
     def derive(self, password: str | bytes | bytearray) -> bytes:
         """Derive a key from the password."""
