@@ -23,7 +23,8 @@ openssl req \
   -new \
   -key key.pem -out request.pem \
   -subj '/C=NL/O=python-pskc/CN=Test signing' \
-  -addext 'subjectAltName = email:test-signing@example.com'
+  -addext 'subjectAltName = email:test-signing@example.com' \
+  -addext 'keyUsage = digitalSignature'
 
 openssl x509 \
   -req \
