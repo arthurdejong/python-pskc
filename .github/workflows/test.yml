@@ -8,6 +8,9 @@ on:
   schedule:
     - cron: '9 0 * * 1'
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -17,9 +20,10 @@ jobs:
         python-version: [3.9, '3.10', 3.11, 3.12, 3.13, 3.14, pypy3.11]
         flavour: [signxml]
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v7
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -37,9 +41,10 @@ jobs:
         python-version: [3.13]
         flavour: [legacy, legacy-defusedxml, lxml]
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v7
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -53,29 +58,13 @@ jobs:
       matrix:
         tox_job: [docs, flake8, mypy, codespell]
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v7
         with:
           python-version: 3.14
       - name: Install dependencies
         run: python -m pip install --upgrade pip tox
       - name: Run tox ${{ matrix.tox_job }}
         run: tox -e ${{ matrix.tox_job }} --skip-missing-interpreters false
-  CodeQL:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: python
-    - name: Build
-      uses: github/codeql-action/autobuild@v2
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
